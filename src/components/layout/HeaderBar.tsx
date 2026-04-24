@@ -30,6 +30,11 @@ export function HeaderBar({ onClearConversation }: HeaderBarProps) {
           flex-shrink: 0;
           animation: header-in 0.6s ease both;
         }
+        @media (max-width: 600px) {
+          .header-bar {
+            padding: 12px 16px;
+          }
+        }
       `}</style>
     </header>
   );

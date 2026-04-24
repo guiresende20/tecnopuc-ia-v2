@@ -4,6 +4,7 @@ import { useAppStore } from '@/store/appStore';
 import { TCore3D } from '@/components/t-core/TCore3D';
 import { TRadialMenu } from '@/components/radial-menu/TRadialMenu';
 import { ResponseLayer } from '@/components/responses/ResponseLayer';
+import { StageFeedbackLayer } from '@/components/stage/StageFeedbackLayer';
 import type { ResponseNode } from '@/types/app.types';
 
 interface ExperienceStageProps {
@@ -41,6 +42,9 @@ export function ExperienceStage({
 
   return (
     <div className="experience-stage">
+      {/* Feedback layer: particles + pulse rings behind the T */}
+      <StageFeedbackLayer />
+
       {/* T + radial anchored at center */}
       <div className="t-anchor">
         <TCore3D

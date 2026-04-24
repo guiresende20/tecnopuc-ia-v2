@@ -8,6 +8,14 @@ import type {
   ResponseNode,
 } from '@/types/app.types';
 
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
+
+export interface Toast {
+  id: string;
+  type: ToastType;
+  message: string;
+}
+
 interface AppActions {
   setViewportMode: (mode: ViewportMode) => void;
   setInteractionMode: (mode: InteractionMode) => void;
@@ -27,9 +35,12 @@ interface AppActions {
   setMuted: (muted: boolean) => void;
   setInputValue: (value: string) => void;
   setSubmitting: (submitting: boolean) => void;
+  showToast: (type: ToastType, message: string) => void;
+  dismissToast: (id: string) => void;
 }
 
-const initialState: AppState = {
+const initialState: AppState & { toasts: Toast[] } = {
+  toasts: [],
   viewportMode: 'desktop',
   interactionMode: 'text',
   tState: 'idle',
@@ -60,7 +71,7 @@ const initialState: AppState = {
   },
 };
 
-export const useAppStore = create<AppState & AppActions>((set) => ({
+export const useAppStore = create<AppState & { toasts: Toast[] } & AppActions>((set) => ({
   ...initialState,
 
   setViewportMode: (mode) => set({ viewportMode: mode }),
@@ -107,4 +118,12 @@ export const useAppStore = create<AppState & AppActions>((set) => ({
 
   setSubmitting: (submitting) =>
     set((s) => ({ input: { ...s.input, submitting } })),
+
+  showToast: (type, message) =>
+    set((s) => ({
+      toasts: [...s.toasts, { id: `toast_${Date.now()}_${Math.random()}`, type, message }],
+    })),
+
+  dismissToast: (id) =>
+    set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 }));

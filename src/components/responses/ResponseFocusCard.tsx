@@ -4,6 +4,7 @@ import { useState } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ResponseNode } from '@/types/app.types';
+import { useTypewriter } from '@/hooks/useTypewriter';
 
 const markdownComponents: Components = {
   a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
@@ -18,11 +19,15 @@ interface ResponseFocusCardProps {
 export function ResponseFocusCard({ node, isStreaming, streamingText }: ResponseFocusCardProps) {
   const [copied, setCopied] = useState(false);
 
-  const content = isStreaming ? streamingText ?? '' : node.body ?? '';
+  const target = isStreaming ? streamingText ?? '' : node.body ?? '';
+  const displayed = useTypewriter(target);
+  const isRevealing = displayed.length < target.length;
+  const showCursor = isStreaming || isRevealing;
+  const showActions = !isStreaming && !isRevealing;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(content);
+      await navigator.clipboard.writeText(node.body ?? target);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch { /* silent fallback */ }
@@ -31,11 +36,11 @@ export function ResponseFocusCard({ node, isStreaming, streamingText }: Response
   return (
     <div className="focus-card">
       <div className="focus-card-body">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{content}</ReactMarkdown>
-        {isStreaming && <span className="cursor-blink" aria-hidden="true" />}
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{displayed}</ReactMarkdown>
+        {showCursor && <span className="cursor-blink" aria-hidden="true" />}
       </div>
 
-      {!isStreaming && (
+      {showActions && (
         <div className="focus-card-actions">
           <button onClick={handleCopy} className="action-btn" title="Copiar resposta">
             {copied ? (

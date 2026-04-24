@@ -41,6 +41,11 @@ export function InputZone({ onSend, onStop, disabled, showSuggestions, voiceStat
           flex-shrink: 0;
           animation: footer-in 0.6s ease 0.2s both;
         }
+        @media (max-width: 600px) {
+          .footer {
+            padding: 12px 16px 20px;
+          }
+        }
       `}</style>
     </footer>
   );

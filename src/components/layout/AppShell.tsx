@@ -7,6 +7,7 @@ import { HeaderBar } from './HeaderBar';
 import { ExperienceStage } from '@/components/stage/ExperienceStage';
 import { InputZone } from '@/components/input/InputZone';
 import { StageBackground } from '@/components/stage/StageBackground';
+import { ToastLayer } from '@/components/overlays/ToastLayer';
 import { streamChat, type ChatMessage } from '@/services/chatService';
 import { GeminiLiveChat, type LiveChatStatus } from '@/lib/gemini-live';
 import type { ResponseNode } from '@/types/app.types';
@@ -16,6 +17,7 @@ export function AppShell() {
 
   const setTState = useAppStore((s) => s.setTState);
   const setSubmitting = useAppStore((s) => s.setSubmitting);
+  const showToast = useAppStore((s) => s.showToast);
 
   // Text chat state
   const [responses, setResponses] = useState<ResponseNode[]>([]);
@@ -112,6 +114,7 @@ export function AppShell() {
           onError: (err) => {
             console.error('[AppShell Voice]', err);
             setVoiceStatus('error');
+            showToast('error', 'Erro na conversa por voz. Tente novamente.');
           },
         },
         systemInstruction,
@@ -123,6 +126,7 @@ export function AppShell() {
       console.error('[AppShell Voice] start failed:', err);
       setVoiceStatus('error');
       liveChatRef.current = null;
+      showToast('error', 'Não foi possível iniciar o modo voz. Verifique sua conexão.');
     }
   }, []);
 
@@ -178,6 +182,7 @@ export function AppShell() {
         };
         setResponses((prev) => [...prev, errorNode]);
         setTState('error');
+        showToast('error', 'Erro ao buscar resposta. Tente novamente.');
         setTimeout(() => setTState('idle'), 3000);
       }
     } finally {
@@ -212,6 +217,7 @@ export function AppShell() {
   return (
     <div className="app-shell">
       <StageBackground />
+      <ToastLayer />
       <HeaderBar onClearConversation={handleClearConversation} />
 
       <main className="app-main">

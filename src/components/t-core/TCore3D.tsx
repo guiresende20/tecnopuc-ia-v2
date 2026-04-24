@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { useAppStore } from '@/store/appStore';
+import { T_VISUAL_CONFIG } from './TStateMachine';
 
 interface TCore3DProps {
   onHoverStart?: () => void;
@@ -10,90 +11,79 @@ interface TCore3DProps {
   audioLevel?: number;
 }
 
-type Palette = 'blue' | 'purple';
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const PALETTES = {
-  blue: {
-    grad1: ['#a8d4ff', '#ffffff', '#4aa8ff', '#cce8ff', '#0077dd', '#88ccff'],
-    grad2: ['#66bbff', '#ffffff', '#2299ff'],
-    glow:    'rgba(0,153,255,',
-    glowAlt: 'rgba(0,200,255,',
-    ring:    'rgba(0,200,255,',
-    orbit:   'rgba(0,229,255,',
-    drop1:   'rgba(0,153,255,0.9)',
-    drop2:   'rgba(0,153,255,0.5)',
-    drop3:   'rgba(0,200,255,0.3)',
-  },
-  purple: {
-    grad1: ['#e9d5ff', '#ffffff', '#c084fc', '#f3e8ff', '#7c3aed', '#d8b4fe'],
-    grad2: ['#c084fc', '#ffffff', '#a855f7'],
-    glow:    'rgba(168,85,247,',
-    glowAlt: 'rgba(196,132,252,',
-    ring:    'rgba(192,132,252,',
-    orbit:   'rgba(216,180,254,',
-    drop1:   'rgba(168,85,247,0.9)',
-    drop2:   'rgba(168,85,247,0.5)',
-    drop3:   'rgba(196,132,252,0.3)',
-  },
-} as const;
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
 
-function MetallicT({
-  size = 198,
-  rotationSpeed = 14,
-  palette = 'blue',
-}: {
-  size?: number;
-  rotationSpeed?: number;
-  palette?: Palette;
-}) {
-  const p = PALETTES[palette];
-  const w = size * 0.9;
-  const h = size;
-  const barH = h * 0.18;
-  const barW = w;
-  const stemW = w * 0.28;
-  const stemH = h - barH;
-  const stemX = (w - stemW) / 2;
+// Maps TStateMachine rotationSpeed multiplier → CSS animation duration (seconds)
+function rotationDuration(speed: number): number {
+  if (speed <= 0) return 9999;
+  return Math.round(10 / speed);
+}
 
-  // Unique gradient IDs per palette to avoid SVG caching issues
-  const g1 = `metalGrad-${palette}`;
-  const g2 = `metalGrad2-${palette}`;
-  const gf = `glow-${palette}`;
+// ─── Metallic SVG T ───────────────────────────────────────────────────────────
+
+const SVG_GRAD_BLUE = {
+  grad1: ['#a8d4ff', '#ffffff', '#4aa8ff', '#cce8ff', '#0077dd', '#88ccff'],
+  grad2: ['#66bbff', '#ffffff', '#2299ff'],
+};
+
+interface MetallicTProps {
+  rotateDuration: number;
+  paused: boolean;
+  glowColor: string;
+  glowIntensity: number;
+  scale: number;
+}
+
+function MetallicT({ rotateDuration, paused, glowColor, glowIntensity, scale }: MetallicTProps) {
+  const drop1 = hexToRgba(glowColor, 0.9  * glowIntensity);
+  const drop2 = hexToRgba(glowColor, 0.5  * glowIntensity);
+  const drop3 = hexToRgba(glowColor, 0.28 * glowIntensity);
 
   return (
     <div
-      className="t-letter-container"
-      style={{ animationDuration: `${rotationSpeed}s, 6s` }}
+      className="t-letter-wrap"
+      style={{
+        transform: `scale(${scale})`,
+        transition: 'transform 0.4s ease',
+        animationDuration: `${rotateDuration}s, 6s`,
+        animationPlayState: paused ? 'paused' : 'running',
+      }}
     >
       <svg
         className="t-svg"
-        width={w}
-        height={h}
-        viewBox={`0 0 ${w} ${h}`}
+        width="100%"
+        height="100%"
+        viewBox="0 0 178 198"
+        preserveAspectRatio="xMidYMid meet"
         style={{
           filter: `
-            drop-shadow(0 0 20px ${p.drop1})
-            drop-shadow(0 0 40px ${p.drop2})
-            drop-shadow(0 0 80px ${p.drop3})
+            drop-shadow(0 0 18px ${drop1})
+            drop-shadow(0 0 38px ${drop2})
+            drop-shadow(0 0 70px ${drop3})
           `,
-          transition: 'filter 0.6s ease',
+          transition: 'filter 0.5s ease',
         }}
       >
         <defs>
-          <linearGradient id={g1} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stopColor={p.grad1[0]} />
-            <stop offset="20%"  stopColor={p.grad1[1]} />
-            <stop offset="40%"  stopColor={p.grad1[2]} />
-            <stop offset="60%"  stopColor={p.grad1[3]} />
-            <stop offset="80%"  stopColor={p.grad1[4]} />
-            <stop offset="100%" stopColor={p.grad1[5]} />
+          <linearGradient id="tGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            {SVG_GRAD_BLUE.grad1.map((c, i) => (
+              <stop key={i} offset={`${i * 20}%`} stopColor={c} />
+            ))}
           </linearGradient>
-          <linearGradient id={g2} x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%"   stopColor={p.grad2[0]} />
-            <stop offset="50%"  stopColor={p.grad2[1]} />
-            <stop offset="100%" stopColor={p.grad2[2]} />
+          <linearGradient id="tGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stopColor={SVG_GRAD_BLUE.grad2[0]} />
+            <stop offset="50%"  stopColor={SVG_GRAD_BLUE.grad2[1]} />
+            <stop offset="100%" stopColor={SVG_GRAD_BLUE.grad2[2]} />
           </linearGradient>
-          <filter id={gf}>
+          <filter id="tGlow">
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
@@ -102,25 +92,25 @@ function MetallicT({
           </filter>
         </defs>
         {/* Top bar */}
-        <rect x="0" y="0" width={barW} height={barH} rx="3"
-          fill={`url(#${g1})`} filter={`url(#${gf})`} />
+        <rect x="0" y="0" width="178" height="35.6" rx="3"
+          fill="url(#tGrad1)" filter="url(#tGlow)" />
         {/* Stem */}
-        <rect x={stemX} y={barH} width={stemW} height={stemH} rx="3"
-          fill={`url(#${g2})`} filter={`url(#${gf})`} />
-        {/* Highlight on bar */}
-        <rect x="4" y="3" width={barW - 8} height={barH * 0.25} rx="2"
+        <rect x="74.8" y="35.6" width="49.8" height="162.4" rx="3"
+          fill="url(#tGrad2)" filter="url(#tGlow)" />
+        {/* Highlight bar */}
+        <rect x="4" y="3" width="170" height="8.9" rx="2"
           fill="rgba(255,255,255,0.35)" />
-        {/* Highlight on stem */}
-        <rect x={stemX + 3} y={barH + 4} width={stemW * 0.3} height={stemH - 8} rx="2"
+        {/* Highlight stem */}
+        <rect x="78.8" y="39.6" width="14.9" height="154.4" rx="2"
           fill="rgba(255,255,255,0.2)" />
       </svg>
 
       <style jsx>{`
-        .t-letter-container {
+        .t-letter-wrap {
+          width: 100%;
+          height: 100%;
           animation: rotateT linear infinite, float ease-in-out infinite;
           transform-style: preserve-3d;
-          position: relative;
-          z-index: 2;
         }
         .t-svg { display: block; }
       `}</style>
@@ -128,18 +118,24 @@ function MetallicT({
   );
 }
 
-export function TCore3D({
-  onHoverStart,
-  onHoverEnd,
-  onHoldStart,
-}: TCore3DProps) {
+// ─── Main Export ──────────────────────────────────────────────────────────────
+
+export function TCore3D({ onHoverStart, onHoverEnd, onHoldStart }: TCore3DProps) {
   const viewportMode = useAppStore((s) => s.viewportMode);
   const tState = useAppStore((s) => s.tState);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isSpeaking = tState === 'speaking';
-  const palette: Palette = isSpeaking ? 'purple' : 'blue';
-  const p = PALETTES[palette];
+  const config = T_VISUAL_CONFIG[tState];
+  const glow = config.glowColor;
+  const ringBorder  = hexToRgba(glow, 0.4);
+  const ringGlow    = hexToRgba(glow, 0.2);
+  const ringInset   = hexToRgba(glow, 0.1);
+  const orbitBorder = hexToRgba(glow, 0.6);
+  const orbitGlow   = hexToRgba(glow, 0.3);
+  const innerBg     = hexToRgba(glow, 0.2);
+
+  const rotateDur = rotationDuration(config.rotationSpeed);
+  const paused = config.rotationSpeed <= 0;
 
   const cancelHold = () => {
     if (holdTimer.current) {
@@ -163,38 +159,48 @@ export function TCore3D({
     >
       {/* Outer static ring */}
       <div
-        className="t-glow-ring-outer"
+        className="t-ring-outer"
         style={{
-          borderColor: `${p.ring}0.35)`,
-          boxShadow: `0 0 18px ${p.ring}0.2), inset 0 0 18px ${p.ring}0.1)`,
-          transition: 'border-color 0.6s ease, box-shadow 0.6s ease',
+          borderColor: ringBorder,
+          boxShadow: `0 0 18px ${ringGlow}, inset 0 0 18px ${ringInset}`,
+          transition: 'border-color 0.5s ease, box-shadow 0.5s ease',
         }}
       />
       {/* Orbital spinning ring */}
       <div
-        className="t-orbit-ring"
+        className="t-ring-orbit"
         style={{
-          borderColor: `${p.orbit}0.55)`,
-          boxShadow: `0 0 12px ${p.orbit}0.3)`,
-          transition: 'border-color 0.6s ease, box-shadow 0.6s ease',
+          borderColor: orbitBorder,
+          boxShadow: `0 0 12px ${orbitGlow}`,
+          transition: 'border-color 0.5s ease, box-shadow 0.5s ease',
         }}
       />
       {/* Inner glow */}
       <div
-        className="t-glow-ring"
+        className="t-glow-inner"
         style={{
-          background: `radial-gradient(circle, ${p.glow}0.25) 0%, transparent 70%)`,
-          transition: 'background 0.6s ease',
+          background: `radial-gradient(circle, ${innerBg} 0%, transparent 70%)`,
+          transition: 'background 0.5s ease',
         }}
       />
-      {/* The T */}
-      <MetallicT size={198} rotationSpeed={isSpeaking ? 6 : 14} palette={palette} />
+
+      {/* SVG T */}
+      <div className="t-svg-container">
+        <MetallicT
+          rotateDuration={rotateDur}
+          paused={paused}
+          glowColor={glow}
+          glowIntensity={config.glowIntensity}
+          scale={config.scale}
+        />
+      </div>
 
       <style jsx>{`
         .tcore-root {
+          --t: min(500px, calc(100vw - 40px));
           position: relative;
-          width: 500px;
-          height: 500px;
+          width: var(--t);
+          height: var(--t);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -203,32 +209,41 @@ export function TCore3D({
           -webkit-user-select: none;
           flex-shrink: 0;
         }
-        .t-glow-ring {
+        .t-svg-container {
+          position: relative;
+          width: calc(var(--t) * 0.40);
+          height: calc(var(--t) * 0.44);
+          z-index: 2;
+          flex-shrink: 0;
+        }
+        .t-glow-inner {
           position: absolute;
-          width: 230px;
-          height: 230px;
+          width: calc(var(--t) * 0.46);
+          height: calc(var(--t) * 0.46);
           border-radius: 50%;
           animation: glow-pulse 4s ease-in-out infinite;
           pointer-events: none;
         }
-        .t-glow-ring-outer {
+        .t-ring-outer {
           position: absolute;
-          width: 320px;
-          height: 320px;
+          width: calc(var(--t) * 0.64);
+          height: calc(var(--t) * 0.64);
           border-radius: 50%;
           border: 1.5px solid;
           animation: glow-pulse 4s ease-in-out infinite 0.5s;
           pointer-events: none;
+          transition: border-color 0.5s ease, box-shadow 0.5s ease;
         }
-        .t-orbit-ring {
+        .t-ring-orbit {
           position: absolute;
-          width: 320px;
-          height: 320px;
+          width: calc(var(--t) * 0.64);
+          height: calc(var(--t) * 0.64);
           border-radius: 50%;
           border: 1.5px solid;
           pointer-events: none;
           animation: spinRingY 6s linear infinite;
           transform-style: preserve-3d;
+          transition: border-color 0.5s ease, box-shadow 0.5s ease;
         }
       `}</style>
     </div>
