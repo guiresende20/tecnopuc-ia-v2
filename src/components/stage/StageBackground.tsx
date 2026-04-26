@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useAppStore } from '@/store/appStore';
 
 export function StageBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -12,7 +13,7 @@ export function StageBackground() {
     if (!ctxOrNull) return;
     const ctx = ctxOrNull as CanvasRenderingContext2D;
 
-    interface Node { x: number; y: number; vx: number; vy: number; r: number; _color: string; _scale: number; _homeX: number; _homeY: number; }
+    interface Node { x: number; y: number; vx: number; vy: number; r: number; _scale: number; _homeX: number; _homeY: number; }
 
     let W = 0, H = 0;
     let mouse = { x: -9999, y: -9999 };
@@ -33,6 +34,19 @@ export function StageBackground() {
     const SCALE_NEAR = 0.75;
     const SCALE_FAR = 1.8;
     const HOME_SPRING = 0.004;
+
+    // Hue global oscilante (azul ↔ roxo) e multiplicador de velocidade.
+    // speedTarget vai a 1.6 quando a IA está respondendo; speedSmooth segue suave.
+    // PHASE_STEP é calibrado para ciclo de ~12s a 40fps; o multiplicador acelera
+    // tanto a deriva dos nós quanto a oscilação da cor.
+    let phase = 0;
+    let speedTarget = 1;
+    let speedSmooth = 1;
+    let currentColor = '0,200,255';
+    const COLOR_PERIOD_FRAMES = FPS * 12;
+    const PHASE_STEP = (Math.PI * 2) / COLOR_PERIOD_FRAMES;
+    const SPEED_BOOST = 1.6;
+    const SPEED_EASE = 0.04;
 
     function buildFogCache() {
       fogCanvas = document.createElement('canvas');
@@ -67,7 +81,6 @@ export function StageBackground() {
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             r: Math.random() * 1.4 + 1.0,
-            _color: '0,200,255',
             _scale: SCALE_FAR,
             _homeX: x,
             _homeY: y,
@@ -82,17 +95,17 @@ export function StageBackground() {
       H = (canvas as HTMLCanvasElement).height = window.innerHeight;
       buildFogCache();
       nodes = makeNodes();
-      nodes.forEach(updateNodeColor);
-    }
-
-    function updateNodeColor(n: Node) {
-      const t = Math.max(0, Math.min(1, n.x / W));
-      const r = Math.round(t * 160);
-      const g = Math.round((1 - t) * 200 + t * 60);
-      n._color = `${r},${g},255`;
     }
 
     function update() {
+      // Speed easing + advance da fase de cor (mais rápido durante resposta)
+      speedSmooth += (speedTarget - speedSmooth) * SPEED_EASE;
+      phase += PHASE_STEP * speedSmooth;
+      const hueT = (Math.sin(phase) + 1) * 0.5;
+      const r = Math.round(hueT * 160);
+      const g = Math.round((1 - hueT) * 200 + hueT * 60);
+      currentColor = `${r},${g},255`;
+
       nodes.forEach(n => {
         const dx = mouse.x - n.x, dy = mouse.y - n.y;
         const dSq = dx * dx + dy * dy;
@@ -117,19 +130,20 @@ export function StageBackground() {
           const s = 0.04 / (spd || 1);
           n.vx *= s; n.vy *= s;
         }
-        n.x += n.vx; n.y += n.vy;
+        // Multiplicador de velocidade entra só na integração de posição
+        n.x += n.vx * speedSmooth;
+        n.y += n.vy * speedSmooth;
         if (n.x < -50) n.x = W + 50;
         if (n.x > W + 50) n.x = -50;
         if (n.y < -50) n.y = H + 50;
         if (n.y > H + 50) n.y = -50;
-        updateNodeColor(n);
       });
     }
 
     function draw() {
       if (fogCanvas) ctx.drawImage(fogCanvas, 0, 0);
 
-      // Arestas
+      // Arestas — todas usam a hue global do frame
       ctx.lineWidth = 1.2;
       for (let i = 0; i < nodes.length; i++) {
         const a = nodes[i];
@@ -139,14 +153,10 @@ export function StageBackground() {
           const dSq = dx * dx + dy * dy;
           if (dSq < MAX_DIST_SQ) {
             const alpha = ((1 - Math.sqrt(dSq) / MAX_DIST) * 0.65).toFixed(2);
-            const mx = (a.x + b.x) * 0.5;
-            const t = Math.max(0, Math.min(1, mx / W));
-            const r = Math.round(t * 160);
-            const g = Math.round((1 - t) * 200 + t * 60);
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `rgba(${r},${g},255,${alpha})`;
+            ctx.strokeStyle = `rgba(${currentColor},${alpha})`;
             ctx.stroke();
           }
         }
@@ -162,7 +172,7 @@ export function StageBackground() {
           ctx.beginPath();
           ctx.moveTo(n.x, n.y);
           ctx.lineTo(mouse.x, mouse.y);
-          ctx.strokeStyle = `rgba(0,220,255,${alpha})`;
+          ctx.strokeStyle = `rgba(${currentColor},${alpha})`;
           ctx.stroke();
         }
       });
@@ -170,10 +180,10 @@ export function StageBackground() {
       // Nós: shadowBlur produz o halo sem createRadialGradient por frame
       nodes.forEach(n => {
         ctx.shadowBlur = 12 * n._scale;
-        ctx.shadowColor = `rgba(${n._color},1)`;
+        ctx.shadowColor = `rgba(${currentColor},1)`;
         ctx.beginPath();
         ctx.arc(n.x, n.y, n.r * n._scale, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${n._color},1)`;
+        ctx.fillStyle = `rgba(${currentColor},1)`;
         ctx.fill();
       });
       ctx.shadowBlur = 0;
@@ -184,7 +194,7 @@ export function StageBackground() {
         for (let i = 0; i < 3; i++) {
           ctx.beginPath();
           ctx.arc(rip.x, rip.y, rip.r + i * 22, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(0,210,255,${(rip.alpha * (1 - i * 0.3)).toFixed(2)})`;
+          ctx.strokeStyle = `rgba(${currentColor},${(rip.alpha * (1 - i * 0.3)).toFixed(2)})`;
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -215,6 +225,19 @@ export function StageBackground() {
     const onClick = (e: MouseEvent) => ripples.push({ x: e.clientX, y: e.clientY, r: 0, alpha: 0.8 });
     const onVisibility = () => { paused = document.hidden; };
 
+    // Subscribe ao tState pra acelerar a rede quando a IA responde (texto ou voz)
+    const unsubStore = useAppStore.subscribe((state) => {
+      const responding = state.tState === 'responding' || state.tState === 'speaking';
+      speedTarget = responding ? SPEED_BOOST : 1.0;
+    });
+    // Aplica estado inicial caso já esteja respondendo
+    {
+      const s = useAppStore.getState();
+      const responding = s.tState === 'responding' || s.tState === 'speaking';
+      speedTarget = responding ? SPEED_BOOST : 1.0;
+      speedSmooth = speedTarget;
+    }
+
     resize(); // inicializa W, H, fogCanvas e nodes
     window.addEventListener('resize', onResize);
     window.addEventListener('mousemove', onMouseMove);
@@ -228,6 +251,7 @@ export function StageBackground() {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('click', onClick);
       document.removeEventListener('visibilitychange', onVisibility);
+      unsubStore();
     };
   }, []);
 

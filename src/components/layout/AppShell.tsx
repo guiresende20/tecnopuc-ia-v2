@@ -18,6 +18,7 @@ export function AppShell() {
   const setTState = useAppStore((s) => s.setTState);
   const setSubmitting = useAppStore((s) => s.setSubmitting);
   const showToast = useAppStore((s) => s.showToast);
+  const setAudioLevel = useAppStore((s) => s.setAudioLevel);
 
   // Text chat state
   const [responses, setResponses] = useState<ResponseNode[]>([]);
@@ -63,6 +64,7 @@ export function AppShell() {
       liveChatRef.current.stop();
       liveChatRef.current = null;
       setVoiceStatus('disconnected');
+      setAudioLevel(0);
       return;
     }
 
@@ -87,6 +89,7 @@ export function AppShell() {
         ephemeralToken,
         {
           onStatusChange: (status) => setVoiceStatus(status),
+          onAudioLevel: (level) => setAudioLevel(level),
           onTurnComplete: (aiText, userText) => {
             // Add voice turn to the conversation visible in the UI
             if (userText.trim()) {

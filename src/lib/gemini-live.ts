@@ -16,6 +16,7 @@ export interface LiveChatCallbacks {
   onTextAction?: (text: string) => void;
   onTurnComplete?: (aiText: string, userText: string) => void;
   onError?: (error: string) => void;
+  onAudioLevel?: (level: number) => void;
 }
 
 export class GeminiLiveChat {
@@ -23,6 +24,9 @@ export class GeminiLiveChat {
   private audioContext: AudioContext | null = null;
   private mediaStream: MediaStream | null = null;
   private scriptProcessor: ScriptProcessorNode | null = null;
+  private analyserNode: AnalyserNode | null = null;
+  private levelRafId: number | null = null;
+  private inputLevelRafId: number | null = null;
 
   private nextPlayTime = 0;
   private currentAiText = '';
@@ -36,6 +40,15 @@ export class GeminiLiveChat {
   // 4096 samples @ 16kHz = ~256ms por frame. 2 frames = ~512ms de fala sustentada.
   private readonly VAD_MIN_FRAMES = 2;
 
+  // Suavização exponencial assimétrica do nível de input. ScriptProcessor emite
+  // a cada ~256ms (4Hz) e o RMS por frame é muito jittery (sílabas vs pausas).
+  // Coeficientes pequenos = janela de média ampla; preferimos perder fidelidade
+  // de pico a ter o aura pulsando em saltos.
+  private smoothedInputLevel = 0;
+  private targetInputLevel = 0;
+  private readonly INPUT_ATTACK = 0.12;
+  private readonly INPUT_RELEASE = 0.05;
+
   // `authToken` é um token efêmero emitido pelo servidor via authTokens.create().
   // Não é a chave privada do Gemini — dura ≤30 min e vale ≤1 sessão.
   constructor(
@@ -45,8 +58,76 @@ export class GeminiLiveChat {
   ) {}
 
   private updateStatus(status: LiveChatStatus) {
+    const prev = this.currentStatus;
     this.currentStatus = status;
     this.callbacks.onStatusChange(status);
+
+    // Start rAF poll when entering speaking state
+    if (status === 'speaking' && prev !== 'speaking') {
+      if (!this.levelRafId) {
+        this.levelRafId = requestAnimationFrame(() => this.pollOutputLevel());
+      }
+    }
+
+    // Stop rAF poll when leaving speaking state and reset level
+    if (status !== 'speaking' && prev === 'speaking') {
+      if (this.levelRafId !== null) {
+        cancelAnimationFrame(this.levelRafId);
+        this.levelRafId = null;
+      }
+      this.callbacks.onAudioLevel?.(0);
+    }
+
+    // Start input level smoothing rAF when entering listening
+    if (status === 'listening' && prev !== 'listening') {
+      if (!this.inputLevelRafId) {
+        this.inputLevelRafId = requestAnimationFrame(this.pollInputLevel);
+      }
+    }
+
+    // Stop input smoothing when leaving listening
+    if (status !== 'listening' && prev === 'listening') {
+      if (this.inputLevelRafId !== null) {
+        cancelAnimationFrame(this.inputLevelRafId);
+        this.inputLevelRafId = null;
+      }
+      this.smoothedInputLevel = 0;
+      this.targetInputLevel = 0;
+    }
+
+    // Reset level on disconnect
+    if (status === 'disconnected') {
+      this.callbacks.onAudioLevel?.(0);
+    }
+  }
+
+  private pollInputLevel = () => {
+    if (this.currentStatus !== 'listening') {
+      this.inputLevelRafId = null;
+      return;
+    }
+    const target = this.targetInputLevel;
+    const coeff = target > this.smoothedInputLevel ? this.INPUT_ATTACK : this.INPUT_RELEASE;
+    this.smoothedInputLevel += (target - this.smoothedInputLevel) * coeff;
+    this.callbacks.onAudioLevel?.(this.smoothedInputLevel);
+    this.inputLevelRafId = requestAnimationFrame(this.pollInputLevel);
+  };
+
+  private pollOutputLevel() {
+    if (!this.analyserNode || this.currentStatus !== 'speaking') {
+      this.levelRafId = null;
+      return;
+    }
+    const data = new Uint8Array(this.analyserNode.frequencyBinCount);
+    this.analyserNode.getByteTimeDomainData(data);
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) {
+      const val = (data[i] - 128) / 128;
+      sum += val * val;
+    }
+    const rms = Math.sqrt(sum / data.length);
+    this.callbacks.onAudioLevel?.(Math.min(1, rms / 0.3));
+    this.levelRafId = requestAnimationFrame(() => this.pollOutputLevel());
   }
 
   public interruptSpeech() {
@@ -67,6 +148,11 @@ export class GeminiLiveChat {
       )({
         sampleRate: 16000, // Gemini Live espera 16kHz para input
       });
+
+      // AnalyserNode conectado ao destino para monitorar nível de saída (speaking)
+      this.analyserNode = this.audioContext.createAnalyser();
+      this.analyserNode.fftSize = 256;
+      this.analyserNode.connect(this.audioContext.destination);
 
       // Endpoint BidiGenerateContentConstrained + query param access_token são
       // obrigatórios para tokens efêmeros (diferente do endpoint com ?key= usado
@@ -207,13 +293,13 @@ export class GeminiLiveChat {
 
         const inputData = e.inputBuffer.getChannelData(0);
 
-        // VAD local: interrompe a fala da IA assim que o usuário começa a falar,
-        // sem esperar o VAD do servidor. echoCancellation está ativo, então o áudio
-        // da IA não deve contaminar significativamente o mic.
+        // Calcular RMS uma vez para VAD e para nível visual
+        let sumSq = 0;
+        for (let i = 0; i < inputData.length; i++) sumSq += inputData[i] * inputData[i];
+        const rms = Math.sqrt(sumSq / inputData.length);
+
+        // VAD local: interrompe a fala da IA assim que o usuário começa a falar
         if (this.currentStatus === 'speaking') {
-          let sumSq = 0;
-          for (let i = 0; i < inputData.length; i++) sumSq += inputData[i] * inputData[i];
-          const rms = Math.sqrt(sumSq / inputData.length);
           if (rms > this.VAD_THRESHOLD) {
             this.vadFramesAbove++;
             if (this.vadFramesAbove >= this.VAD_MIN_FRAMES) {
@@ -224,6 +310,13 @@ export class GeminiLiveChat {
           }
         } else {
           this.vadFramesAbove = 0;
+        }
+
+        // Atualiza target; pollInputLevel rAF emite suavizado a ~60Hz.
+        // Normalização em 0.25 (mais alta) evita saturar em 1.0 com fala normal —
+        // mantém range útil pro aura modular escala suavemente.
+        if (this.currentStatus === 'listening') {
+          this.targetInputLevel = Math.min(1, rms / 0.25);
         }
 
         // Converter Float32 → PCM Int16
@@ -295,7 +388,7 @@ export class GeminiLiveChat {
 
     const source = this.audioContext.createBufferSource();
     source.buffer = audioBuffer;
-    source.connect(this.audioContext.destination);
+    source.connect(this.analyserNode ?? this.audioContext.destination);
 
     source.onended = () => {
       this.activeSources = this.activeSources.filter((s) => s !== source);
@@ -335,6 +428,23 @@ export class GeminiLiveChat {
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach((track) => track.stop());
       this.mediaStream = null;
+    }
+
+    if (this.levelRafId !== null) {
+      cancelAnimationFrame(this.levelRafId);
+      this.levelRafId = null;
+    }
+
+    if (this.inputLevelRafId !== null) {
+      cancelAnimationFrame(this.inputLevelRafId);
+      this.inputLevelRafId = null;
+    }
+    this.smoothedInputLevel = 0;
+    this.targetInputLevel = 0;
+
+    if (this.analyserNode) {
+      this.analyserNode.disconnect();
+      this.analyserNode = null;
     }
 
     if (this.audioContext) {

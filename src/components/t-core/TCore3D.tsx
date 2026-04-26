@@ -3,12 +3,12 @@
 import { useRef } from 'react';
 import { useAppStore } from '@/store/appStore';
 import { T_VISUAL_CONFIG } from './TStateMachine';
+import { TAudioAura } from './TAudioAura';
 
 interface TCore3DProps {
   onHoverStart?: () => void;
   onHoverEnd?: () => void;
   onHoldStart?: () => void;
-  audioLevel?: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -184,6 +184,9 @@ export function TCore3D({ onHoverStart, onHoverEnd, onHoldStart }: TCore3DProps)
         }}
       />
 
+      {/* Audio aura: pulses to mic/speaker amplitude during listening and speaking */}
+      <TAudioAura />
+
       {/* SVG T */}
       <div className="t-svg-container">
         <MetallicT
@@ -241,7 +244,7 @@ export function TCore3D({ onHoverStart, onHoverEnd, onHoldStart }: TCore3DProps)
           border-radius: 50%;
           border: 1.5px solid;
           pointer-events: none;
-          animation: spinRingY 6s linear infinite;
+          animation: spinRingY 14s linear infinite;
           transform-style: preserve-3d;
           transition: border-color 0.5s ease, box-shadow 0.5s ease;
         }

@@ -17,6 +17,7 @@ export interface Toast {
 }
 
 interface AppActions {
+  setAudioLevel: (level: number) => void;
   setViewportMode: (mode: ViewportMode) => void;
   setInteractionMode: (mode: InteractionMode) => void;
   setTState: (state: TState) => void;
@@ -39,8 +40,9 @@ interface AppActions {
   dismissToast: (id: string) => void;
 }
 
-const initialState: AppState & { toasts: Toast[] } = {
+const initialState: AppState & { toasts: Toast[]; audioLevel: number } = {
   toasts: [],
+  audioLevel: 0,
   viewportMode: 'desktop',
   interactionMode: 'text',
   tState: 'idle',
@@ -71,9 +73,10 @@ const initialState: AppState & { toasts: Toast[] } = {
   },
 };
 
-export const useAppStore = create<AppState & { toasts: Toast[] } & AppActions>((set) => ({
+export const useAppStore = create<AppState & { toasts: Toast[]; audioLevel: number } & AppActions>((set) => ({
   ...initialState,
 
+  setAudioLevel: (level) => set({ audioLevel: level }),
   setViewportMode: (mode) => set({ viewportMode: mode }),
   setInteractionMode: (mode) => set({ interactionMode: mode }),
   setTState: (state) => set({ tState: state }),

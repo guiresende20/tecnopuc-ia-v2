@@ -125,8 +125,8 @@ body {
   40%            { transform: scale(1); opacity: 1; }
 }
 @keyframes spinRingY {
-  from { transform: rotateY(0deg); }
-  to   { transform: rotateY(360deg); }
+  from { transform: rotateX(22deg) rotateY(0deg); }
+  to   { transform: rotateX(22deg) rotateY(360deg); }
 }
 @keyframes header-in {
   from { opacity: 0; transform: translateY(-10px); }
