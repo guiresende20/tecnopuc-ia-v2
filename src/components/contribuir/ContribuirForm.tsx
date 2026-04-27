@@ -1,9 +1,8 @@
 'use client';
 
 // Componente reutilizável de formulário de contribuição da comunidade.
-// Usado hoje na página /contribuir; quando o botão migrar para o canto direito
-// da home com layer estilo ResponseFocusCard, este mesmo componente é montado
-// dentro do layer sem alteração.
+// Estilizado com a paleta do chat (#0099ff / Space Grotesk / glass dark).
+// Usado tanto na página /contribuir (fallback) quanto dentro do ContribuirLayer.
 
 import { useState, FormEvent } from 'react';
 
@@ -74,7 +73,7 @@ export function ContribuirForm({ onSuccess }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="contrib-form">
       {/* Honeypot — invisível para humanos, irresistível para bots. */}
       <input
         type="text"
@@ -84,24 +83,14 @@ export function ContribuirForm({ onSuccess }: Props) {
         tabIndex={-1}
         autoComplete="off"
         aria-hidden="true"
-        style={{
-          position: 'absolute',
-          left: '-9999px',
-          opacity: 0,
-          height: 0,
-          width: 0,
-          pointerEvents: 'none',
-        }}
+        className="contrib-honeypot"
       />
 
-      <div>
-        <label
-          htmlFor="conteudo"
-          className="block text-sm font-medium text-slate-200 mb-2"
-        >
-          Sua contribuição{' '}
-          <span className="text-slate-400 font-normal">
-            ({tamanho}/{MAX_LEN})
+      <div className="contrib-field">
+        <label htmlFor="conteudo" className="contrib-label">
+          Sua contribuição
+          <span className="contrib-counter">
+            {tamanho}/{MAX_LEN}
           </span>
         </label>
         <textarea
@@ -110,23 +99,20 @@ export function ContribuirForm({ onSuccess }: Props) {
           value={conteudo}
           onChange={(e) => setConteudo(e.target.value)}
           placeholder="Compartilhe um conhecimento sobre o TecnoPUC — uma empresa, evento, programa, fato relevante..."
-          className="w-full rounded-lg bg-slate-900 border border-slate-700 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+          className="contrib-input contrib-textarea"
           disabled={enviando}
         />
         {tamanho > 0 && tamanho < MIN_LEN && (
-          <p className="mt-1 text-xs text-amber-400">
+          <p className="contrib-warning">
             Mínimo de {MIN_LEN} caracteres ({MIN_LEN - tamanho} restantes).
           </p>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-slate-200 mb-2"
-          >
-            Seu e-mail <span className="text-rose-400">*</span>
+      <div className="contrib-row">
+        <div className="contrib-field">
+          <label htmlFor="email" className="contrib-label">
+            E-mail <span className="contrib-required">*</span>
           </label>
           <input
             id="email"
@@ -135,20 +121,14 @@ export function ContribuirForm({ onSuccess }: Props) {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="voce@exemplo.com"
             required
-            className="w-full rounded-lg bg-slate-900 border border-slate-700 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+            className="contrib-input"
             disabled={enviando}
           />
-          <p className="mt-1 text-xs text-slate-400">
-            Usado apenas para confirmar a contribuição.
-          </p>
+          <p className="contrib-hint">Usado apenas para confirmar a contribuição.</p>
         </div>
-        <div>
-          <label
-            htmlFor="categoria"
-            className="block text-sm font-medium text-slate-200 mb-2"
-          >
-            Categoria{' '}
-            <span className="text-slate-500 font-normal">(opcional)</span>
+        <div className="contrib-field">
+          <label htmlFor="categoria" className="contrib-label">
+            Categoria <span className="contrib-optional">(opcional)</span>
           </label>
           <input
             id="categoria"
@@ -157,32 +137,197 @@ export function ContribuirForm({ onSuccess }: Props) {
             onChange={(e) => setCategoria(e.target.value)}
             placeholder="Empresa, evento, programa..."
             maxLength={80}
-            className="w-full rounded-lg bg-slate-900 border border-slate-700 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+            className="contrib-input"
             disabled={enviando}
           />
         </div>
       </div>
 
       {mensagem && (
-        <div
-          role="status"
-          className={`rounded-lg px-4 py-3 text-sm border ${
-            mensagem.tipo === 'sucesso'
-              ? 'bg-emerald-950/40 border-emerald-700/40 text-emerald-200'
-              : 'bg-rose-950/40 border-rose-700/40 text-rose-200'
-          }`}
-        >
+        <div className={`contrib-message ${mensagem.tipo}`} role="status">
           {mensagem.texto}
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={!podeEnviar}
-        className="w-full md:w-auto rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-medium px-6 py-3 transition"
-      >
+      <button type="submit" disabled={!podeEnviar} className="contrib-submit">
         {enviando ? 'Enviando...' : 'Enviar contribuição'}
       </button>
+
+      <style jsx>{`
+        .contrib-form {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+          font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .contrib-honeypot {
+          position: absolute;
+          left: -9999px;
+          opacity: 0;
+          height: 0;
+          width: 0;
+          pointer-events: none;
+        }
+
+        .contrib-field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .contrib-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 14px;
+        }
+
+        .contrib-label {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 8px;
+          font-size: 10.5px;
+          font-weight: 600;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: rgba(200, 220, 255, 0.65);
+        }
+
+        .contrib-counter {
+          font-size: 10.5px;
+          font-weight: 500;
+          letter-spacing: 0.04em;
+          text-transform: none;
+          color: rgba(200, 220, 255, 0.4);
+          font-variant-numeric: tabular-nums;
+        }
+
+        .contrib-required {
+          color: #ef4444;
+          font-weight: 700;
+          margin-left: 2px;
+        }
+
+        .contrib-optional {
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 0.04em;
+          text-transform: none;
+          color: rgba(200, 220, 255, 0.4);
+          margin-left: 4px;
+        }
+
+        .contrib-input {
+          width: 100%;
+          padding: 10px 14px;
+          background: rgba(10, 16, 36, 0.8);
+          border: 1px solid rgba(0, 153, 255, 0.2);
+          border-radius: 8px;
+          color: rgba(220, 235, 255, 0.95);
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: 13.5px;
+          line-height: 1.5;
+          transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        .contrib-input::placeholder {
+          color: rgba(200, 220, 255, 0.3);
+        }
+
+        .contrib-input:hover:not(:disabled):not(:focus) {
+          border-color: rgba(0, 153, 255, 0.35);
+        }
+
+        .contrib-input:focus {
+          outline: none;
+          border-color: rgba(0, 153, 255, 0.55);
+          background: rgba(10, 16, 36, 0.95);
+          box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.12);
+        }
+
+        .contrib-input:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .contrib-textarea {
+          resize: vertical;
+          min-height: 140px;
+        }
+
+        .contrib-warning {
+          margin: 0;
+          font-size: 11px;
+          color: rgba(251, 191, 36, 0.85);
+        }
+
+        .contrib-hint {
+          margin: 0;
+          font-size: 11px;
+          color: rgba(200, 220, 255, 0.45);
+        }
+
+        .contrib-message {
+          padding: 11px 14px;
+          border-radius: 8px;
+          font-size: 12.5px;
+          line-height: 1.5;
+          border: 1px solid;
+        }
+
+        .contrib-message.sucesso {
+          background: rgba(16, 185, 129, 0.1);
+          border-color: rgba(16, 185, 129, 0.35);
+          color: rgba(167, 243, 208, 0.95);
+        }
+
+        .contrib-message.erro {
+          background: rgba(239, 68, 68, 0.1);
+          border-color: rgba(239, 68, 68, 0.35);
+          color: rgba(252, 165, 165, 0.95);
+        }
+
+        .contrib-submit {
+          align-self: flex-start;
+          padding: 10px 22px;
+          background: rgba(0, 153, 255, 0.15);
+          border: 1px solid rgba(0, 153, 255, 0.4);
+          border-radius: 8px;
+          color: #0099ff;
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: 11.5px;
+          font-weight: 600;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+
+        .contrib-submit:hover:not(:disabled) {
+          background: rgba(0, 153, 255, 0.25);
+          border-color: rgba(0, 153, 255, 0.7);
+          color: #33bbff;
+          box-shadow: 0 0 16px rgba(0, 153, 255, 0.25);
+        }
+
+        .contrib-submit:disabled {
+          background: rgba(0, 153, 255, 0.04);
+          border-color: rgba(0, 153, 255, 0.12);
+          color: rgba(200, 220, 255, 0.3);
+          cursor: not-allowed;
+        }
+
+        @media (max-width: 600px) {
+          .contrib-row {
+            grid-template-columns: 1fr;
+          }
+          .contrib-submit {
+            align-self: stretch;
+            text-align: center;
+          }
+        }
+      `}</style>
     </form>
   );
 }
