@@ -8,6 +8,8 @@ import { ExperienceStage } from '@/components/stage/ExperienceStage';
 import { InputZone } from '@/components/input/InputZone';
 import { StageBackground } from '@/components/stage/StageBackground';
 import { ToastLayer } from '@/components/overlays/ToastLayer';
+import { ContribuirButton } from '@/components/contribuir/ContribuirButton';
+import { ContribuirLayer } from '@/components/contribuir/ContribuirLayer';
 import { streamChat, type ChatMessage } from '@/services/chatService';
 import { GeminiLiveChat, type LiveChatStatus } from '@/lib/gemini-live';
 import type { ResponseNode } from '@/types/app.types';
@@ -32,6 +34,9 @@ export function AppShell() {
   const [voiceStatus, setVoiceStatus] = useState<LiveChatStatus>('disconnected');
   const liveChatRef = useRef<GeminiLiveChat | null>(null);
   const voiceContextCache = useRef<{ systemInstruction: string; ephemeralToken: string } | null>(null);
+
+  // Contribuir layer
+  const [contribuirOpen, setContribuirOpen] = useState(false);
 
   // Pre-fetch voice context on mount to cut latency on first click
   useEffect(() => {
@@ -242,6 +247,9 @@ export function AppShell() {
         onVoiceToggle={handleVoiceToggle}
         onVoiceInterrupt={handleVoiceInterrupt}
       />
+
+      <ContribuirButton onClick={() => setContribuirOpen(true)} />
+      <ContribuirLayer open={contribuirOpen} onClose={() => setContribuirOpen(false)} />
 
       <style jsx>{`
         .app-shell {

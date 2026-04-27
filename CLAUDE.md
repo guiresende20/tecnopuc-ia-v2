@@ -18,28 +18,55 @@ Chatbot inteligente do **TecnoPUC (Parque Científico e Tecnológico da PUCRS)**
 ```
 src/
   app/
-    page.tsx                  # Interface principal do chatbot
-    admin/page.tsx            # Painel de administração
+    page.tsx                          # Monta o AppShell (interface imersiva do chat)
+    admin/page.tsx                    # Painel admin (abas: Documentos | Contribuições | Personalidade)
+    contribuir/                       # Fluxo público de contribuição comunitária
+      page.tsx                        # Página fallback com o form
+      validado/page.tsx               # "Contribuição confirmada"
+      expirado/page.tsx               # "Link expirado"
     api/
-      chat/route.ts           # Endpoint principal do chat (RAG pipeline)
-      ingest/route.ts         # Ingestão de documentos via API
+      chat/route.ts                   # RAG pipeline (embed + match + gerar)
+      ingest/route.ts                 # Ingestão de docs via API
+      voice-context/route.ts          # Token efêmero do modo voz
       admin/
-        settings/route.ts     # Configurações do admin
-        sources/route.ts      # Gerenciamento de fontes
-        upload/route.ts       # Upload de documentos
-      voice-context/route.ts  # Contexto para modo de voz
+        settings/route.ts             # GET/PUT settings + authAdmin() compartilhado
+        sources/route.ts              # CRUD de knowledge_sources
+        upload/route.ts               # Upload PDF/TXT
+        contribuicoes/route.ts        # GET lista + PATCH aprovar/rejeitar
+      contribuicoes/                  # Endpoints públicos (sem auth)
+        route.ts                      # POST submeter contribuição
+        verificar/route.ts            # GET valida token e promove status
   components/
-    ChatInput.tsx             # Input com suporte a voz
-    ChatWindow.tsx            # Janela de mensagens
-    VoiceButton.tsx           # Botão de ativação de voz
+    layout/AppShell.tsx               # Monta tudo: chat + ContribuirButton + ContribuirLayer
+    stage/                            # T 3D, background, feedback layer
+    t-core/                           # TCore3D + máquina de estados
+    radial-menu/                      # Menu radial dos hubs
+    responses/                        # ResponseLayer + ResponseFocusCard (modal de chat)
+    input/                            # InputZone, TextInputDock, suggestion chips, voice
+    overlays/ToastLayer.tsx
+    contribuir/                       # Feature de contribuição da comunidade
+      ContribuirForm.tsx              # Form reusável (página + layer)
+      ContribuirButton.tsx            # Pill no canto inferior direito
+      ContribuirLayer.tsx             # Modal estilo ResponseLayer com o form dentro
+    admin/
+      ContribuicoesPanel.tsx          # Aba de moderação no /admin
   lib/
-    gemini.ts                 # Cliente Gemini + buildSystemPrompt()
-    gemini-live.ts            # WebSocket para voz em tempo real
-    supabase.ts               # Cliente Supabase
+    gemini.ts                         # generateEmbedding() + streamChat() + buildSystemPrompt()
+    gemini-live.ts                    # WebSocket Gemini Live (voz)
+    supabase.ts                       # Cliente service-role + matchDocuments()
+    ingest.ts                         # ingestContent() reusável (chunk + embed + insert)
+    rate-limit.ts                     # Upstash limiters (chat, admin, contribuicoes, ...)
+    email/index.ts                    # Wrapper Resend; em dev sem chave loga URL no console
 
-knowledge/                    # Base de conhecimento em Markdown (.md)
+knowledge/                            # Base de conhecimento em Markdown (.md)
 scripts/
-  ingest.ts                   # Script de ingestão para o Supabase
+  ingest.ts                           # CLI de ingestão dos .md em knowledge/
+
+# Setup do banco — rodar em ordem no SQL Editor do Supabase
+supabase-setup.sql                    # documents (pgvector) + match_documents()
+admin-setup.sql                       # knowledge_sources + chatbot_settings
+contribuicoes-setup.sql               # contribuicoes (state machine + RLS)
+contribuicoes-purge-cron.sql          # Jobs pg_cron de purga (opcional)
 ```
 
 ---
@@ -96,24 +123,91 @@ Edite `src/lib/gemini-live.ts` — campo `voiceName`:
 
 ## Variáveis de Ambiente
 
-O projeto requer um arquivo `.env.local` na raiz com:
+O projeto requer um arquivo `.env.local` (ou `.env`) na raiz com:
 ```
+# Core
 GEMINI_API_KEY=...
 SUPABASE_URL=...
 SUPABASE_SERVICE_ROLE_KEY=...
 INGEST_SECRET=...
-ADMIN_USERNAME=...
+
+# Admin (qualquer um dos dois formatos serve)
+ADMIN_USERNAME=...                         # legado, 1 admin
 ADMIN_PASSWORD=...
+# OU lista de admins em JSON (preferido):
+ADMIN_USERS=[{"username":"a","password":"x"},{"username":"b","password":"y"}]
+
+# Rate limit (opcional em dev — sem isso o limiter vira no-op)
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+
+# E-mail transacional (Resend) — usado pelo fluxo de contribuições
+RESEND_API_KEY=...                         # opcional em dev (sem chave, URL de validação loga no console)
+EMAIL_FROM=TecnoPUC IA <onboarding@resend.dev>
+APP_BASE_URL=http://localhost:3000         # URL pública usada nos links de validação por e-mail
 ```
 
 > **Segurança:** todas as variáveis são server-side. O browser nunca recebe a chave Gemini — para o modo voz, o servidor emite um **token efêmero** via `authTokens.create()` em `/api/voice-context` (válido ≤30 min, single-use). As variáveis `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `NEXT_PUBLIC_GEMINI_API_KEY` foram removidas intencionalmente. Se no futuro for necessário acesso client-side ao Supabase (ex: Realtime), reintroduza as variáveis **e** habilite RLS com policies adequadas antes.
+
+> **Resend em dev (`onboarding@resend.dev`):** esse remetente padrão só consegue enviar para o e-mail do dono da conta Resend. Para produção, verificar domínio próprio no painel Resend (ex: subdomínio PUCRS) e atualizar `EMAIL_FROM` para `noreply@dominio-verificado`.
 
 ---
 
 ## Banco de Dados (Supabase)
 
-- Setup inicial: executar `supabase-setup.sql` e `admin-setup.sql` no painel do Supabase
-- A tabela de documentos usa a extensão `pgvector` para busca semântica
+- Setup inicial: executar **em ordem** `supabase-setup.sql`, `admin-setup.sql`, `contribuicoes-setup.sql` no SQL Editor do Supabase
+- Para ativar a purga automática de contribuições antigas: habilitar a extensão `pg_cron` em **Database → Extensions** e rodar `contribuicoes-purge-cron.sql`
+- A tabela `documents` usa a extensão `pgvector` para busca semântica
+- A tabela `contribuicoes` tem RLS habilitada (defesa em profundidade — service-role bypassa, anon-key fica bloqueada)
+
+---
+
+## Contribuições da Comunidade (RAG colaborativo)
+
+Sistema que permite **qualquer visitante** sugerir conhecimento para a base, com **moderação obrigatória** por admin antes de entrar no RAG.
+
+### Fluxo público
+1. Visitante clica no botão **"CONTRIBUIR"** (canto inferior direito) → abre `<ContribuirLayer />` (modal estilo `ResponseLayer`)
+2. Preenche conteúdo (50–5000 chars) + e-mail + categoria opcional → `POST /api/contribuicoes`
+3. Backend gera token de 1h, salva como `aguardando_email`, dispara e-mail via Resend (em dev sem chave, loga URL no console)
+4. Visitante clica no link → `GET /api/contribuicoes/verificar?token=...` valida e promove para `aguardando_revisao`
+5. Redireciona para `/contribuir/validado` (ou `/contribuir/expirado` se token inválido)
+
+### Fluxo admin
+1. `/admin` → aba **"Contribuições"** (badge vermelho com count de pendentes)
+2. Filtros: **Pendentes** / **Aprovadas** / **Rejeitadas**
+3. Para cada pendente: editar título (obrigatório) e conteúdo se necessário → **Aprovar** ou **Rejeitar** (motivo opcional)
+4. Aprovação chama `ingestContent()` em `src/lib/ingest.ts`:
+   - Cria linha em `knowledge_sources` com `type='comunidade'`
+   - Gera chunks vetoriais em `documents` com `metadata.origem='comunidade'` e `metadata.contribuicao_id=...`
+5. Doc aprovado aparece junto dos demais na aba "Documentos e PDF" com chip azul **comunidade**
+
+### Tabela `contribuicoes`
+Estados: `aguardando_email` → `aguardando_revisao` → `aprovada` | `rejeitada`
+
+Campos críticos:
+- `token_validacao` + `token_expira_em` (1h)
+- `revisada_por` (username admin extraído do Basic Auth) + `revisada_em`
+- `knowledge_source_id` + `documents_ids` (rastreabilidade pós-aprovação)
+- `motivo_rejeicao` (opcional)
+
+### Anti-abuso
+- Honeypot: campo `website` invisível no form (bots preenchem, humanos não)
+- Rate limit por IP (10/24h) e e-mail (3/24h) via `contribuicoesIpLimiter` e `contribuicoesEmailLimiter` (Upstash)
+- Validação de e-mail é gate obrigatório antes da revisão
+- pg_cron diário: apaga `aguardando_email` >24h e `rejeitada` >15d
+
+### Arquivos críticos
+- Schema: `contribuicoes-setup.sql`, `contribuicoes-purge-cron.sql`
+- Lib: `src/lib/email/index.ts` (Resend wrapper) e `src/lib/ingest.ts` (`ingestContent()`)
+- API pública: `src/app/api/contribuicoes/{route.ts, verificar/route.ts}`
+- API admin: `src/app/api/admin/contribuicoes/route.ts` (GET list + PATCH aprovar/rejeitar)
+- UI pública: `src/components/contribuir/{ContribuirForm, ContribuirButton, ContribuirLayer}.tsx`
+- UI admin: `src/components/admin/ContribuicoesPanel.tsx`
+- Páginas: `src/app/contribuir/{page, validado/page, expirado/page}.tsx`
+
+### Limitação atual conhecida
+`EMAIL_FROM=onboarding@resend.dev` — Resend bloqueia envio para qualquer e-mail que não seja o dono da conta. Para produção real, verificar domínio próprio antes de promover.
 
 ---
 

@@ -39,6 +39,10 @@ export const adminLimiter        = createLimiter('admin',         30, '1 m');
 export const adminLoginLimiter   = createLimiter('admin-login',    5, '1 m');
 // Upload é operação cara — 10/min já é muito.
 export const adminUploadLimiter  = createLimiter('admin-upload',  10, '1 m');
+// Contribuições da comunidade — janela longa para coibir spam, mas tolerar contribuidor legítimo.
+// O limite é checado duas vezes no POST: uma pelo e-mail, outra pelo IP.
+export const contribuicoesEmailLimiter = createLimiter('contrib-email',  3, '24 h');
+export const contribuicoesIpLimiter    = createLimiter('contrib-ip',    10, '24 h');
 
 export function getClientIp(req: NextRequest): string {
   // Netlify e Vercel populam x-forwarded-for; primeiro IP é o cliente original.

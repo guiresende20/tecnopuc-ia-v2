@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { ContribuicoesPanel } from '@/components/admin/ContribuicoesPanel';
 import './admin.css'; // Add some basic styling if needed
 
 export default function AdminPage() {
@@ -8,8 +9,9 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [authHeader, setAuthHeader] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'docs' | 'prompt'>('docs');
+  const [activeTab, setActiveTab] = useState<'docs' | 'contribuicoes' | 'prompt'>('docs');
   const [sources, setSources] = useState<any[]>([]);
+  const [contribuicoesPendentes, setContribuicoesPendentes] = useState(0);
   
   // Settings States
   const [systemPrompt, setSystemPrompt] = useState('');
@@ -71,12 +73,28 @@ export default function AdminPage() {
     } catch (e) {}
   };
 
+  const fetchPendingCount = useCallback(async () => {
+    if (!authHeader) return;
+    try {
+      const res = await fetch('/api/admin/contribuicoes?status=aguardando_revisao', {
+        headers: { Authorization: authHeader },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setContribuicoesPendentes(data.pendingCount ?? 0);
+      }
+    } catch {
+      // silencioso — se falhar, badge fica zerado e atualiza quando o admin abrir a aba
+    }
+  }, [authHeader]);
+
   useEffect(() => {
     if (authHeader) {
       fetchSettings();
       fetchSources();
+      fetchPendingCount();
     }
-  }, [authHeader]);
+  }, [authHeader, fetchPendingCount]);
 
   const saveSettings = async () => {
     setLoading(true);
@@ -210,6 +228,12 @@ export default function AdminPage() {
           <button className={activeTab === 'docs' ? 'active' : ''} onClick={() => setActiveTab('docs')}>
             Documentos e PDF
           </button>
+          <button className={activeTab === 'contribuicoes' ? 'active' : ''} onClick={() => setActiveTab('contribuicoes')}>
+            Contribuições
+            {contribuicoesPendentes > 0 && (
+              <span className="tab-badge">{contribuicoesPendentes}</span>
+            )}
+          </button>
           <button className={activeTab === 'prompt' ? 'active' : ''} onClick={() => setActiveTab('prompt')}>
             Personalidade
           </button>
@@ -223,6 +247,13 @@ export default function AdminPage() {
             <div className="status-bar-fill"></div>
             <div className="status-bar-text">{loadingMessage || 'Processando de forma assíncrona...'}</div>
           </div>
+        )}
+
+        {activeTab === 'contribuicoes' && (
+          <ContribuicoesPanel
+            authHeader={authHeader}
+            onPendingCountChange={setContribuicoesPendentes}
+          />
         )}
 
         {activeTab === 'prompt' && (
@@ -290,7 +321,13 @@ export default function AdminPage() {
                     <div className="doc-info">
                       <span className="doc-title">{src.title}</span>
                       <div className="doc-meta-row">
-                        <span className="doc-meta">{src.type} · {new Date(src.created_at).toLocaleDateString('pt-BR')}</span>
+                        {src.type === 'comunidade' && (
+                          <span className="doc-type-chip">comunidade</span>
+                        )}
+                        <span className="doc-meta">
+                          {src.type !== 'comunidade' && `${src.type} · `}
+                          {new Date(src.created_at).toLocaleDateString('pt-BR')}
+                        </span>
                         <div className="doc-actions">
                           <button className="btn-icon btn-icon-edit" title="Editar" onClick={() => startEdit(src)}>✏️</button>
                           <button className="btn-icon btn-icon-delete" title="Apagar" onClick={() => deleteDoc(src.id)}>🗑</button>
