@@ -118,7 +118,7 @@ function ParticleCanvas({ mode }: { mode: ParticleMode | null }) {
     let animId = 0;
     let frameCount = 0;
 
-    function spawn(): Particle {
+    const spawn = (): Particle => {
       const m = modeRef.current;
 
       if (m === 'rise') {
@@ -178,9 +178,9 @@ function ParticleCanvas({ mode }: { mode: ParticleMode | null }) {
         r: 1 + Math.random() * 1.2,
         color: `0,200,255`,
       };
-    }
+    };
 
-    function loop() {
+    const loop = () => {
       animId = requestAnimationFrame(loop);
       frameCount++;
       ctx.clearRect(0, 0, W, H);
@@ -213,7 +213,7 @@ function ParticleCanvas({ mode }: { mode: ParticleMode | null }) {
         ctx.fill();
       }
       ctx.shadowBlur = 0;
-    }
+    };
 
     loop();
     return () => cancelAnimationFrame(animId);
