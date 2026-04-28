@@ -1,0 +1,936 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TecnoPUC IA — Apresentação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  :root {
+    --bg: #08080e;
+    --bg2: #0d0d18;
+    --blue: #0099ff;
+    --cyan: #00e5ff;
+    --glass: rgba(10, 15, 30, 0.7);
+    --glass-border: rgba(0, 153, 255, 0.25);
+    --t-text: #e8f4ff;
+    --t-text-dim: rgba(200, 220, 255, 0.55);
+    --color-ocre: #ea982f;
+    --color-ocre-light: #f2b04d;
+    --color-purple-deep: #3a245f;
+    --color-purple-mid: #552583;
+    --color-purple-light: #8d3d8f;
+    --color-lilac: #cc99cc;
+    --gradient-brand: linear-gradient(135deg, #3a245f 0%, #552583 55%, #8d3d8f 100%);
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 32px;
+    --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.45);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--t-text);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* ── Background hologáfico (network grid + glow) ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(0, 153, 255, 0.18) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 70%, rgba(141, 61, 143, 0.18) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 100%, rgba(0, 229, 255, 0.10) 0%, transparent 60%),
+      var(--bg);
+    z-index: -2;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 153, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 153, 255, 0.04) 1px, transparent 1px);
+    background-size: 64px 64px;
+    z-index: -1;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  }
+
+  /* ── Deck ── */
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 56px 88px;
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+    pointer-events: none;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  /* ── Header de cada slide ── */
+  .slide-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 36px;
+    animation: header-in 0.6s ease both;
+  }
+  @keyframes header-in {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .brand-t {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    background: var(--gradient-brand);
+    display: grid;
+    place-items: center;
+    box-shadow: 0 0 24px rgba(141, 61, 143, 0.55), inset 0 0 12px rgba(255, 255, 255, 0.12);
+    position: relative;
+    overflow: hidden;
+  }
+  .brand-t::before {
+    content: 'T';
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    color: #fff;
+    text-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+  }
+  .brand-name {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+  }
+  .brand-name strong {
+    font-size: 18px;
+    letter-spacing: 0.02em;
+    color: var(--t-text);
+    font-weight: 600;
+  }
+  .brand-name span {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--cyan);
+    font-weight: 500;
+  }
+
+  .slide-meta {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 12px;
+    color: var(--t-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+  }
+  .slide-meta .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+    animation: dotPulse 2.4s ease infinite;
+  }
+  @keyframes dotPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  /* ── Título ── */
+  .slide-title {
+    font-size: 56px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 10px;
+    background: linear-gradient(120deg, #fff 0%, #b9d8ff 60%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .slide-subtitle {
+    font-size: 18px;
+    color: var(--t-text-dim);
+    margin-bottom: 36px;
+    max-width: 760px;
+    line-height: 1.55;
+  }
+
+  /* ── Grids ── */
+  .grid {
+    display: grid;
+    gap: 18px;
+    flex: 1;
+    align-content: start;
+  }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  /* ── Card ── */
+  .card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    animation: cardIn 0.55s ease both;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.6;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(0, 229, 255, 0.55);
+    box-shadow: 0 0 28px rgba(0, 153, 255, 0.18);
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .card:nth-child(1) { animation-delay: 0.05s; }
+  .card:nth-child(2) { animation-delay: 0.10s; }
+  .card:nth-child(3) { animation-delay: 0.15s; }
+  .card:nth-child(4) { animation-delay: 0.20s; }
+  .card:nth-child(5) { animation-delay: 0.25s; }
+  .card:nth-child(6) { animation-delay: 0.30s; }
+
+  .card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(0, 153, 255, 0.25), rgba(141, 61, 143, 0.25));
+    border: 1px solid rgba(0, 229, 255, 0.35);
+    display: grid;
+    place-items: center;
+    color: var(--cyan);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: -0.005em;
+  }
+  .card p {
+    font-size: 14px;
+    color: var(--t-text-dim);
+    line-height: 1.55;
+  }
+  .card ul {
+    list-style: none;
+    margin-top: 8px;
+  }
+  .card ul li {
+    font-size: 13.5px;
+    color: var(--t-text-dim);
+    line-height: 1.7;
+    padding-left: 14px;
+    position: relative;
+  }
+  .card ul li::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 10px;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(234, 152, 47, 0.12);
+    color: var(--color-ocre-light);
+    border: 1px solid rgba(234, 152, 47, 0.3);
+    margin-bottom: 12px;
+  }
+  .tag.purple {
+    background: rgba(141, 61, 143, 0.18);
+    color: var(--color-lilac);
+    border-color: rgba(141, 61, 143, 0.4);
+  }
+  .tag.cyan {
+    background: rgba(0, 229, 255, 0.10);
+    color: var(--cyan);
+    border-color: rgba(0, 229, 255, 0.35);
+  }
+
+  /* ── Stack tabela ── */
+  .stack-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    align-items: center;
+    padding: 16px 22px;
+    border-bottom: 1px solid rgba(0, 153, 255, 0.12);
+    gap: 24px;
+  }
+  .stack-row:last-child { border-bottom: 0; }
+  .stack-row .label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--cyan);
+    font-weight: 500;
+  }
+  .stack-row .value {
+    font-size: 15px;
+    color: var(--t-text);
+    line-height: 1.55;
+  }
+  .stack-row code {
+    font-family: 'Space Grotesk', monospace;
+    background: rgba(0, 153, 255, 0.10);
+    border: 1px solid rgba(0, 153, 255, 0.20);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 13px;
+    color: #b9d8ff;
+    margin: 0 4px 4px 0;
+    display: inline-block;
+  }
+
+  /* ── Footer / nav ── */
+  .nav {
+    position: fixed;
+    bottom: 24px;
+    right: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10;
+  }
+  .nav button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    color: var(--t-text);
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+    font-size: 18px;
+    display: grid;
+    place-items: center;
+  }
+  .nav button:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    box-shadow: 0 0 16px rgba(0, 229, 255, 0.35);
+  }
+  .nav .counter {
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    color: var(--t-text-dim);
+    text-transform: uppercase;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .progress {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: rgba(0, 153, 255, 0.08);
+    z-index: 20;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+    transition: width 0.4s ease;
+    box-shadow: 0 0 12px var(--cyan);
+  }
+
+  .hint {
+    position: fixed;
+    bottom: 32px;
+    left: 32px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--t-text-dim);
+    z-index: 10;
+  }
+  .hint kbd {
+    background: rgba(0, 153, 255, 0.12);
+    border: 1px solid rgba(0, 153, 255, 0.25);
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin: 0 4px;
+    font-family: inherit;
+    color: var(--cyan);
+  }
+
+  /* ── Layout específico do slide de stack ── */
+  .stack-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(14px);
+    overflow: hidden;
+    animation: cardIn 0.55s ease both;
+  }
+
+  /* Print */
+  @media print {
+    body::before, body::after, .nav, .hint, .progress { display: none !important; }
+    .deck { height: auto; }
+    .slide {
+      position: relative;
+      page-break-after: always;
+      opacity: 1 !important;
+      transform: none !important;
+      height: 100vh;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+
+<div class="deck" id="deck">
+
+  <!-- ============ SLIDE 1 — FEATURES ============ -->
+  <section class="slide active" data-slide="1">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TecnoPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>01 / 07 — Features</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Features</h1>
+    <p class="slide-subtitle">
+      O que o assistente entrega ao usuário final e ao time de operação do TecnoPUC.
+    </p>
+
+    <div class="grid grid-3">
+      <article class="card">
+        <div class="card-icon">◉</div>
+        <h3>Chat com RAG</h3>
+        <p>Pergunta → busca semântica na base → resposta gerada com contexto recuperado. Restrita ao conteúdo institucional, sem alucinação fora do escopo.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-icon">◐</div>
+        <h3>Modo voz multimodal</h3>
+        <p>Captura de áudio + transcrição em tempo real e síntese de voz. 5 vozes selecionáveis. Token efêmero server-side: a chave nunca sai para o navegador.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-icon">▲</div>
+        <h3>Interface 3D imersiva</h3>
+        <p>“T” 3D no centro da tela com estados visuais (idle, escutando, processando, falando). Menu radial com hubs institucionais e aura reativa.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-icon">⌘</div>
+        <h3>Painel admin</h3>
+        <p>Upload de PDFs e URLs com chunking automático, moderação de contribuições e edição do system prompt da IA pelo painel. Multi-admin.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-icon">✦</div>
+        <h3>Contribuições da comunidade</h3>
+        <p>Visitante sugere conhecimento → validação por e-mail → moderação → injeção no RAG. Anti-abuso com honeypot, rate limit, RLS e purga automática.</p>
+      </article>
+
+      <article class="card">
+        <div class="card-icon">≣</div>
+        <h3>Base curada</h3>
+        <p>13 documentos cobrindo TecnoPUC, ecossistema, hubs, empresas residentes, programas, ambientes, cases e infraestrutura. Re-ingestão por CLI.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 2 — SERVIÇOS EXTERNOS ============ -->
+  <section class="slide" data-slide="2">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TecnoPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>02 / 07 — Serviços externos</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Serviços externos</h1>
+    <p class="slide-subtitle">
+      Integrações de terceiros que sustentam IA, dados, e-mail, hospedagem e proteção contra abuso.
+    </p>
+
+    <div class="grid grid-3">
+      <article class="card">
+        <span class="tag cyan">IA</span>
+        <h3>Google Gemini API</h3>
+        <ul>
+          <li>Embeddings vetoriais</li>
+          <li>Geração de texto</li>
+          <li>Multimodal Live (voz via WebSocket)</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Dados</span>
+        <h3>Supabase</h3>
+        <ul>
+          <li>Postgres gerenciado</li>
+          <li>pgvector p/ busca semântica</li>
+          <li>RLS como defesa em profundidade</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag">Proteção</span>
+        <h3>Upstash Redis</h3>
+        <ul>
+          <li>Rate limit no chat</li>
+          <li>Rate limit admin</li>
+          <li>Rate limit contribuições e ingest</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">E-mail</span>
+        <h3>Resend</h3>
+        <ul>
+          <li>Validação de contribuições</li>
+          <li>Token de 1h por link</li>
+          <li>Domínio próprio em produção</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Infra</span>
+        <h3>Netlify</h3>
+        <ul>
+          <li>Hosting da aplicação</li>
+          <li>Deploy contínuo</li>
+          <li>Preview de PRs</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag">Código</span>
+        <h3>GitHub</h3>
+        <ul>
+          <li>Repositório versionado</li>
+          <li>CI / lint automatizado</li>
+          <li>Histórico auditável</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 3 — STACK TÉCNICO ============ -->
+  <section class="slide" data-slide="3">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TecnoPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>03 / 07 — Stack técnico</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Stack técnico</h1>
+    <p class="slide-subtitle">
+      Tecnologias usadas em frontend, backend, IA e infraestrutura.
+    </p>
+
+    <div class="stack-card">
+      <div class="stack-row">
+        <span class="label">Frontend</span>
+        <span class="value">
+          <code>Next.js 16</code><code>React 19</code><code>TypeScript</code><code>Tailwind v4</code><code>App Router</code>
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">3D &amp; Animação</span>
+        <span class="value">
+          <code>Three.js</code><code>react-three-fiber</code><code>drei</code><code>Framer Motion</code>
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">Estado</span>
+        <span class="value">
+          <code>Zustand</code> — store global enxuta para sessão, áudio, painéis e máquina de estados do “T”.
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">Backend</span>
+        <span class="value">
+          <code>Next.js API Routes</code> serverless — RAG pipeline, ingestão, voice token e admin.
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">IA</span>
+        <span class="value">
+          <code>@google/generative-ai</code><code>@google/genai</code> — embeddings, geração e Live API.
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">Ingestão</span>
+        <span class="value">
+          <code>pdf2json</code> (PDFs)<code>cheerio</code> + <code>turndown</code> (web → MD)<code>react-markdown</code> + <code>remark-gfm</code> (render).
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">Dados</span>
+        <span class="value">
+          <code>@supabase/supabase-js</code> + <code>pgvector</code><code>@upstash/redis</code><code>@upstash/ratelimit</code>
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">DX / Build</span>
+        <span class="value">
+          <code>tsx</code><code>ESLint 9</code><code>Turbopack</code><code>dotenv</code>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 4 — SEGURANÇA ============ -->
+  <section class="slide" data-slide="4">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TecnoPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>04 / 07 — Segurança</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Segurança</h1>
+    <p class="slide-subtitle">
+      Camadas de proteção que blindam credenciais, dados e o canal público de contribuição.
+    </p>
+
+    <div class="grid grid-2">
+      <article class="card">
+        <span class="tag cyan">Credenciais</span>
+        <h3>Chaves 100% server-side</h3>
+        <p>Nenhuma credencial sensível chega ao navegador. Variáveis <code style="background:rgba(0,153,255,0.1);padding:1px 6px;border-radius:4px;color:#b9d8ff">NEXT_PUBLIC_*</code> proibidas para segredos. A chave do Gemini nunca sai do servidor.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag">Voz</span>
+        <h3>Token efêmero para o modo voz</h3>
+        <p>O servidor emite token single-use válido por até 30 min via <code style="background:rgba(0,153,255,0.1);padding:1px 6px;border-radius:4px;color:#b9d8ff">/api/voice-context</code>. O cliente conecta na Gemini Live com esse token, nunca com a chave-mestra.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Banco</span>
+        <h3>RLS no Supabase</h3>
+        <p>Row Level Security habilitada na tabela <code style="background:rgba(0,153,255,0.1);padding:1px 6px;border-radius:4px;color:#b9d8ff">contribuicoes</code> como defesa em profundidade. Anon-key fica bloqueada; só service-role bypassa.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag">Rate limit</span>
+        <h3>Upstash em todas as rotas públicas</h3>
+        <p>Limites distintos para chat, admin, contribuições e ingest. Por IP e por e-mail no fluxo da comunidade (10/24h IP, 3/24h e-mail).</p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Anti-abuso</span>
+        <h3>Honeypot + validação obrigatória</h3>
+        <p>Campo invisível que bots preenchem mas humanos não. Validação de e-mail é gate obrigatório antes de a contribuição entrar na fila de moderação.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Higiene</span>
+        <h3>Purga automática (pg_cron)</h3>
+        <p>Job diário descarta contribuições <em>aguardando_email</em> com mais de 24h e <em>rejeitadas</em> com mais de 15 dias. Reduz superfície de dados pessoais retidos.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 5 — ROADMAP ============ -->
+  <section class="slide" data-slide="5">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TecnoPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>05 / 07 — Roadmap</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Em construção</h1>
+    <p class="slide-subtitle">
+      Funcionalidades já planejadas: deferidas da última entrega ou previstas no roadmap original do frontend.
+    </p>
+
+    <div class="grid grid-3">
+      <article class="card">
+        <span class="tag cyan">Curto prazo</span>
+        <h3>Selo “via comunidade”</h3>
+        <p>Quando uma resposta usa um chunk vindo de contribuição da comunidade, o card de resposta deve exibir o selo. Reforça transparência e reconhece quem contribuiu.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Curto prazo</span>
+        <h3>Busca e paginação no admin</h3>
+        <p>Hoje a moderação de contribuições só filtra por status. Falta busca por e-mail e paginação para escalar quando o volume crescer.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Curto prazo</span>
+        <h3>Harmonização da página de contribuição</h3>
+        <p>O formulário já está com a paleta holographic, mas o wrapper standalone <code style="background:rgba(0,153,255,0.1);padding:1px 6px;border-radius:4px;color:#b9d8ff">/contribuir</code> ainda usa Tailwind básico. Falta unificar o visual.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Médio prazo</span>
+        <h3>Painéis avançados</h3>
+        <p><strong>DetailPanel</strong> para abrir respostas em versão expandida e <strong>TimelinePanel</strong> com histórico de turnos da sessão.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Médio prazo</span>
+        <h3>Onboarding</h3>
+        <p>Tutorial inicial ensinando texto, voz, hubs e replay. <strong>MobileHoldHint</strong> avisando que o radial abre por hold no “T”.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Médio prazo</span>
+        <h3>Resiliência visual do “T”</h3>
+        <p>Fallback 2D para dispositivos sem WebGL e estados visuais avançados — <em>uncertainty</em> e <em>error</em> ainda compartilham aparência com estados básicos.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 6 — OPERACIONAL ============ -->
+  <section class="slide" data-slide="6">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TecnoPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>06 / 07 — Operacional</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Pendências operacionais</h1>
+    <p class="slide-subtitle">
+      Não-código, mas precisam ser resolvidas antes de operar em produção real com tráfego externo.
+    </p>
+
+    <div class="grid grid-2">
+      <article class="card" style="border-color: rgba(234,152,47,0.45);">
+        <span class="tag">Crítico</span>
+        <h3>Domínio próprio no Resend</h3>
+        <p>Enquanto o remetente for <code style="background:rgba(0,153,255,0.1);padding:1px 6px;border-radius:4px;color:#b9d8ff">onboarding@resend.dev</code>, o Resend só entrega para o dono da conta. Qualquer outro contribuidor é bloqueado silenciosamente. <strong>Bloqueia o uso real do feature de contribuições.</strong></p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Compliance</span>
+        <h3>Política de uso e privacidade</h3>
+        <p>Formulário público coleta e-mail e conteúdo livre. LGPD pede política pública declarando uso, retenção e direitos do contribuidor. Hoje a purga existe no banco mas não está documentada para o usuário.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Observabilidade</span>
+        <h3>Monitoramento e alertas</h3>
+        <p>Métricas de uso (perguntas por dia, latência, falhas), alertas de erro no chat e na ingestão, e dashboards para acompanhar a saúde do RAG após cada alteração na base.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Qualidade</span>
+        <h3>Suíte de testes automatizados</h3>
+        <p>Hoje a verificação é manual. Regressão crítica em RAG, fluxo de contribuições e moderação merece cobertura automatizada antes do projeto ganhar mais autores.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 7 — VISÃO DE FUTURO ============ -->
+  <section class="slide" data-slide="7">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TecnoPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>07 / 07 — Visão de futuro</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Visão de futuro</h1>
+    <p class="slide-subtitle">
+      Funcionalidades aspiracionais que expandem o assistente de “FAQ inteligente” para ferramenta de relacionamento institucional.
+    </p>
+
+    <div class="grid grid-3">
+      <article class="card">
+        <span class="tag cyan">Visual</span>
+        <h3>Empresas vivas na network</h3>
+        <p>Os nódulos da network 3D no fundo passam a exibir nomes das empresas residentes do TecnoPUC. O ecossistema vira parte do palco — não só decoração.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Sessão</span>
+        <h3>Histórico persistido com login</h3>
+        <p>Continuidade entre acessos: o usuário retorna e encontra suas conversas anteriores, contribuições enviadas e hubs visitados.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag">Inteligência</span>
+        <h3>Recomendação proativa</h3>
+        <p>A IA sugere o hub, programa ou empresa relevante com base na pergunta — não apenas responde, conecta o usuário ao próximo passo dentro do parque.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Dados</span>
+        <h3>Analytics de gaps na base</h3>
+        <p>Painel admin mostra perguntas frequentes não respondidas pela base — direciona o esforço de curadoria para o que realmente impacta o usuário.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Alcance</span>
+        <h3>Multilíngue (EN / ES)</h3>
+        <p>TecnoPUC recebe delegações internacionais. Resposta automática no idioma da pergunta, com base de conhecimento traduzida progressivamente.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag">Qualidade</span>
+        <h3>Feedback inline na resposta</h3>
+        <p>👍 / 👎 com comentário opcional em cada resposta. Loop de melhoria contínua baseado em sinal real do usuário, alimentando priorização da base.</p>
+      </article>
+    </div>
+  </section>
+
+</div>
+
+<nav class="nav">
+  <button id="prev" aria-label="Anterior">‹</button>
+  <span class="counter" id="counter">01 / 04</span>
+  <button id="next" aria-label="Próximo">›</button>
+</nav>
+
+<div class="hint">
+  <kbd>←</kbd><kbd>→</kbd> navegar &nbsp;·&nbsp; <kbd>F</kbd> tela cheia &nbsp;·&nbsp; <kbd>P</kbd> imprimir
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  const counter = document.getElementById('counter');
+  const progressBar = document.getElementById('progressBar');
+  let current = 0;
+
+  function show(i) {
+    current = (i + total) % total;
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === current));
+    counter.textContent = String(current + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+    progressBar.style.width = ((current + 1) / total * 100) + '%';
+  }
+
+  document.getElementById('prev').onclick = () => show(current - 1);
+  document.getElementById('next').onclick = () => show(current + 1);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') show(current + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') show(current - 1);
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(total - 1);
+    if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+    if (e.key === 'p' || e.key === 'P') window.print();
+  });
+
+  show(0);
+</script>
+
+</body>
+</html>
