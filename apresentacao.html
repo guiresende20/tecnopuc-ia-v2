@@ -425,6 +425,228 @@
     animation: cardIn 0.55s ease both;
   }
 
+  /* ── Glossário ── */
+  .glossary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    flex: 1;
+    align-content: start;
+  }
+  .glossary-col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    animation: cardIn 0.55s ease both;
+  }
+  .glossary-col:nth-child(1) { animation-delay: 0.05s; }
+  .glossary-col:nth-child(2) { animation-delay: 0.10s; }
+  .glossary-col:nth-child(3) { animation-delay: 0.15s; }
+  .glossary-cat {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--cyan);
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.18);
+    margin-bottom: 4px;
+  }
+  .glossary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 0;
+    border-bottom: 1px dashed rgba(0, 153, 255, 0.10);
+  }
+  .glossary-item:last-child { border-bottom: 0; }
+  .glossary-item dt {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.005em;
+  }
+  .glossary-item dt em {
+    font-size: 11px;
+    color: var(--t-text-dim);
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 400;
+    margin-left: 6px;
+  }
+  .glossary-item dd {
+    font-size: 12.5px;
+    color: var(--t-text-dim);
+    line-height: 1.55;
+  }
+
+  /* ── Card com detalhamento ── */
+  .card[data-detail] {
+    cursor: pointer;
+  }
+  .card[data-detail]::after {
+    content: '+';
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 229, 255, 0.4);
+    color: var(--cyan);
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 229, 255, 0.06);
+    transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  }
+  @media (hover: hover) {
+    .card[data-detail]:hover::after {
+      transform: rotate(90deg) scale(1.1);
+      background: rgba(0, 229, 255, 0.18);
+      box-shadow: 0 0 14px rgba(0, 229, 255, 0.45);
+    }
+  }
+
+  /* ── Detail overlay ── */
+  .detail-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    pointer-events: none;
+  }
+  .detail-overlay.open {
+    display: flex;
+    pointer-events: auto;
+  }
+  .detail-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 6, 14, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    animation: backdropIn 0.28s ease both;
+  }
+  @keyframes backdropIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .detail-modal {
+    position: relative;
+    max-width: 640px;
+    width: 100%;
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+    background: linear-gradient(180deg, rgba(13, 19, 36, 0.94) 0%, rgba(8, 11, 22, 0.96) 100%);
+    border: 1px solid rgba(0, 229, 255, 0.32);
+    border-radius: var(--radius-xl);
+    padding: 36px 40px 32px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 60px rgba(0, 153, 255, 0.18);
+    animation: modalIn 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+  }
+  .detail-modal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.7;
+  }
+  .detail-tag {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(0, 229, 255, 0.10);
+    color: var(--cyan);
+    border: 1px solid rgba(0, 229, 255, 0.35);
+    margin-bottom: 16px;
+  }
+  .detail-title {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: #fff;
+    margin-bottom: 18px;
+    background: linear-gradient(120deg, #fff 0%, #b9d8ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .detail-body {
+    font-size: 14.5px;
+    color: var(--t-text-dim);
+    line-height: 1.7;
+    margin-bottom: 22px;
+  }
+  .detail-body p { margin-bottom: 12px; }
+  .detail-body p:last-child { margin-bottom: 0; }
+  .detail-body code {
+    font-family: 'Space Grotesk', monospace;
+    background: rgba(0, 153, 255, 0.10);
+    border: 1px solid rgba(0, 153, 255, 0.20);
+    border-radius: 5px;
+    padding: 1px 7px;
+    font-size: 13px;
+    color: #b9d8ff;
+  }
+  .detail-body strong { color: #e8f4ff; font-weight: 600; }
+  .detail-why {
+    margin-top: 8px;
+    padding: 18px 20px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, rgba(234, 152, 47, 0.10), rgba(141, 61, 143, 0.10));
+    border: 1px solid rgba(234, 152, 47, 0.32);
+  }
+  .detail-why-label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--color-ocre-light);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .detail-why-text {
+    font-size: 14px;
+    color: #ead9c2;
+    line-height: 1.65;
+  }
+  .detail-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.2s ease;
+  }
+  .detail-close:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(0, 229, 255, 0.12);
+  }
+
   /* ── Cover slide (capa) ── */
   .slide.cover {
     align-items: center;
@@ -543,11 +765,16 @@
 
   /* ── Tablet ── */
   @media (max-width: 1024px) {
-    .slide { padding: 40px 48px; }
+    .slide {
+      padding: 40px 48px 96px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
     .slide-title { font-size: 44px; }
     .slide-subtitle { font-size: 16px; margin-bottom: 28px; }
     .grid-3 { grid-template-columns: repeat(2, 1fr); }
     .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .glossary-grid { grid-template-columns: repeat(2, 1fr); gap: 22px; }
   }
 
   /* ── Mobile ── */
@@ -589,6 +816,7 @@
     .grid-2,
     .grid-3,
     .grid-4 { grid-template-columns: 1fr; }
+    .glossary-grid { grid-template-columns: 1fr; gap: 18px; }
 
     .card { padding: 18px 18px 20px; border-radius: 16px; }
     .card-icon { width: 34px; height: 34px; font-size: 16px; margin-bottom: 12px; }
@@ -663,7 +891,7 @@
     <canvas class="cover-canvas" id="coverCanvas"></canvas>
     <div class="cover-content">
       <div class="cover-t"></div>
-      <h1 class="cover-title">TecnoPUC IA</h1>
+      <h1 class="cover-title">TECNOPUC IA</h1>
       <p class="cover-subtitle">
         Assistente conversacional do Parque Científico e Tecnológico da PUCRS — multimodal, com RAG, voz e contribuições da comunidade.
       </p>
@@ -691,7 +919,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>02 / 08 — Features</span>
+        <span>02 / 09 — Features</span>
       </div>
     </header>
 
@@ -701,37 +929,37 @@
     </p>
 
     <div class="grid grid-3">
-      <article class="card">
+      <article class="card" data-detail="rag">
         <div class="card-icon">◉</div>
         <h3>Chat com RAG</h3>
         <p>Pergunta → busca semântica na base → resposta gerada com contexto recuperado. Restrita ao conteúdo institucional, sem alucinação fora do escopo.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="voz">
         <div class="card-icon">◐</div>
         <h3>Modo voz multimodal</h3>
         <p>Captura de áudio + transcrição em tempo real e síntese de voz. 5 vozes selecionáveis. Token efêmero server-side: a chave nunca sai para o navegador.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="interface3d">
         <div class="card-icon">▲</div>
         <h3>Interface 3D imersiva</h3>
         <p>“T” 3D no centro da tela com estados visuais (idle, escutando, processando, falando). Menu radial com hubs institucionais e aura reativa.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="admin">
         <div class="card-icon">⌘</div>
         <h3>Painel admin</h3>
         <p>Upload de PDFs e URLs com chunking automático, moderação de contribuições e edição do system prompt da IA pelo painel. Multi-admin.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="contribuicoes">
         <div class="card-icon">✦</div>
         <h3>Contribuições da comunidade</h3>
         <p>Visitante sugere conhecimento → validação por e-mail → moderação → injeção no RAG. Anti-abuso com honeypot, rate limit, RLS e purga automática.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="base">
         <div class="card-icon">≣</div>
         <h3>Base curada</h3>
         <p>13 documentos cobrindo TecnoPUC, ecossistema, hubs, empresas residentes, programas, ambientes, cases e infraestrutura. Re-ingestão por CLI.</p>
@@ -751,7 +979,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>03 / 08 — Serviços externos</span>
+        <span>03 / 09 — Serviços externos</span>
       </div>
     </header>
 
@@ -835,7 +1063,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>04 / 08 — Stack técnico</span>
+        <span>04 / 09 — Stack técnico</span>
       </div>
     </header>
 
@@ -908,7 +1136,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>05 / 08 — Segurança</span>
+        <span>05 / 09 — Segurança</span>
       </div>
     </header>
 
@@ -917,7 +1145,7 @@
       Camadas de proteção que blindam credenciais, dados e o canal público de contribuição.
     </p>
 
-    <div class="grid grid-2">
+    <div class="grid grid-4">
       <article class="card">
         <span class="tag cyan">Credenciais</span>
         <h3>Chaves 100% server-side</h3>
@@ -980,7 +1208,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>06 / 08 — Roadmap</span>
+        <span>06 / 09 — Roadmap</span>
       </div>
     </header>
 
@@ -990,37 +1218,37 @@
     </p>
 
     <div class="grid grid-3">
-      <article class="card">
+      <article class="card" data-detail="selo-comunidade">
         <span class="tag cyan">Curto prazo</span>
         <h3>Selo “via comunidade”</h3>
         <p>Quando uma resposta usa um chunk vindo de contribuição da comunidade, o card de resposta deve exibir o selo. Reforça transparência e reconhece quem contribuiu.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="admin-busca">
         <span class="tag cyan">Curto prazo</span>
         <h3>Busca e paginação no admin</h3>
         <p>Hoje a moderação de contribuições só filtra por status. Falta busca por e-mail e paginação para escalar quando o volume crescer.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="harmonizacao-contribuir">
         <span class="tag cyan">Curto prazo</span>
         <h3>Harmonização da página de contribuição</h3>
         <p>O formulário já está com a paleta holographic, mas o wrapper standalone <code style="background:rgba(0,153,255,0.1);padding:1px 6px;border-radius:4px;color:#b9d8ff">/contribuir</code> ainda usa Tailwind básico. Falta unificar o visual.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="paineis-avancados">
         <span class="tag purple">Médio prazo</span>
         <h3>Painéis avançados</h3>
         <p><strong>DetailPanel</strong> para abrir respostas em versão expandida e <strong>TimelinePanel</strong> com histórico de turnos da sessão.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="onboarding">
         <span class="tag purple">Médio prazo</span>
         <h3>Onboarding</h3>
         <p>Tutorial inicial ensinando texto, voz, hubs e replay. <strong>MobileHoldHint</strong> avisando que o radial abre por hold no “T”.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="resiliencia-t">
         <span class="tag purple">Médio prazo</span>
         <h3>Resiliência visual do “T”</h3>
         <p>Fallback 2D para dispositivos sem WebGL e estados visuais avançados — <em>uncertainty</em> e <em>error</em> ainda compartilham aparência com estados básicos.</p>
@@ -1040,7 +1268,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>07 / 08 — Operacional</span>
+        <span>07 / 09 — Operacional</span>
       </div>
     </header>
 
@@ -1050,25 +1278,25 @@
     </p>
 
     <div class="grid grid-2">
-      <article class="card" style="border-color: rgba(234,152,47,0.45);">
+      <article class="card" data-detail="dominio-resend" style="border-color: rgba(234,152,47,0.45);">
         <span class="tag">Crítico</span>
         <h3>Domínio próprio no Resend</h3>
         <p>Enquanto o remetente for <code style="background:rgba(0,153,255,0.1);padding:1px 6px;border-radius:4px;color:#b9d8ff">onboarding@resend.dev</code>, o Resend só entrega para o dono da conta. Qualquer outro contribuidor é bloqueado silenciosamente. <strong>Bloqueia o uso real do feature de contribuições.</strong></p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="politica-uso">
         <span class="tag purple">Compliance</span>
         <h3>Política de uso e privacidade</h3>
         <p>Formulário público coleta e-mail e conteúdo livre. LGPD pede política pública declarando uso, retenção e direitos do contribuidor. Hoje a purga existe no banco mas não está documentada para o usuário.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="monitoramento">
         <span class="tag cyan">Observabilidade</span>
         <h3>Monitoramento e alertas</h3>
         <p>Métricas de uso (perguntas por dia, latência, falhas), alertas de erro no chat e na ingestão, e dashboards para acompanhar a saúde do RAG após cada alteração na base.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="testes-auto">
         <span class="tag purple">Qualidade</span>
         <h3>Suíte de testes automatizados</h3>
         <p>Hoje a verificação é manual. Regressão crítica em RAG, fluxo de contribuições e moderação merece cobertura automatizada antes do projeto ganhar mais autores.</p>
@@ -1088,7 +1316,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>08 / 08 — Visão de futuro</span>
+        <span>08 / 09 — Visão de futuro</span>
       </div>
     </header>
 
@@ -1098,37 +1326,37 @@
     </p>
 
     <div class="grid grid-3">
-      <article class="card">
+      <article class="card" data-detail="empresas-network">
         <span class="tag cyan">Visual</span>
         <h3>Empresas vivas na network</h3>
         <p>Os nódulos da network 3D no fundo passam a exibir nomes das empresas residentes do TecnoPUC. O ecossistema vira parte do palco — não só decoração.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="historico-login">
         <span class="tag purple">Sessão</span>
         <h3>Histórico persistido com login</h3>
         <p>Continuidade entre acessos: o usuário retorna e encontra suas conversas anteriores, contribuições enviadas e hubs visitados.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="recomendacao">
         <span class="tag">Inteligência</span>
         <h3>Recomendação proativa</h3>
         <p>A IA sugere o hub, programa ou empresa relevante com base na pergunta — não apenas responde, conecta o usuário ao próximo passo dentro do parque.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="analytics-gaps">
         <span class="tag cyan">Dados</span>
         <h3>Analytics de gaps na base</h3>
         <p>Painel admin mostra perguntas frequentes não respondidas pela base — direciona o esforço de curadoria para o que realmente impacta o usuário.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="multilingue">
         <span class="tag purple">Alcance</span>
         <h3>Multilíngue (EN / ES)</h3>
         <p>TecnoPUC recebe delegações internacionais. Resposta automática no idioma da pergunta, com base de conhecimento traduzida progressivamente.</p>
       </article>
 
-      <article class="card">
+      <article class="card" data-detail="feedback-inline">
         <span class="tag">Qualidade</span>
         <h3>Feedback inline na resposta</h3>
         <p>👍 / 👎 com comentário opcional em cada resposta. Loop de melhoria contínua baseado em sinal real do usuário, alimentando priorização da base.</p>
@@ -1136,11 +1364,129 @@
     </div>
   </section>
 
+  <!-- ============ SLIDE 9 — GLOSSÁRIO ============ -->
+  <section class="slide" data-slide="9">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>09 / 09 — Glossário</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Glossário</h1>
+    <p class="slide-subtitle">
+      Termos técnicos usados nesta apresentação, traduzidos para um público não-técnico.
+    </p>
+
+    <div class="glossary-grid">
+
+      <div class="glossary-col">
+        <h3 class="glossary-cat">IA &amp; Conhecimento</h3>
+        <dl class="glossary-list">
+          <div class="glossary-item">
+            <dt>RAG <em>Retrieval-Augmented Generation</em></dt>
+            <dd>Técnica em que a IA só responde com base em trechos recuperados de uma base de conhecimento, em vez de "lembrar" do que aprendeu no treinamento. Reduz alucinação e torna respostas auditáveis.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>Embedding vetorial</dt>
+            <dd>Representação numérica de um texto em um espaço de centenas de dimensões. Textos com sentidos parecidos ficam próximos — permite buscar por significado, não por palavra exata.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>LLM <em>Large Language Model</em></dt>
+            <dd>Modelo de IA treinado em grandes volumes de texto que prevê a próxima palavra. Gemini, GPT-4 e Claude são exemplos. É o "cérebro" que gera as respostas.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>Chunking</dt>
+            <dd>Quebra de documentos longos em pedaços menores antes de gerar embeddings, para que cada trecho caiba na janela de contexto do modelo e seja indexável de forma granular.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>System prompt</dt>
+            <dd>Instruções iniciais dadas à IA antes de cada conversa, definindo tom de voz, regras e personalidade. No TecnoPUC, é editável pelo painel admin sem precisar de deploy.</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="glossary-col">
+        <h3 class="glossary-cat">Dados &amp; Banco</h3>
+        <dl class="glossary-list">
+          <div class="glossary-item">
+            <dt>pgvector</dt>
+            <dd>Extensão do PostgreSQL que armazena vetores (embeddings) e faz busca por similaridade. É o que permite "lembrar" do conteúdo certo a partir de uma pergunta.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>RLS <em>Row Level Security</em></dt>
+            <dd>Regras de acesso por linha no banco. Mesmo com a chave pública, só linhas autorizadas são lidas. Defesa em profundidade caso outra camada falhe.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>pg_cron</dt>
+            <dd>Extensão que permite agendar tarefas dentro do próprio PostgreSQL. Usada para a purga diária de contribuições não validadas e rejeitadas.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>localStorage</dt>
+            <dd>Armazenamento local do navegador (no computador do usuário) que persiste entre visitas. Guarda a escolha do banner de cookies sem enviar nada ao servidor.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>Token efêmero</dt>
+            <dd>Credencial de curta duração e uso único. O servidor emite um token descartável para o cliente acessar a API de voz, sem precisar expor a chave-mestra do Gemini.</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="glossary-col">
+        <h3 class="glossary-cat">Comunicação &amp; Segurança</h3>
+        <dl class="glossary-list">
+          <div class="glossary-item">
+            <dt>WebSocket</dt>
+            <dd>Protocolo de comunicação bidirecional persistente entre browser e servidor. Usado pela API de voz do Gemini para streaming de áudio em tempo real.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>Multimodal</dt>
+            <dd>Modelo de IA que aceita e gera mais de um tipo de entrada — texto, áudio, imagem. O modo voz é multimodal porque o áudio entra e sai sem virar texto no meio do caminho.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>Rate limit</dt>
+            <dd>Limite de requisições por janela de tempo (por IP ou usuário). Defesa contra abuso, scraping e força bruta nas rotas públicas do projeto.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>Honeypot</dt>
+            <dd>Campo invisível em formulário público. Bots automáticos preenchem todos os campos; humanos não enxergam. Quem preenche é descartado silenciosamente.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>LGPD <em>Lei Geral de Proteção de Dados</em></dt>
+            <dd>Lei brasileira que regula o tratamento de dados pessoais. Obriga consentimento explícito antes de coletar dados de uso, como cookies analíticos do Google Analytics.</dd>
+          </div>
+        </dl>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<div class="detail-overlay" id="detailOverlay" aria-hidden="true">
+  <div class="detail-backdrop" data-close></div>
+  <div class="detail-modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <button class="detail-close" data-close aria-label="Fechar">×</button>
+    <span class="detail-tag">Detalhamento</span>
+    <h2 class="detail-title" id="detailTitle"></h2>
+    <div class="detail-body" id="detailBody"></div>
+    <div class="detail-why">
+      <span class="detail-why-label">Por que isto é importante</span>
+      <p class="detail-why-text" id="detailWhy"></p>
+    </div>
+  </div>
 </div>
 
 <nav class="nav">
   <button id="prev" aria-label="Anterior">‹</button>
-  <span class="counter" id="counter">01 / 08</span>
+  <span class="counter" id="counter">01 / 09</span>
   <button id="next" aria-label="Próximo">›</button>
 </nav>
 
@@ -1298,6 +1644,180 @@
       else stop();
     });
     observer.observe(coverSlide, { attributes: true, attributeFilter: ['class'] });
+  })();
+
+  /* ── Detail modal: explicações por card ── */
+  const detailContent = {
+    // ===== Slide 2 — Features =====
+    rag: {
+      title: 'Chat com RAG',
+      body: `<p>Pipeline de <strong>Retrieval-Augmented Generation</strong> em três etapas. Quando o usuário pergunta, o sistema gera um <strong>embedding vetorial</strong> da pergunta via Gemini, faz uma <strong>busca por similaridade</strong> nos chunks armazenados no Supabase com <code>pgvector</code> e injeta os trechos mais relevantes diretamente no <strong>system prompt</strong> antes de gerar a resposta.</p>
+      <p>O modelo é instruído a responder <strong>apenas com base no contexto recuperado</strong>. Tudo que cai fora da base institucional vira "não sei" — o assistente prefere admitir desconhecimento a alucinar uma resposta. Cada chunk no banco preserva metadados de origem (<code>type='manual'</code>, <code>'pdf'</code> ou <code>'comunidade'</code>) para auditoria.</p>`,
+      why: `Garante respostas <strong>factuais e auditáveis</strong>. Sem RAG, um modelo de linguagem inventa números, nomes de empresas e datas com a mesma confiança com que cita fatos reais. Com RAG, cada resposta é rastreável a um documento real da base — o que protege a credibilidade institucional do TecnoPUC e evita que o assistente espalhe informação incorreta sobre o parque, suas empresas ou programas.`
+    },
+    voz: {
+      title: 'Modo voz multimodal',
+      body: `<p>Captura de áudio do microfone do usuário enviada para a <strong>Gemini Multimodal Live API</strong> via WebSocket. O modelo transcreve, processa e responde em <strong>voz sintetizada em tempo real</strong> — sem etapas separadas de STT e TTS. Cinco vozes disponíveis (Puck, Aoede, Charon, Kore, Fenrir) selecionáveis pelo painel admin.</p>
+      <p>A chave Gemini <strong>nunca chega ao navegador</strong>. O servidor emite um <strong>token efêmero single-use</strong> via <code>/api/voice-context</code> com validade de até 30 minutos, e o cliente conecta na Live API usando esse token descartável. Mesmo que ele vaze do browser, o impacto é limitado a uma única sessão.</p>`,
+      why: `Reduz a barreira de entrada para usuários que <strong>não estão acostumados com chatbots</strong> ou que preferem conversação natural. Atende cenários de <strong>acessibilidade</strong> (deficiência visual, motora) e situações onde digitar é inviável — visita guiada ao parque, demonstrações em eventos, totens institucionais. Posiciona o TecnoPUC como referência em interfaces conversacionais avançadas.`
+    },
+    interface3d: {
+      title: 'Interface 3D imersiva',
+      body: `<p>O símbolo <strong>"T"</strong> do TecnoPUC vive no centro da tela como objeto 3D animado, renderizado com <code>Three.js</code> + <code>react-three-fiber</code>. Não é decoração — é o <strong>centro semântico da experiência</strong>. Tem nove estados visuais (<em>idle, hover, listening, processing, responding, speaking, stable, uncertainty, error</em>) sincronizados com o estado real do backend e do áudio.</p>
+      <p>Os <strong>hubs institucionais</strong> (Hubs, Estrutura, Programas, Sobre) abrem em menu radial ancorado no T — por <strong>hover</strong> no desktop, por <strong>hold</strong> no mobile. A aura ao redor reage ao volume do microfone quando está ouvindo, e à síntese de voz quando está falando.</p>`,
+      why: `Transforma um chatbot em uma <strong>experiência espacial reconhecível</strong>. Um campo de input genérico é esquecível; um T 3D que reage à voz vira <strong>identidade visual e momento memorável</strong> em eventos, demonstrações e visitas institucionais. É também um diferencial competitivo: a maioria dos chatbots institucionais ainda usa apenas texto plano.`
+    },
+    admin: {
+      title: 'Painel admin',
+      body: `<p>Interface autenticada por <strong>Basic Auth multi-admin</strong> (configurável via <code>ADMIN_USERS</code> em JSON) que centraliza a operação do assistente. Três abas principais: <strong>Documentos &amp; PDF</strong> (upload, edição manual, ingestão de URLs com chunking automático), <strong>Contribuições</strong> (moderação aprovar/rejeitar com filtros) e <strong>Personalidade</strong> (edição direta do system prompt da IA).</p>
+      <p>Mudanças no system prompt entram em vigor <strong>sem deploy</strong> — basta salvar. Documentos novos são chunked, embedados e indexados no banco vetorial em segundos. O painel também mostra a origem de cada fonte (<em>manual</em>, <em>PDF</em>, <em>comunidade</em>) para curadoria informada.</p>`,
+      why: `<strong>Desacopla a manutenção da base do time de desenvolvimento</strong>. A equipe de comunicação do TecnoPUC pode atualizar conteúdo, ajustar tom de voz e moderar contribuições sozinha — sem esperar PR, code review ou deploy. Reduz drasticamente o tempo entre "informação institucional mudou" e "chatbot já sabe", o que mantém o assistente útil ao longo do tempo.`
+    },
+    contribuicoes: {
+      title: 'Contribuições da comunidade',
+      body: `<p>Sistema de <strong>RAG colaborativo com moderação obrigatória</strong>. Visitante preenche formulário público → backend valida tamanho e e-mail, gera token de validação de 1h e envia link via Resend → ao clicar no link, contribuição entra na fila de moderação → admin aprova ou rejeita → se aprovada, é chunked, embedada e injetada no banco vetorial com <code>metadata.origem = 'comunidade'</code>.</p>
+      <p>Camadas anti-abuso: <strong>honeypot</strong> invisível (bots preenchem, humanos não), <strong>rate limit</strong> via Upstash (10 envios/24h por IP, 3/24h por e-mail), <strong>RLS no Supabase</strong> como defesa em profundidade, e <strong>purga automática diária</strong> via <code>pg_cron</code> que descarta contribuições não validadas em 24h e rejeitadas em 15 dias.</p>`,
+      why: `Cria um <strong>loop de melhoria contínua sem aumentar a carga do time interno</strong>. A base cresce com inteligência distribuída — alunos, professores, residentes do parque — sob curadoria humana antes de qualquer chunk entrar no RAG. É também <strong>compliance-friendly</strong>: nenhuma contribuição vira resposta sem revisão, e a rastreabilidade preserva quem contribuiu o quê.`
+    },
+    base: {
+      title: 'Base curada',
+      body: `<p>Treze documentos em Markdown cobrindo o universo institucional do TecnoPUC: identidade do parque, ecossistema de inovação, <strong>hubs verticais</strong> (Saúde, Energia, Tecnologias para Imagem etc.), empresas residentes, programas (TecnoPUC Startups, residência, mentoria), ambientes físicos, cases de impacto e infraestrutura.</p>
+      <p>Re-ingestão por <strong>CLI dedicada</strong> (<code>npx tsx scripts/ingest.ts</code>) que recalcula embeddings e atualiza o banco vetorial. Cada arquivo é dividido em chunks de tamanho otimizado para a janela de contexto do Gemini, com <em>overlap</em> para preservar continuidade semântica entre trechos.</p>`,
+      why: `Define o <strong>universo de conhecimento que o assistente domina</strong>. Curadoria manual evita o ruído típico de scraping aberto de site institucional e garante que o <strong>tom de voz, terminologia e posicionamento estratégico</strong> do TecnoPUC sejam preservados em cada resposta. Conteúdo errado na base = resposta errada na ponta — por isso entra apenas o que foi revisado.`
+    },
+
+    // ===== Slide 6 — Em construção =====
+    'selo-comunidade': {
+      title: 'Selo "via comunidade"',
+      body: `<p>Quando uma resposta da IA usar um chunk vindo de contribuição da comunidade (com <code>metadata.origem='comunidade'</code> no banco), o card de resposta passa a exibir um selo visual sinalizando essa origem.</p>
+      <p>A informação de origem <strong>já existe no banco</strong> desde a primeira contribuição aprovada — falta apenas surfacear no frontend ao montar o card de resposta. O selo aparece junto com a resposta, com link opcional para a fonte original.</p>`,
+      why: `Reforça a <strong>transparência</strong> do projeto e <strong>reconhece quem contribuiu</strong>. Para o público, fica claro que a base do assistente é viva e construída em parte pela comunidade. Para os contribuidores, é um incentivo direto: ver o seu conteúdo aparecer em uma resposta real fecha o ciclo de engajamento e aumenta a probabilidade de novas contribuições.`
+    },
+    'admin-busca': {
+      title: 'Busca e paginação no admin',
+      body: `<p>A aba de moderação de contribuições hoje só filtra por status (<em>pendente</em>, <em>aprovada</em>, <em>rejeitada</em>). Quando o volume crescer, falta <strong>busca por e-mail/conteúdo</strong> e <strong>paginação</strong> para que o admin não precise carregar centenas de itens de uma vez.</p>
+      <p>Implementação envolve adicionar parâmetros <code>?q=</code> e <code>?page=</code> à rota <code>/api/admin/contribuicoes</code>, índice <code>GIN</code> no Postgres para busca textual e componente de paginação no painel.</p>`,
+      why: `É <strong>infraestrutura para sobreviver ao próprio sucesso</strong>. Se uma campanha de divulgação trouxer um pico de contribuições, a moderação trava sem busca e paginação. Sem essa preparação, a operação vira caótica justamente no momento em que o projeto está ganhando tração — exatamente quando precisa estar fluindo bem.`
+    },
+    'harmonizacao-contribuir': {
+      title: 'Harmonização da página de contribuição',
+      body: `<p>O formulário dentro do modal <code>&lt;ContribuirLayer&gt;</code> já segue a paleta holographic do resto do projeto (azul/ciano/glassmorphism). Mas o wrapper standalone em <code>/contribuir</code> — usado quando o JS está desabilitado ou o usuário acessa o link direto — ainda usa Tailwind básico, sem os efeitos visuais que aparecem no resto da experiência.</p>
+      <p>Trabalho é uma passada de CSS + estrutura para alinhar a página standalone à mesma identidade visual.</p>`,
+      why: `A <strong>consistência visual é parte da experiência institucional</strong>. Um usuário que acessa pelo link do e-mail e cai em uma página descolorida tem uma quebra brusca de percepção. É um detalhe pequeno que reforça a impressão geral de polimento — ou denuncia falta dele. Em comunicação institucional, esses detalhes definem se o projeto soa amador ou profissional.`
+    },
+    'paineis-avancados': {
+      title: 'Painéis avançados',
+      body: `<p>Dois painéis previstos no plano de arquitetura ainda não implementados: <strong>DetailPanel</strong> abre uma resposta em versão expandida, com mais contexto, ações de copiar/ouvir novamente/compartilhar; <strong>TimelinePanel</strong> mostra o histórico de turnos da sessão atual em uma linha temporal visual lateral.</p>
+      <p>Ambos vivem no <code>SidePanelManager</code>, que já foi instalado mas hoje só renderiza <code>HubPanel</code> e <code>AudioSettingsPanel</code>.</p>`,
+      why: `Hoje a interface é otimizada para <strong>uma pergunta-uma resposta</strong>. Esses painéis abrem o assistente para uso de pesquisa mais aprofundada — útil em visitas guiadas, demonstrações longas e usuários que querem voltar em respostas anteriores. É a diferença entre "FAQ inteligente" e "ferramenta de exploração institucional".`
+    },
+    onboarding: {
+      title: 'Onboarding',
+      body: `<p>Tutorial interativo na primeira visita ensinando como perguntar por texto, como ativar o microfone para o modo voz, como abrir os hubs no menu radial e como ouvir/repetir uma resposta falada. Inclui um <strong>MobileHoldHint</strong> específico para mobile, avisando que o radial abre por toque longo no "T" — gesto que ninguém descobre sozinho.</p>
+      <p>Aparece apenas na primeira visita (persistência em <code>localStorage</code>), com botão "pular" sempre disponível.</p>`,
+      why: `A interface tem mecânicas que <strong>não são óbvias</strong> — hold no T, hover no radial, modos texto/voz coexistindo, hubs ancorados no símbolo. Sem onboarding, o usuário descobre 30% do produto e nunca vê os outros 70%. Em uma demonstração institucional, é a diferença entre "ah, é um chatbot" e "é uma experiência conversacional completa que aproveita áudio, 3D e conteúdo institucional".`
+    },
+    'resiliencia-t': {
+      title: 'Resiliência visual do "T"',
+      body: `<p>Duas frentes: <strong>fallback 2D</strong> do "T" para dispositivos sem WebGL ou com placa gráfica fraca (raros, mas existem em totens antigos e máquinas compartilhadas), e <strong>diferenciação dos estados visuais avançados</strong> — hoje <em>uncertainty</em> (quando a IA tem baixa confiança na resposta) e <em>error</em> compartilham aparência com estados básicos como <em>idle</em>.</p>
+      <p>O fallback 2D é uma versão SVG estática do T, ativada por <em>feature detection</em> no carregamento.</p>`,
+      why: `A interface <strong>não pode depender de hardware moderno para ser usável</strong>. Em totens institucionais, computadores compartilhados em laboratórios ou conexões instáveis, o 3D pode falhar — e o assistente precisa continuar funcionando com identidade visual reconhecível. É <strong>robustez para o pior cenário de uso</strong>, e diferenciação visual de erros evita que o usuário continue tentando achando que é só lentidão.`
+    },
+
+    // ===== Slide 7 — Pendências operacionais =====
+    'dominio-resend': {
+      title: 'Domínio próprio no Resend',
+      body: `<p>Hoje o remetente dos e-mails de validação de contribuição é <code>onboarding@resend.dev</code>, o domínio padrão do Resend para desenvolvimento. <strong>Esse remetente bloqueia silenciosamente envios para qualquer endereço que não seja o dono da conta Resend.</strong></p>
+      <p>Para sair desse modo, o time de TI da PUCRS precisa configurar registros DNS (<code>SPF</code>, <code>DKIM</code>, <code>DMARC</code>) em um subdomínio próprio (ex: <code>noreply@mail.tecnopuc.pucrs.br</code>) e verificar no painel do Resend. Depois disso, basta atualizar a env var <code>EMAIL_FROM</code> em produção.</p>`,
+      why: `É <strong>bloqueador para o uso real do feature de contribuições</strong>. Enquanto o domínio não for verificado, qualquer visitante que tentar contribuir nunca recebe o link de confirmação — e a contribuição é descartada silenciosamente em 24h. O sistema funciona em testes e demonstrações, mas é inviável abrir para público real até que isso seja resolvido.`
+    },
+    'politica-uso': {
+      title: 'Política de uso e privacidade',
+      body: `<p>O formulário de contribuição coleta <strong>e-mail e conteúdo livre</strong> digitado pelo usuário. A LGPD exige uma política pública declarando: para que os dados são usados, por quanto tempo são retidos, quais são os direitos do contribuidor (revogação, acesso, exclusão).</p>
+      <p>A purga automática diária via <code>pg_cron</code> já existe no banco, mas <strong>não está documentada publicamente</strong> para o usuário — e a documentação técnica não substitui a política redigida em linguagem acessível.</p>`,
+      why: `<strong>Compliance regulatório direto.</strong> A LGPD prevê multas significativas e qualquer denúncia de uso indevido pode escalar rápido em uma instituição educacional. Além de ser correto eticamente, ter a política bem redigida e visível é <strong>defesa preventiva</strong>: comprova boa-fé e transparência se algum dia houver questionamento, e protege a reputação da PUCRS.`
+    },
+    monitoramento: {
+      title: 'Monitoramento e alertas',
+      body: `<p>Falta instrumentação de produção: <strong>métricas de uso</strong> (perguntas/dia, latência média, taxa de falha), <strong>alertas em tempo real</strong> quando o RAG retorna respostas vazias ou falha em ingerir um documento, e <strong>dashboards de saúde</strong> — quantos chunks novos foram indexados, consumo diário de tokens do Gemini, distribuição de tipos de pergunta.</p>
+      <p>Ferramentas candidatas: Sentry para erros, Grafana ou Datadog para métricas, ou o próprio painel admin estendido com gráficos.</p>`,
+      why: `Sem monitoramento, <strong>problemas só são descobertos quando alguém reclama</strong> — e em um chatbot institucional, a maioria dos usuários frustrados não reclama, eles simplesmente saem. Dashboards convertem "está funcionando bem?" em pergunta com resposta objetiva, e alertas garantem que o time saiba antes do gestor saber pela ferramenta.`
+    },
+    'testes-auto': {
+      title: 'Suíte de testes automatizados',
+      body: `<p>Hoje a verificação é feita <strong>manualmente</strong> — cada release exige testar fluxo de chat, modo voz, contribuições, moderação, ingestão. Falta cobertura automatizada: <strong>testes unitários</strong> nas funções críticas do RAG (chunking, busca por similaridade), <strong>testes de integração</strong> nas rotas de API e <strong>end-to-end</strong> em fluxos críticos como contribuição com validação de e-mail.</p>
+      <p>Stack candidata: Vitest para unitários, Playwright para E2E.</p>`,
+      why: `Conforme o projeto ganha mais autores e mais features, <strong>regressão fica inevitável</strong>. Uma mudança no painel admin pode quebrar a moderação de contribuições sem que ninguém perceba. Testes automatizados são a rede de segurança que permite escalar o número de pessoas mexendo no código sem perder qualidade — e dão confiança para o time da PUCRS aceitar contribuições externas no futuro.`
+    },
+
+    // ===== Slide 8 — Visão de futuro =====
+    'empresas-network': {
+      title: 'Empresas vivas na network',
+      body: `<p>Os nódulos da rede 3D que aparecem na capa e ao fundo da experiência hoje são <strong>abstratos</strong>. A visão é fazer com que cada nódulo represente uma <strong>empresa residente real</strong> do TecnoPUC, com nome legível ao aproximar, link para detalhes e interação ao clicar.</p>
+      <p>O fundo deixa de ser decoração e vira <strong>mapa visual do ecossistema</strong> — densidade dos nódulos pode até refletir clusters por área de atuação.</p>`,
+      why: `Reforça o posicionamento do TecnoPUC como <strong>ecossistema, não apenas como prédio</strong>. Cada empresa residente vira parte da apresentação institucional do parque, e o usuário entende visualmente o tamanho e a diversidade do ecossistema sem precisar ler uma lista. Para as empresas residentes, é <strong>exposição automática de marca</strong> dentro do canal oficial — gerando valor reverso para quem está no parque.`
+    },
+    'historico-login': {
+      title: 'Histórico persistido com login',
+      body: `<p>Hoje cada visita é uma sessão isolada — quando o usuário fecha a aba, perde tudo. A visão é introduzir <strong>login leve</strong> (Google ou e-mail mágico, sem senha) e persistir no Supabase as conversas anteriores, contribuições enviadas e hubs visitados.</p>
+      <p>O usuário retorna em outra visita e <strong>encontra de onde parou</strong>, com sugestões baseadas em histórico ("você estava explorando o Hub de Energia").</p>`,
+      why: `Transforma o assistente de <strong>"ferramenta de uma pergunta"</strong> em <strong>"interlocutor contínuo"</strong>. Para alunos pesquisando empresas, professores buscando programas e empreendedores explorando o parque, ter histórico é a diferença entre uma curiosidade pontual e uma relação de uso recorrente. <strong>Aumenta retenção e profundidade do engajamento</strong> — métricas que importam para uma instituição que quer ser relevante.`
+    },
+    recomendacao: {
+      title: 'Recomendação proativa',
+      body: `<p>A IA passa a sugerir, ao final de cada resposta, o <strong>próximo passo dentro do parque</strong> — hub temático relevante, programa que combina com a pergunta, empresa residente da área de interesse.</p>
+      <p>Não é mais só responder, é <strong>conectar o usuário ao próximo movimento</strong>. Implementação usa o mesmo embedding da pergunta para fazer matching com catálogos estruturados de hubs, programas e empresas.</p>`,
+      why: `Converte o chatbot em <strong>ferramenta de funil</strong>. Um aluno pergunta sobre IA → assistente sugere o Hub de Tecnologias para Imagem + programa de residência + empresas residentes da área. <strong>Cada interação tem potencial de gerar lead, visita ou candidatura</strong>, em vez de terminar com a resposta. É a diferença entre informar passivamente e ativar oportunidades dentro do parque.`
+    },
+    'analytics-gaps': {
+      title: 'Analytics de gaps na base',
+      body: `<p>Painel admin que destaca <strong>perguntas frequentes que a base não conseguiu responder bem</strong> — seja por similaridade baixa nos chunks recuperados, seja por o usuário ter feito follow-up reformulado (sinal de que a primeira resposta não satisfez).</p>
+      <p>Fonte de dados é o histórico do GA4 (perguntas) + estatísticas dos retornos do RAG (similaridade) + sinal de feedback inline.</p>`,
+      why: `Produto <strong>data-driven</strong> em vez de intuitivo. Em vez de a equipe de comunicação gastar tempo escrevendo conteúdo que ninguém pergunta, ela vê em painel "estas 20 perguntas da última semana ficaram sem resposta boa" e endereça especificamente. <strong>Otimiza o ROI de cada hora investida em curadoria da base</strong> — recurso escasso em qualquer time institucional.`
+    },
+    multilingue: {
+      title: 'Multilíngue (EN / ES)',
+      body: `<p>O TecnoPUC recebe regularmente <strong>delegações internacionais</strong> — investidores, universidades parceiras, programas de cooperação. A visão é detectar o idioma da pergunta e responder no mesmo idioma, com a base de conhecimento <strong>traduzida progressivamente</strong> para inglês e espanhol.</p>
+      <p>Início pelos documentos institucionais mais visitados (visão geral do parque, hubs, residência). Documentos não traduzidos voltam ao português com aviso.</p>`,
+      why: `<strong>Posiciona o parque como interlocutor global</strong>. Hoje uma delegação precisa de tradutor humano ou material institucional impresso em outro idioma. Um chatbot multilíngue 24/7 atende qualquer visita <strong>sem custo adicional por evento</strong> e mantém a mesma qualidade de informação no idioma do interlocutor — algo difícil de garantir com tradutores ad-hoc.`
+    },
+    'feedback-inline': {
+      title: 'Feedback inline na resposta',
+      body: `<p>Em cada resposta do assistente, dois botões 👍/👎 com campo de comentário opcional. O sinal vai para o painel admin e <strong>alimenta a priorização de curadoria</strong> da base.</p>
+      <p>Combinado com analytics de gaps, fecha o loop completo: <em>respostas marcadas como ruins</em> + <em>perguntas sem cobertura</em> = <strong>backlog explícito de melhoria</strong>, ordenado por impacto real no usuário.</p>`,
+      why: `Transforma <strong>uso real em direção de produto</strong>. Um chatbot sem feedback evolui por palpite. Com feedback inline, cada usuário insatisfeito vira <strong>input estruturado de melhoria</strong>, e a base de conhecimento vai sendo refinada exatamente onde mais incomoda — não onde a equipe acha que precisa. É o melhor sinal de qualidade que um produto conversacional pode ter.`
+    }
+  };
+
+  (function () {
+    const overlay = document.getElementById('detailOverlay');
+    const titleEl = document.getElementById('detailTitle');
+    const bodyEl  = document.getElementById('detailBody');
+    const whyEl   = document.getElementById('detailWhy');
+
+    function open(id) {
+      const data = detailContent[id];
+      if (!data) return;
+      titleEl.textContent = data.title;
+      bodyEl.innerHTML = data.body;
+      whyEl.innerHTML = data.why;
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+    }
+    function close() {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    document.querySelectorAll('[data-detail]').forEach((el) => {
+      el.addEventListener('click', () => open(el.getAttribute('data-detail')));
+    });
+    overlay.querySelectorAll('[data-close]').forEach((el) => {
+      el.addEventListener('click', close);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+    });
   })();
 </script>
 
