@@ -222,10 +222,12 @@
     background: linear-gradient(90deg, transparent, var(--cyan), transparent);
     opacity: 0.6;
   }
-  .card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(0, 229, 255, 0.55);
-    box-shadow: 0 0 28px rgba(0, 153, 255, 0.18);
+  @media (hover: hover) {
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(0, 229, 255, 0.55);
+      box-shadow: 0 0 28px rgba(0, 153, 255, 0.18);
+    }
   }
   @keyframes cardIn {
     from { opacity: 0; transform: translateY(14px); }
@@ -421,6 +423,93 @@
     backdrop-filter: blur(14px);
     overflow: hidden;
     animation: cardIn 0.55s ease both;
+  }
+
+  /* ── Tablet ── */
+  @media (max-width: 1024px) {
+    .slide { padding: 40px 48px; }
+    .slide-title { font-size: 44px; }
+    .slide-subtitle { font-size: 16px; margin-bottom: 28px; }
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 720px) {
+    .slide {
+      padding: 22px 18px 96px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .slide-header {
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand { gap: 10px; }
+    .brand-t { width: 36px; height: 36px; border-radius: 8px; }
+    .brand-t::before { font-size: 22px; }
+    .brand-name strong { font-size: 14px; letter-spacing: 0.04em; }
+    .brand-name span { font-size: 9px; letter-spacing: 0.16em; }
+
+    .slide-meta {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      gap: 10px;
+    }
+
+    .slide-title {
+      font-size: 30px;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+    .slide-subtitle {
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+
+    .grid { gap: 14px; }
+    .grid-2,
+    .grid-3,
+    .grid-4 { grid-template-columns: 1fr; }
+
+    .card { padding: 18px 18px 20px; border-radius: 16px; }
+    .card-icon { width: 34px; height: 34px; font-size: 16px; margin-bottom: 12px; }
+    .card h3 { font-size: 16px; margin-bottom: 6px; }
+    .card p { font-size: 13.5px; line-height: 1.55; }
+    .card ul li { font-size: 13px; line-height: 1.6; }
+    .tag { font-size: 10px; letter-spacing: 0.14em; padding: 3px 8px; }
+
+    .stack-row {
+      grid-template-columns: 1fr;
+      gap: 6px;
+      padding: 14px 16px;
+    }
+    .stack-row .label { font-size: 11px; letter-spacing: 0.16em; }
+    .stack-row .value { font-size: 13.5px; line-height: 1.6; }
+    .stack-row code { font-size: 12px; }
+
+    .nav {
+      bottom: 16px;
+      right: 50%;
+      transform: translateX(50%);
+      gap: 10px;
+    }
+    .nav button { width: 44px; height: 44px; font-size: 20px; }
+    .nav .counter { font-size: 11px; min-width: 50px; }
+
+    .hint {
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      white-space: nowrap;
+    }
+    .hint kbd { display: none; }
+    .hint::before { content: 'Deslize para navegar'; }
+    .hint .kbd-only { display: none; }
   }
 
   /* Print */
@@ -897,7 +986,7 @@
 </nav>
 
 <div class="hint">
-  <kbd>←</kbd><kbd>→</kbd> navegar &nbsp;·&nbsp; <kbd>F</kbd> tela cheia &nbsp;·&nbsp; <kbd>P</kbd> imprimir
+  <span class="kbd-only"><kbd>←</kbd><kbd>→</kbd> navegar &nbsp;·&nbsp; <kbd>F</kbd> tela cheia &nbsp;·&nbsp; <kbd>P</kbd> imprimir</span>
 </div>
 
 <script>
@@ -928,6 +1017,23 @@
     }
     if (e.key === 'p' || e.key === 'P') window.print();
   });
+
+  // Swipe horizontal em telas com toque
+  let touchStartX = 0;
+  let touchStartY = 0;
+  const deck = document.getElementById('deck');
+  deck.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+  deck.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    const dy = e.changedTouches[0].screenY - touchStartY;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) show(current + 1);
+      else show(current - 1);
+    }
+  }, { passive: true });
 
   show(0);
 </script>
