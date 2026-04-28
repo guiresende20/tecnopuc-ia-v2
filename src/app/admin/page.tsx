@@ -26,6 +26,7 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newDocTitle, setNewDocTitle] = useState('');
   const [newDocContent, setNewDocContent] = useState('');
+  const [formOpen, setFormOpen] = useState(false);
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -151,13 +152,22 @@ export default function AdminPage() {
     setEditingId(src.id);
     setNewDocTitle(src.title);
     setNewDocContent(src.content || ''); // Pega o conteúdo porque agora a API GET retorna fields: id, title, content, type...
+    setFormOpen(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const startNewDoc = () => {
+    setEditingId(null);
+    setNewDocTitle('');
+    setNewDocContent('');
+    setFormOpen(true);
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setNewDocTitle('');
     setNewDocContent('');
+    setFormOpen(false);
   };
 
   const uploadFile = async () => {
@@ -315,6 +325,13 @@ export default function AdminPage() {
           <div className="admin-panel docs-panel">
             <div className="docs-list">
               <h3>Documentos ({sources.length})</h3>
+              <button
+                type="button"
+                className={`docs-add-btn${formOpen && editingId === null ? ' active' : ''}`}
+                onClick={startNewDoc}
+              >
+                + Adicionar Novo Texto Manual
+              </button>
               <ul>
                 {sources.map(src => (
                   <li key={src.id}>
@@ -341,19 +358,21 @@ export default function AdminPage() {
             </div>
 
             <div className="docs-actions">
-              <div className="docs-add-text">
-                <h3>{editingId ? 'Editando Documento Existente' : 'Adicionar Novo Texto Manual'}</h3>
-                <input type="text" placeholder="Título do Texto (Ex: Eventos 2026)" value={newDocTitle} onChange={e => setNewDocTitle(e.target.value)} />
-                <textarea rows={32} placeholder="Cole ou edite todo o conteúdo informativo aqui..." value={newDocContent} onChange={e => setNewDocContent(e.target.value)}></textarea>
-                <div className="doc-form-actions">
-                  <button className="primary-btn" onClick={addOrUpdateTextDoc}>
-                    {editingId ? 'Salvar e Reindexar Alterações' : 'Salvar e Indexar Texto'}
-                  </button>
-                  {editingId && (
-                    <button className="danger-btn" onClick={cancelEdit}>Cancelar Edição</button>
-                  )}
+              {formOpen && (
+                <div className="docs-add-text">
+                  <h3>{editingId ? 'Editando Documento Existente' : 'Adicionar Novo Texto Manual'}</h3>
+                  <input type="text" placeholder="Título do Texto (Ex: Eventos 2026)" value={newDocTitle} onChange={e => setNewDocTitle(e.target.value)} />
+                  <textarea rows={32} placeholder="Cole ou edite todo o conteúdo informativo aqui..." value={newDocContent} onChange={e => setNewDocContent(e.target.value)}></textarea>
+                  <div className="doc-form-actions">
+                    <button className="primary-btn" onClick={addOrUpdateTextDoc}>
+                      {editingId ? 'Salvar e Reindexar Alterações' : 'Salvar e Indexar Texto'}
+                    </button>
+                    <button className="danger-btn" onClick={cancelEdit}>
+                      {editingId ? 'Cancelar Edição' : 'Fechar sem salvar'}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="docs-upload">
                 <h3>Upload de PDF ou TXT</h3>
                 <p>Nós extrairemos o texto automaticamente para injetar na base vetorial (RAG).</p>

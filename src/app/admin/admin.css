@@ -136,6 +136,37 @@
   letter-spacing: 0.05em;
 }
 
+.docs-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  background: rgba(56, 189, 248, 0.08);
+  color: #38bdf8;
+  border: 1px dashed rgba(56, 189, 248, 0.5);
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.docs-add-btn:hover {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: #38bdf8;
+  color: #7dd3fc;
+}
+
+.docs-add-btn.active {
+  background: rgba(56, 189, 248, 0.22);
+  border-style: solid;
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
 .docs-list ul {
   list-style: none;
   padding: 0;
