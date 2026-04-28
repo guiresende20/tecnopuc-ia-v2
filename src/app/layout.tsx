@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { CookieBanner } from '@/components/overlays/CookieBanner';
+import { AnalyticsLoader } from '@/components/AnalyticsLoader';
 
 export const metadata: Metadata = {
   title: 'Assistente TecnoPUC',
@@ -21,7 +23,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        {children}
+        <CookieBanner />
+        <AnalyticsLoader />
+      </body>
     </html>
   );
 }
