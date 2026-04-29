@@ -3,13 +3,16 @@
 // Botão fixo no canto inferior direito que abre o ContribuirLayer.
 // Visual alinhado com a paleta do projeto (#0099ff, glass effect, Space Grotesk).
 
+import { useT } from '@/i18n';
+
 interface Props {
   onClick: () => void;
 }
 
 export function ContribuirButton({ onClick }: Props) {
+  const t = useT();
   return (
-    <button className="contribuir-btn" onClick={onClick} type="button" aria-label="Contribuir com a base">
+    <button className="contribuir-btn" onClick={onClick} type="button" aria-label={t.contribuir.buttonAriaLabel}>
       <svg
         className="contribuir-btn-icon"
         width="13"
@@ -22,7 +25,7 @@ export function ContribuirButton({ onClick }: Props) {
       >
         <path d="M12 5v14M5 12h14" strokeLinecap="round" />
       </svg>
-      <span>Contribuir</span>
+      <span>{t.contribuir.buttonLabel}</span>
 
       <style jsx>{`
         .contribuir-btn {

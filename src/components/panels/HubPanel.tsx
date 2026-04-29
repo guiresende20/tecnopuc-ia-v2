@@ -4,72 +4,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
-import type { HubId } from '@/types/app.types';
-
-/* ─── Conteúdo estático dos hubs ─── */
-interface HubContent {
-  title: string;
-  description: string;
-  items: { name: string; detail: string }[];
-  cta?: string;
-}
-
-const HUB_CONTENT: Record<HubId, HubContent> = {
-  hubs: {
-    title: 'Negócios e Inovação',
-    description:
-      'Contribuímos para o desenvolvimento de startups a multinacionais, com atuação nos setores privado ou público.',
-    items: [
-      { name: 'Hub de Saúde', detail: 'Tecnologia aplicada à saúde, diagnóstico e bem-estar.' },
-      { name: 'Hub de Energia', detail: 'Soluções sustentáveis, renováveis e eficiência energética.' },
-      { name: 'Hub de Cidades', detail: 'Mobilidade, infraestrutura urbana e smart cities.' },
-      { name: 'Hub de Agronegócio', detail: 'Agtech, biotecnologia agrícola e cadeia produtiva.' },
-      { name: 'Hub de Indústria 4.0', detail: 'Automação, IoT, robótica e manufatura avançada.' },
-      { name: 'Hub de TIC', detail: 'Software, inteligência artificial e transformação digital.' },
-    ],
-    cta: 'Conheça os hubs',
-  },
-  estrutura: {
-    title: 'P&D e Design',
-    description:
-      'Desenvolvemos soluções para as demandas do mercado, com o suporte de estruturas e demais áreas de conhecimento e pesquisa da PUCRS.',
-    items: [
-      { name: 'Techpark Building', detail: 'Torre de escritórios com salas e andares corporativos.' },
-      { name: 'Laboratórios', detail: 'Espaços equipados para pesquisa aplicada e P&D.' },
-      { name: 'Auditórios', detail: 'Capacidade para grandes eventos e conferências.' },
-      { name: 'Espaços colaborativos', detail: 'Salas de reunião, coworking e áreas de descompressão.' },
-      { name: 'Datacenter', detail: 'Infraestrutura de alta disponibilidade e segurança.' },
-      { name: 'Área verde', detail: 'Jardins e espaços de convivência integrados ao campus.' },
-    ],
-    cta: 'Ver infraestrutura',
-  },
-  programas: {
-    title: 'Talentos e Futuros',
-    description:
-      'Pessoas são o centro da inovação. Por aqui, desenvolvemos talentos em empreendedorismo, inovação, tecnologia e criatividade.',
-    items: [
-      { name: 'Residência', detail: 'Instalação permanente de empresas no parque.' },
-      { name: 'Aceleração', detail: 'Mentorias, conexões e acesso a recursos para startups.' },
-      { name: 'Soft Landing', detail: 'Entrada facilitada para empresas estrangeiras no Brasil.' },
-      { name: 'Spin-off Acadêmico', detail: 'Suporte para transformar pesquisa universitária em negócio.' },
-      { name: 'Programa Âncora', detail: 'Modelo para grandes empresas que atuam como âncoras de ecossistema.' },
-    ],
-    cta: 'Ver programas',
-  },
-  sobre: {
-    title: 'Conexões & Experiências',
-    description:
-      'Geramos conexões e experiências entre os membros e parceiros da nossa comunidade global, com foco na geração de negócios.',
-    items: [
-      { name: 'Missão', detail: 'Promover inovação, conhecimento e desenvolvimento sustentável.' },
-      { name: 'Fundação', detail: 'Criado em 2003 como iniciativa da PUCRS em parceria com empresas e governo.' },
-      { name: 'Comunidade', detail: 'Mais de 300 empresas e 10.000 pessoas no ecossistema.' },
-      { name: 'Reconhecimento', detail: 'Certificado pela IASP (International Association of Science Parks).' },
-      { name: 'Localização', detail: 'Campus da PUCRS, Porto Alegre — RS, Brasil.' },
-    ],
-    cta: 'Saiba mais',
-  },
-};
+import { useT } from '@/i18n';
 
 /* ─── Estilos inline ─── */
 const S = {
@@ -197,7 +132,8 @@ interface HubPanelProps {
 
 export function HubPanel({ isOpen, onClose }: HubPanelProps) {
   const selectedHub = useAppStore((s) => s.selectedHub);
-  const content = selectedHub ? HUB_CONTENT[selectedHub] : null;
+  const t = useT();
+  const content = selectedHub ? t.hub[selectedHub] : null;
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -236,7 +172,7 @@ export function HubPanel({ isOpen, onClose }: HubPanelProps) {
           {/* Header */}
           <div style={S.header}>
             <h2 style={S.title}>{content.title}</h2>
-            <button style={S.closeBtn} onClick={onClose} aria-label="Fechar">
+            <button style={S.closeBtn} onClick={onClose} aria-label={t.response.closeTitle}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />

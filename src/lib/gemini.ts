@@ -4,6 +4,8 @@
 // - Chat com streaming (Gemini Flash)
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import type { Locale } from '@/i18n/locales';
+import { localeDisplayName } from './translation';
 
 const apiKey = process.env.GEMINI_API_KEY;
 
@@ -45,9 +47,25 @@ export interface ChatMessage {
 
 /**
  * Monta o system prompt do TecnoPUC com o contexto RAG injetado.
+ *
+ * Quando locale !== 'pt', anexa instrução para o modelo responder no idioma
+ * do usuário, mantendo termos próprios (TecnoPUC, PUCRS, nomes de hubs)
+ * em português. O contexto recuperado do RAG continua em PT — o modelo
+ * traduz naturalmente ao responder.
  */
-export function buildSystemPrompt(context: string, basePrompt: string): string {
-  return `${basePrompt}
+export function buildSystemPrompt(
+  context: string,
+  basePrompt: string,
+  locale: Locale = 'pt',
+): string {
+  const languageInstruction =
+    locale === 'pt'
+      ? ''
+      : `\n\n--- LANGUAGE INSTRUCTION ---
+The user is interacting in ${localeDisplayName(locale)}. Respond ALWAYS in ${localeDisplayName(locale)}, regardless of the language of the context below. Translate the context naturally as you compose your answer. Keep proper nouns unchanged (TecnoPUC, PUCRS, names of hubs and programs).
+--- END LANGUAGE INSTRUCTION ---`;
+
+  return `${basePrompt}${languageInstruction}
 
 --- CONTEXTO PARA RESPOSTA ---
 ${context}

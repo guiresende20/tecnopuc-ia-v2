@@ -5,6 +5,7 @@ import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ResponseNode } from '@/types/app.types';
 import { useTypewriter } from '@/hooks/useTypewriter';
+import { useT } from '@/i18n';
 
 const markdownComponents: Components = {
   a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
@@ -18,6 +19,7 @@ interface ResponseFocusCardProps {
 
 export function ResponseFocusCard({ node, isStreaming, streamingText }: ResponseFocusCardProps) {
   const [copied, setCopied] = useState(false);
+  const t = useT();
 
   const target = isStreaming ? streamingText ?? '' : node.body ?? '';
   const displayed = useTypewriter(target);
@@ -42,13 +44,13 @@ export function ResponseFocusCard({ node, isStreaming, streamingText }: Response
 
       {showActions && (
         <div className="focus-card-actions">
-          <button onClick={handleCopy} className="action-btn" title="Copiar resposta">
+          <button onClick={handleCopy} className="action-btn" title={t.response.copyAnswerTitle}>
             {copied ? (
               <>
                 <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                Copiado
+                {t.response.copied}
               </>
             ) : (
               <>
@@ -56,7 +58,7 @@ export function ResponseFocusCard({ node, isStreaming, streamingText }: Response
                   <rect x="9" y="9" width="13" height="13" rx="2" />
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                 </svg>
-                Copiar
+                {t.response.copy}
               </>
             )}
           </button>

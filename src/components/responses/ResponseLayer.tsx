@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { ResponseFocusCard } from './ResponseFocusCard';
 import type { ResponseNode } from '@/types/app.types';
+import { useT } from '@/i18n';
 
 interface ResponseLayerProps {
   responses: ResponseNode[];
@@ -32,6 +33,7 @@ function ThinkingDots() {
 export function ResponseLayer({ responses, userMessages, isStreaming, streamingText, onClose }: ResponseLayerProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const t = useT();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -42,8 +44,8 @@ export function ResponseLayer({ responses, userMessages, isStreaming, streamingT
   const handleCopyAll = async () => {
     const lines: string[] = [];
     for (let i = 0; i < turns; i++) {
-      if (userMessages[i]) lines.push(`Você: ${userMessages[i].content}`);
-      if (responses[i]?.body) lines.push(`Assistente: ${responses[i].body}`);
+      if (userMessages[i]) lines.push(`${t.response.userPrefix}: ${userMessages[i].content}`);
+      if (responses[i]?.body) lines.push(`${t.response.assistantPrefix}: ${responses[i].body}`);
     }
     try {
       await navigator.clipboard.writeText(lines.join('\n\n'));
@@ -58,11 +60,11 @@ export function ResponseLayer({ responses, userMessages, isStreaming, streamingT
       <div className="chat-header">
         <div className="response-label">
           <div className="response-label-dot" />
-          Assistente TecnoPUC
+          {t.response.assistantBadge}
         </div>
         <div className="header-actions">
           {/* Copiar conversa */}
-          <button className="action-btn" onClick={handleCopyAll} title="Copiar conversa" disabled={isStreaming}>
+          <button className="action-btn" onClick={handleCopyAll} title={t.response.copyConversationTitle} disabled={isStreaming}>
             {copied ? (
               <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <polyline points="20 6 9 17 4 12" />
@@ -75,7 +77,7 @@ export function ResponseLayer({ responses, userMessages, isStreaming, streamingT
             )}
           </button>
           {/* Fechar */}
-          <button className="action-btn close-btn" onClick={onClose} title="Fechar">
+          <button className="action-btn close-btn" onClick={onClose} title={t.response.closeTitle}>
             <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />

@@ -3,6 +3,7 @@
 import { BrandBlock } from './BrandBlock';
 import { AssistantStatus } from './AssistantStatus';
 import { UtilityActions } from './UtilityActions';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface HeaderBarProps {
   onClearConversation: () => void;
@@ -13,7 +14,10 @@ export function HeaderBar({ onClearConversation }: HeaderBarProps) {
     <header className="header-bar">
       <BrandBlock />
       <AssistantStatus />
-      <UtilityActions onClearConversation={onClearConversation} />
+      <div className="header-right">
+        <LanguageSwitcher />
+        <UtilityActions onClearConversation={onClearConversation} />
+      </div>
 
       <style jsx>{`
         .header-bar {
@@ -30,9 +34,17 @@ export function HeaderBar({ onClearConversation }: HeaderBarProps) {
           flex-shrink: 0;
           animation: header-in 0.6s ease both;
         }
+        .header-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
         @media (max-width: 600px) {
           .header-bar {
             padding: 12px 16px;
+          }
+          .header-right {
+            gap: 6px;
           }
         }
       `}</style>

@@ -1,4 +1,5 @@
 import type { ResponseNode } from '@/types/app.types';
+import type { Locale } from '@/i18n/locales';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -13,13 +14,14 @@ export interface ChatStreamResult {
 export async function streamChat(
   messages: ChatMessage[],
   query: string,
+  locale: Locale,
   onChunk: (text: string) => void,
   signal: AbortSignal,
 ): Promise<ResponseNode> {
   const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages, query }),
+    body: JSON.stringify({ messages, query, locale }),
     signal,
   });
 

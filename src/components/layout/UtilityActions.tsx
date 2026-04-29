@@ -1,6 +1,7 @@
 'use client';
 
 import { useAppStore } from '@/store/appStore';
+import { useT } from '@/i18n';
 
 interface UtilityActionsProps {
   onClearConversation: () => void;
@@ -9,18 +10,19 @@ interface UtilityActionsProps {
 export function UtilityActions({ onClearConversation }: UtilityActionsProps) {
   const muted = useAppStore((s) => s.audio.muted);
   const setMuted = useAppStore((s) => s.setMuted);
+  const t = useT();
 
   return (
     <div className="utility-actions">
       {/* Limpar conversa */}
-      <button className="icon-btn" onClick={onClearConversation} title="Limpar conversa">
+      <button className="icon-btn" onClick={onClearConversation} title={t.header.clearConversation}>
         <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
         </svg>
       </button>
 
       {/* Mute/Unmute */}
-      <button className="icon-btn" onClick={() => setMuted(!muted)} title={muted ? 'Ativar voz' : 'Silenciar voz'}>
+      <button className="icon-btn" onClick={() => setMuted(!muted)} title={muted ? t.header.enableVoice : t.header.muteVoice}>
         {muted ? (
           <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" />

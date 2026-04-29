@@ -1,3 +1,5 @@
+import type { Locale } from '@/i18n/locales';
+
 export type ViewportMode = 'desktop' | 'mobile';
 
 export type InteractionMode = 'text' | 'voice' | 'hybrid';
@@ -67,6 +69,7 @@ export interface InputState {
 }
 
 export interface AppState {
+  locale: Locale;
   viewportMode: ViewportMode;
   interactionMode: InteractionMode;
   tState: TState;

@@ -13,6 +13,9 @@ import { ContribuirLayer } from '@/components/contribuir/ContribuirLayer';
 import { streamChat, type ChatMessage } from '@/services/chatService';
 import { GeminiLiveChat, type LiveChatStatus } from '@/lib/gemini-live';
 import type { ResponseNode } from '@/types/app.types';
+import { detectLocale } from '@/i18n/detectLocale';
+import { LOCALES } from '@/i18n/locales';
+import { dictionaries } from '@/i18n';
 
 export function AppShell() {
   useViewportMode();
@@ -21,6 +24,20 @@ export function AppShell() {
   const setSubmitting = useAppStore((s) => s.setSubmitting);
   const showToast = useAppStore((s) => s.showToast);
   const setAudioLevel = useAppStore((s) => s.setAudioLevel);
+  const setLocale = useAppStore((s) => s.setLocale);
+  const locale = useAppStore((s) => s.locale);
+
+  // Detecta locale uma vez no mount (evita hydration mismatch — server sempre renderiza 'pt')
+  useEffect(() => {
+    setLocale(detectLocale());
+  }, [setLocale]);
+
+  // Mantém <html lang> sincronizado com o locale ativo
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = LOCALES[locale].htmlLang;
+    }
+  }, [locale]);
 
   // Text chat state
   const [responses, setResponses] = useState<ResponseNode[]>([]);
@@ -38,13 +55,28 @@ export function AppShell() {
   // Contribuir layer
   const [contribuirOpen, setContribuirOpen] = useState(false);
 
-  // Pre-fetch voice context on mount to cut latency on first click
+  // Pre-fetch voice context sempre que locale mudar (e no mount).
+  // Cache fica casado com o locale atual; trocar idioma invalida e refaz.
   useEffect(() => {
-    fetch('/api/voice-context')
+    voiceContextCache.current = null;
+    fetch(`/api/voice-context?locale=${locale}`)
       .then((r) => r.json())
       .then((data) => { voiceContextCache.current = data; })
       .catch(() => {});
-  }, []);
+  }, [locale]);
+
+  // Se o usuário trocar o idioma com a voz já ativa, encerra a sessão —
+  // a sessão atual está atada ao systemInstruction antigo (idioma anterior).
+  useEffect(() => {
+    if (liveChatRef.current) {
+      liveChatRef.current.stop();
+      liveChatRef.current = null;
+      setVoiceStatus('disconnected');
+      setAudioLevel(0);
+    }
+    // intencional: só reage a mudança de locale, não às refs/setters
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
 
   // Sync voice status → tState
   useEffect(() => {
@@ -78,7 +110,7 @@ export function AppShell() {
     try {
       const context =
         voiceContextCache.current ??
-        (await fetch('/api/voice-context').then((r) => r.json()));
+        (await fetch(`/api/voice-context?locale=${locale}`).then((r) => r.json()));
       // Token efêmero é single-use e expira em 60s pra iniciar sessão nova — sempre
       // descartar após 1 sessão e buscar fresco na próxima vez.
       voiceContextCache.current = null;
@@ -122,7 +154,7 @@ export function AppShell() {
           onError: (err) => {
             console.error('[AppShell Voice]', err);
             setVoiceStatus('error');
-            showToast('error', 'Erro na conversa por voz. Tente novamente.');
+            showToast('error', dictionaries[locale].toasts.voiceTurnError);
           },
         },
         systemInstruction,
@@ -134,9 +166,9 @@ export function AppShell() {
       console.error('[AppShell Voice] start failed:', err);
       setVoiceStatus('error');
       liveChatRef.current = null;
-      showToast('error', 'Não foi possível iniciar o modo voz. Verifique sua conexão.');
+      showToast('error', dictionaries[locale].toasts.voiceStartError);
     }
-  }, []);
+  }, [locale, showToast, setAudioLevel]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -167,6 +199,7 @@ export function AppShell() {
       const node = await streamChat(
         messagesForApi,
         query,
+        locale,
         (text) => {
           setStreamingText(text);
           setTState('responding');
@@ -182,15 +215,16 @@ export function AppShell() {
         setTState('stable');
       } else {
         console.error('[AppShell] Chat error:', err);
+        const dict = dictionaries[locale];
         const errorNode: ResponseNode = {
           id: `err_${Date.now()}`,
           origin: 'text',
           type: 'primary',
-          body: 'Desculpe, ocorreu um erro. Tente novamente.',
+          body: dict.response.genericError,
         };
         setResponses((prev) => [...prev, errorNode]);
         setTState('error');
-        showToast('error', 'Erro ao buscar resposta. Tente novamente.');
+        showToast('error', dict.toasts.chatError);
         setTimeout(() => setTState('idle'), 3000);
       }
     } finally {
@@ -198,7 +232,7 @@ export function AppShell() {
       setStreamingText('');
       setSubmitting(false);
     }
-  }, [isStreaming, setTState, setSubmitting]);
+  }, [isStreaming, setTState, setSubmitting, locale, showToast]);
 
   const handleStop = useCallback(() => {
     abortRef.current?.abort();

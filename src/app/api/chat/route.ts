@@ -6,6 +6,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateEmbedding, streamChat, buildSystemPrompt, ChatMessage } from '@/lib/gemini';
 import { matchDocuments, getSettings } from '@/lib/supabase';
 import { chatLimiter, enforceLimit, getClientIp } from '@/lib/rate-limit';
+import { translateToPortuguese } from '@/lib/translation';
+import { isLocale, DEFAULT_LOCALE, type Locale } from '@/i18n/locales';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -20,7 +22,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { messages, query }: { messages: ChatMessage[]; query: string } = body;
+    const { messages, query, locale: rawLocale }: { messages: ChatMessage[]; query: string; locale?: unknown } = body;
+    const locale: Locale = isLocale(rawLocale) ? rawLocale : DEFAULT_LOCALE;
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json({ error: 'query é obrigatório.' }, { status: 400 });
@@ -58,17 +61,21 @@ export async function POST(req: NextRequest) {
     // Obter as configs dinâmicas em alta resolução do Admin DB
     const settings = await getSettings();
 
-    // 1. Gerar embedding da query do usuário
-    const queryEmbedding = await generateEmbedding(query);
+    // 1. Traduzir query para PT-BR se necessário (recall RAG é melhor em PT,
+    //    pois a base de conhecimento está em português). No-op para locale='pt'.
+    const queryForEmbedding = await translateToPortuguese(query, locale);
 
-    // 2. Buscar os chunks mais relevantes no Supabase (pgvector) dinamicamente
+    // 2. Gerar embedding da query (já em PT)
+    const queryEmbedding = await generateEmbedding(queryForEmbedding);
+
+    // 3. Buscar os chunks mais relevantes no Supabase (pgvector) dinamicamente
     const relevantDocs = await matchDocuments(
-      queryEmbedding, 
-      settings.matchCount, 
+      queryEmbedding,
+      settings.matchCount,
       settings.similarityThreshold
     );
 
-    // 3. Montar o contexto com os documentos recuperados
+    // 4. Montar o contexto com os documentos recuperados
     let contextText: string;
     if (relevantDocs.length === 0) {
       contextText = 'Nenhuma informação específica encontrada na base de conhecimento.';
@@ -81,18 +88,18 @@ export async function POST(req: NextRequest) {
         .join('\n\n---\n\n');
     }
 
-    // 4. Montar o system prompt enriquecido com o contexto RAG
-    const systemPrompt = buildSystemPrompt(contextText, settings.system_prompt);
+    // 5. Montar o system prompt enriquecido com o contexto RAG + instrução de idioma
+    const systemPrompt = buildSystemPrompt(contextText, settings.system_prompt, locale);
 
-    // 5. Iniciar streaming da resposta do Gemini com a temperatura paramétrica e tokens max
+    // 6. Iniciar streaming da resposta do Gemini com a temperatura paramétrica e tokens max
     const stream = await streamChat(
-      messages, 
-      systemPrompt, 
-      settings.temperature, 
+      messages,
+      systemPrompt,
+      settings.temperature,
       settings.maxTokens
     );
 
-    // 6. Retornar o stream para o frontend
+    // 7. Retornar o stream para o frontend
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',

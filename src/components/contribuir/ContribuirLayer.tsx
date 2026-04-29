@@ -6,6 +6,7 @@
 
 import { useEffect } from 'react';
 import { ContribuirForm } from './ContribuirForm';
+import { useT } from '@/i18n';
 
 interface Props {
   open: boolean;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function ContribuirLayer({ open, onClose }: Props) {
+  const t = useT();
   useEffect(() => {
     if (!open) return;
     function handleKey(e: KeyboardEvent) {
@@ -40,15 +42,15 @@ export function ContribuirLayer({ open, onClose }: Props) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Contribuir com a base"
+      aria-label={t.contribuir.layerTitle}
     >
       <div className="contrib-card" onClick={(e) => e.stopPropagation()}>
         <div className="contrib-header">
           <div className="contrib-label">
             <div className="contrib-label-dot" />
-            Contribuir com a base
+            {t.contribuir.layerTitle}
           </div>
-          <button className="contrib-action-btn close-btn" onClick={onClose} title="Fechar (Esc)">
+          <button className="contrib-action-btn close-btn" onClick={onClose} title={t.contribuir.closeTitle}>
             <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -57,11 +59,7 @@ export function ContribuirLayer({ open, onClose }: Props) {
         </div>
 
         <div className="contrib-body">
-          <p className="contrib-intro">
-            Compartilhe um conhecimento sobre o TecnoPUC. Toda contribuição passa
-            por validação de e-mail e revisão de um administrador antes de entrar
-            na base de conhecimento.
-          </p>
+          <p className="contrib-intro">{t.contribuir.layerIntro}</p>
           <ContribuirForm />
         </div>
       </div>

@@ -8,6 +8,7 @@ import { getSettings, supabase } from '@/lib/supabase';
 import { buildSystemPrompt } from '@/lib/gemini';
 import { voiceContextLimiter, enforceLimit, getClientIp } from '@/lib/rate-limit';
 import { GoogleGenAI } from '@google/genai';
+import { isLocale, DEFAULT_LOCALE, type Locale } from '@/i18n/locales';
 
 export const runtime = 'nodejs';
 
@@ -37,6 +38,9 @@ export async function GET(req: NextRequest) {
   const limited = await enforceLimit(voiceContextLimiter, getClientIp(req));
   if (limited) return limited;
 
+  const localeParam = req.nextUrl.searchParams.get('locale');
+  const locale: Locale = isLocale(localeParam) ? localeParam : DEFAULT_LOCALE;
+
   try {
     // 1. Monta systemInstruction com contexto RAG
     const { data, error } = await supabase
@@ -62,7 +66,7 @@ export async function GET(req: NextRequest) {
         : 'Base de conhecimento ainda não indexada.';
 
     const settings = await getSettings();
-    const systemInstruction = buildSystemPrompt(context, settings.system_prompt);
+    const systemInstruction = buildSystemPrompt(context, settings.system_prompt, locale);
 
     // 2. Minta token efêmero — só agora, depois de tudo mais ter dado certo.
     const ephemeralToken = await mintEphemeralToken();
@@ -78,6 +82,7 @@ export async function GET(req: NextRequest) {
       const fallbackInstruction = buildSystemPrompt(
         'Base de conhecimento temporariamente indisponível. Responda de forma geral sobre o TecnoPUC.',
         fallbackSettings.system_prompt,
+        locale,
       );
       const ephemeralToken = await mintEphemeralToken();
       return NextResponse.json({

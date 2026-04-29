@@ -3,7 +3,8 @@
 import { useEffect, useRef } from 'react';
 import { useAppStore } from '@/store/appStore';
 import { RADIAL_ITEMS } from './radialMenu.config';
-import type { RadialItem } from '@/types/app.types';
+import type { HubId } from '@/types/app.types';
+import { useT } from '@/i18n';
 
 // Distance from T center to button edges
 const H_GAP = 145; // px – left/right inner edge
@@ -49,6 +50,7 @@ export function TRadialMenu() {
   const setSelectedHub = useAppStore((s) => s.setSelectedHub);
   const togglePanel = useAppStore((s) => s.togglePanel);
   const containerRef = useRef<HTMLDivElement>(null);
+  const t = useT();
 
   useEffect(() => {
     if (!radialOpen) return;
@@ -73,8 +75,8 @@ export function TRadialMenu() {
     return () => document.removeEventListener('keydown', handler);
   }, [setRadialOpen]);
 
-  const handleSelect = (item: RadialItem) => {
-    setSelectedHub(item.id);
+  const handleSelect = (id: HubId) => {
+    setSelectedHub(id);
     togglePanel('hub');
     setRadialOpen(false);
   };
@@ -82,7 +84,7 @@ export function TRadialMenu() {
   return (
     <div
       ref={containerRef}
-      aria-label="Menu de navegação"
+      aria-label={t.radial.ariaLabel}
       style={{
         position: 'absolute',
         inset: 0,
@@ -103,10 +105,11 @@ export function TRadialMenu() {
           <div style={{ animation: radialOpen ? `orbit-appear 0.3s ease ${i * 0.06}s both` : 'none' }}>
             <button
               className="orbit-btn"
-              onClick={() => handleSelect(item)}
+              onClick={() => handleSelect(item.id)}
+              title={t.radial[item.id].description}
             >
               <span className="orbit-dot" />
-              {item.label}
+              {t.radial[item.id].label}
             </button>
           </div>
         </div>

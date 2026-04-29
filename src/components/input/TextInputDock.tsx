@@ -2,6 +2,7 @@
 
 import { useRef, useCallback, KeyboardEvent } from 'react';
 import { useAppStore } from '@/store/appStore';
+import { useT } from '@/i18n';
 import type { LiveChatStatus } from '@/lib/gemini-live';
 
 interface TextInputDockProps {
@@ -13,20 +14,21 @@ interface TextInputDockProps {
   onVoiceInterrupt: () => void;
 }
 
-const VOICE_LABEL: Partial<Record<LiveChatStatus, string>> = {
-  connecting: 'Conectando...',
-  connected:  'Conectado',
-  listening:  'Ouvindo...',
-  speaking:   'Falando...',
-  error:      'Erro de voz',
-};
-
 export function TextInputDock({ onSend, onStop, disabled, voiceStatus, onVoiceToggle, onVoiceInterrupt }: TextInputDockProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const value = useAppStore((s) => s.input.value);
   const submitting = useAppStore((s) => s.input.submitting);
   const setInputValue = useAppStore((s) => s.setInputValue);
   const setTState = useAppStore((s) => s.setTState);
+  const t = useT();
+
+  const VOICE_LABEL: Partial<Record<LiveChatStatus, string>> = {
+    connecting: t.input.voiceConnecting,
+    connected:  t.input.voiceConnected,
+    listening:  t.input.voiceListening,
+    speaking:   t.input.voiceSpeaking,
+    error:      t.input.voiceError,
+  };
 
   const handleSend = useCallback(() => {
     const trimmed = value.trim();
@@ -57,13 +59,13 @@ export function TextInputDock({ onSend, onStop, disabled, voiceStatus, onVoiceTo
         <input
           ref={inputRef}
           className="input-field"
-          placeholder={voiceActive ? 'Modo voz ativo — fale ao microfone...' : 'Pergunte sobre o TecnoPUC...'}
+          placeholder={voiceActive ? t.input.placeholderVoiceActive : t.input.placeholder}
           value={value}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={handleFocus}
           disabled={disabled || voiceActive}
-          aria-label="Campo de mensagem"
+          aria-label={t.input.fieldAriaLabel}
         />
 
         {/* Mic button — inside the input field */}
@@ -71,8 +73,8 @@ export function TextInputDock({ onSend, onStop, disabled, voiceStatus, onVoiceTo
           className={`input-mic-btn ${voiceActive ? 'voice-active' : ''} ${voiceStatus === 'listening' ? 'listening' : ''} ${voiceStatus === 'speaking' ? 'speaking' : ''}`}
           onClick={onVoiceToggle}
           disabled={voiceConnecting}
-          title={voiceActive ? 'Encerrar conversa por voz' : 'Iniciar conversa por voz'}
-          aria-label={voiceActive ? 'Encerrar voz' : 'Ativar voz'}
+          title={voiceActive ? t.input.micDeactivateTitle : t.input.micActivateTitle}
+          aria-label={voiceActive ? t.input.micDeactivateAriaLabel : t.input.micActivateAriaLabel}
         >
           {voiceActive ? (
             /* Stop icon when active */
@@ -102,26 +104,26 @@ export function TextInputDock({ onSend, onStop, disabled, voiceStatus, onVoiceTo
         <button
           onClick={onVoiceInterrupt}
           className="interrupt-btn"
-          aria-label="Interromper fala do assistente"
-          title="Interromper fala"
+          aria-label={t.input.interruptAriaLabel}
+          title={t.input.interruptTitle}
         >
           <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
             <rect x="1" y="1" width="10" height="10" rx="2" />
           </svg>
-          <span>Interromper</span>
+          <span>{t.input.interrupt}</span>
         </button>
       )}
 
       {/* Send / Stop button */}
       {!voiceActive && (
         isStopMode ? (
-          <button onClick={onStop} className="send-btn send-btn--stop" aria-label="Parar geração" title="Interromper">
+          <button onClick={onStop} className="send-btn send-btn--stop" aria-label={t.input.stopAriaLabel} title={t.input.stopTitle}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
               <rect x="1" y="1" width="10" height="10" rx="2" />
             </svg>
           </button>
         ) : (
-          <button onClick={handleSend} disabled={!canSend} className="send-btn" aria-label="Enviar mensagem">
+          <button onClick={handleSend} disabled={!canSend} className="send-btn" aria-label={t.input.sendAriaLabel}>
             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
               <line x1="22" y1="2" x2="11" y2="13" />
               <polygon points="22 2 15 22 11 13 2 9 22 2" />

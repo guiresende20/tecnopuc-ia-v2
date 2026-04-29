@@ -1,23 +1,12 @@
 'use client';
 
 import { useAppStore } from '@/store/appStore';
-import type { TState } from '@/types/app.types';
-
-const STATE_LABELS: Record<TState, string> = {
-  idle:        'Assistente pronto',
-  hover:       'Assistente pronto',
-  listening:   'Ouvindo...',
-  processing:  'Processando...',
-  responding:  'Respondendo...',
-  speaking:    'Falando...',
-  stable:      'Assistente pronto',
-  uncertainty: 'Aguardando...',
-  error:       'Erro',
-};
+import { useT } from '@/i18n';
 
 export function AssistantStatus() {
   const tState = useAppStore((s) => s.tState);
-  const label = STATE_LABELS[tState];
+  const t = useT();
+  const label = t.status[tState];
 
   return (
     <div className="status-badge">

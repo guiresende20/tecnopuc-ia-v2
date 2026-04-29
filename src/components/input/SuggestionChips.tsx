@@ -1,10 +1,6 @@
 'use client';
 
-const SUGGESTIONS = [
-  'O que é o TecnoPUC?',
-  'Quais são os hubs?',
-  'Como participar?',
-];
+import { useT } from '@/i18n';
 
 interface SuggestionChipsProps {
   onSelect: (text: string) => void;
@@ -12,9 +8,10 @@ interface SuggestionChipsProps {
 }
 
 export function SuggestionChips({ onSelect, disabled }: SuggestionChipsProps) {
+  const t = useT();
   return (
     <div className="chips-row">
-      {SUGGESTIONS.map((s, i) => (
+      {t.suggestions.items.map((s, i) => (
         <button
           key={s}
           className="chip"

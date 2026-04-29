@@ -1,26 +1,12 @@
-import type { RadialItem } from '@/types/app.types';
+import type { HubId } from '@/types/app.types';
 
-export const RADIAL_ITEMS: RadialItem[] = [
-  {
-    id: 'hubs',
-    label: 'Negócios e Inovação',
-    description: 'Empresas, startups e ecossistema de inovação',
-  },
-  {
-    id: 'estrutura',
-    label: 'P&D e Design',
-    description: 'Pesquisa, desenvolvimento e design aplicado',
-  },
-  {
-    id: 'programas',
-    label: 'Talentos e Futuros',
-    description: 'Formação, aceleração e desenvolvimento de pessoas',
-  },
-  {
-    id: 'sobre',
-    label: 'Conexões e\nExperiências',
-    description: 'Parcerias, eventos e vivências no parque',
-  },
+// Apenas a ordem fixa dos hubs no menu radial — labels e descrições vêm do
+// dicionário i18n em runtime via useT().
+export const RADIAL_ITEMS: { id: HubId }[] = [
+  { id: 'hubs' },
+  { id: 'estrutura' },
+  { id: 'programas' },
+  { id: 'sobre' },
 ];
 
 // Ângulo inicial para o primeiro item (graus, sentido horário a partir do topo)

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useT } from '@/i18n';
 
 const STORAGE_KEY = 'analytics_consent';
 const CONSENT_EVENT = 'analytics-consent-changed';
@@ -21,6 +22,7 @@ function writeConsent(v: ConsentValue) {
 }
 
 export function CookieBanner() {
+  const t = useT();
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -46,7 +48,7 @@ export function CookieBanner() {
           transition={{ duration: 0.28, ease: 'easeOut' }}
           role="dialog"
           aria-live="polite"
-          aria-label="Aviso de cookies"
+          aria-label={t.cookieBanner.ariaLabel}
           style={{
             position: 'fixed',
             left: '24px',
@@ -79,12 +81,10 @@ export function CookieBanner() {
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <strong style={{ fontSize: '14px', color: '#0099ff', letterSpacing: '0.02em' }}>
-                Cookies analíticos
+                {t.cookieBanner.title}
               </strong>
               <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.55, color: '#cbd5e1' }}>
-                Usamos Google Analytics para entender como o assistente é utilizado e melhorar a experiência.
-                Ao recusar, o assistente continua funcionando normalmente — apenas deixaremos de coletar dados anônimos de uso.
-                Sua escolha fica salva neste navegador.
+                {t.cookieBanner.body}
               </p>
             </div>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
@@ -112,7 +112,7 @@ export function CookieBanner() {
                   e.currentTarget.style.borderColor = 'rgba(203, 213, 225, 0.25)';
                 }}
               >
-                Recusar
+                {t.cookieBanner.decline}
               </button>
               <button
                 type="button"
@@ -138,7 +138,7 @@ export function CookieBanner() {
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                Aceitar
+                {t.cookieBanner.accept}
               </button>
             </div>
           </div>

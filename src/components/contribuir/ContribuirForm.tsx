@@ -5,6 +5,7 @@
 // Usado tanto na página /contribuir (fallback) quanto dentro do ContribuirLayer.
 
 import { useState, FormEvent } from 'react';
+import { useT } from '@/i18n';
 
 const MIN_LEN = 50;
 const MAX_LEN = 5000;
@@ -16,6 +17,7 @@ interface Props {
 type Mensagem = { tipo: 'sucesso' | 'erro'; texto: string } | null;
 
 export function ContribuirForm({ onSuccess }: Props) {
+  const t = useT();
   const [conteudo, setConteudo] = useState('');
   const [email, setEmail] = useState('');
   const [categoria, setCategoria] = useState('');
@@ -47,11 +49,7 @@ export function ContribuirForm({ onSuccess }: Props) {
       });
 
       if (res.ok) {
-        setMensagem({
-          tipo: 'sucesso',
-          texto:
-            'Pronto! Verifique seu e-mail para confirmar a contribuição (link válido por 1h).',
-        });
+        setMensagem({ tipo: 'sucesso', texto: t.contribuir.success });
         setConteudo('');
         setEmail('');
         setCategoria('');
@@ -60,13 +58,11 @@ export function ContribuirForm({ onSuccess }: Props) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
         setMensagem({
           tipo: 'erro',
-          texto:
-            data.error ||
-            'Não foi possível enviar agora. Tente novamente em instantes.',
+          texto: data.error || t.contribuir.errorGeneric,
         });
       }
     } catch {
-      setMensagem({ tipo: 'erro', texto: 'Erro de conexão. Tente novamente.' });
+      setMensagem({ tipo: 'erro', texto: t.contribuir.errorConnection });
     } finally {
       setEnviando(false);
     }
@@ -88,7 +84,7 @@ export function ContribuirForm({ onSuccess }: Props) {
 
       <div className="contrib-field">
         <label htmlFor="conteudo" className="contrib-label">
-          Sua contribuição
+          {t.contribuir.contentLabel}
           <span className="contrib-counter">
             {tamanho}/{MAX_LEN}
           </span>
@@ -98,13 +94,13 @@ export function ContribuirForm({ onSuccess }: Props) {
           rows={8}
           value={conteudo}
           onChange={(e) => setConteudo(e.target.value)}
-          placeholder="Compartilhe um conhecimento sobre o TecnoPUC — uma empresa, evento, programa, fato relevante..."
+          placeholder={t.contribuir.contentPlaceholder}
           className="contrib-input contrib-textarea"
           disabled={enviando}
         />
         {tamanho > 0 && tamanho < MIN_LEN && (
           <p className="contrib-warning">
-            Mínimo de {MIN_LEN} caracteres ({MIN_LEN - tamanho} restantes).
+            {t.contribuir.minCharsWarning(MIN_LEN - tamanho, MIN_LEN)}
           </p>
         )}
       </div>
@@ -112,30 +108,30 @@ export function ContribuirForm({ onSuccess }: Props) {
       <div className="contrib-row">
         <div className="contrib-field">
           <label htmlFor="email" className="contrib-label">
-            E-mail <span className="contrib-required">*</span>
+            {t.contribuir.emailLabel} <span className="contrib-required">{t.contribuir.requiredMark}</span>
           </label>
           <input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="voce@exemplo.com"
+            placeholder={t.contribuir.emailPlaceholder}
             required
             className="contrib-input"
             disabled={enviando}
           />
-          <p className="contrib-hint">Usado apenas para confirmar a contribuição.</p>
+          <p className="contrib-hint">{t.contribuir.emailHint}</p>
         </div>
         <div className="contrib-field">
           <label htmlFor="categoria" className="contrib-label">
-            Categoria <span className="contrib-optional">(opcional)</span>
+            {t.contribuir.categoryLabel} <span className="contrib-optional">{t.contribuir.categoryOptional}</span>
           </label>
           <input
             id="categoria"
             type="text"
             value={categoria}
             onChange={(e) => setCategoria(e.target.value)}
-            placeholder="Empresa, evento, programa..."
+            placeholder={t.contribuir.categoryPlaceholder}
             maxLength={80}
             className="contrib-input"
             disabled={enviando}
@@ -150,7 +146,7 @@ export function ContribuirForm({ onSuccess }: Props) {
       )}
 
       <button type="submit" disabled={!podeEnviar} className="contrib-submit">
-        {enviando ? 'Enviando...' : 'Enviar contribuição'}
+        {enviando ? t.contribuir.submitting : t.contribuir.submit}
       </button>
 
       <style jsx>{`

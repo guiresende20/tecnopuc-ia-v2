@@ -7,6 +7,8 @@ import type {
   ViewportMode,
   ResponseNode,
 } from '@/types/app.types';
+import { DEFAULT_LOCALE, type Locale } from '@/i18n/locales';
+import { persistLocale } from '@/i18n/detectLocale';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -17,6 +19,7 @@ export interface Toast {
 }
 
 interface AppActions {
+  setLocale: (locale: Locale) => void;
   setAudioLevel: (level: number) => void;
   setViewportMode: (mode: ViewportMode) => void;
   setInteractionMode: (mode: InteractionMode) => void;
@@ -43,6 +46,7 @@ interface AppActions {
 const initialState: AppState & { toasts: Toast[]; audioLevel: number } = {
   toasts: [],
   audioLevel: 0,
+  locale: DEFAULT_LOCALE,
   viewportMode: 'desktop',
   interactionMode: 'text',
   tState: 'idle',
@@ -76,6 +80,10 @@ const initialState: AppState & { toasts: Toast[]; audioLevel: number } = {
 export const useAppStore = create<AppState & { toasts: Toast[]; audioLevel: number } & AppActions>((set) => ({
   ...initialState,
 
+  setLocale: (locale) => {
+    persistLocale(locale);
+    set({ locale });
+  },
   setAudioLevel: (level) => set({ audioLevel: level }),
   setViewportMode: (mode) => set({ viewportMode: mode }),
   setInteractionMode: (mode) => set({ interactionMode: mode }),

@@ -1,12 +1,15 @@
 'use client';
 
+import { useT } from '@/i18n';
+
 export function BrandBlock() {
+  const t = useT();
   return (
     <div className="brand-block">
       <div className="logo-mark">T</div>
       <div className="brand-text">
         <div className="brand-name">TecnoPUC</div>
-        <div className="brand-sub">Parque Tecnológico · PUCRS</div>
+        <div className="brand-sub">{t.header.brandSub}</div>
       </div>
 
       <style jsx>{`
