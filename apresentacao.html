@@ -964,6 +964,12 @@
         <h3>Base curada</h3>
         <p>13 documentos cobrindo TecnoPUC, ecossistema, hubs, empresas residentes, programas, ambientes, cases e infraestrutura. Re-ingestão por CLI.</p>
       </article>
+
+      <article class="card" data-detail="multilingue">
+        <div class="card-icon">⌖</div>
+        <h3>Multilíngue (PT / EN / ES / ZH)</h3>
+        <p>UI, chat com RAG e voz disponíveis em português, inglês, espanhol e chinês simplificado. Switcher no header com persistência local; pergunta é traduzida para PT antes do embedding e a resposta sai no idioma do usuário.</p>
+      </article>
     </div>
   </section>
 
@@ -1301,6 +1307,12 @@
         <h3>Suíte de testes automatizados</h3>
         <p>Hoje a verificação é manual. Regressão crítica em RAG, fluxo de contribuições e moderação merece cobertura automatizada antes do projeto ganhar mais autores.</p>
       </article>
+
+      <article class="card" data-detail="chaves-corporativas" style="border-color: rgba(234,152,47,0.45);">
+        <span class="tag">Crítico</span>
+        <h3>Chaves de API na conta corporativa</h3>
+        <p>Hoje as chaves de Gemini, Supabase, Upstash, Resend e Netlify estão em contas pessoais. Antes de operar em produção institucional, migrar tudo para contas corporativas do TecnoPUC — billing, ownership, continuidade e auditoria sob a instituição.</p>
+      </article>
     </div>
   </section>
 
@@ -1348,12 +1360,6 @@
         <span class="tag cyan">Dados</span>
         <h3>Analytics de gaps na base</h3>
         <p>Painel admin mostra perguntas frequentes não respondidas pela base — direciona o esforço de curadoria para o que realmente impacta o usuário.</p>
-      </article>
-
-      <article class="card" data-detail="multilingue">
-        <span class="tag purple">Alcance</span>
-        <h3>Multilíngue (EN / ES)</h3>
-        <p>TecnoPUC recebe delegações internacionais. Resposta automática no idioma da pergunta, com base de conhecimento traduzida progressivamente.</p>
       </article>
 
       <article class="card" data-detail="feedback-inline">
@@ -1749,6 +1755,19 @@
       <p>Stack candidata: Vitest para unitários, Playwright para E2E.</p>`,
       why: `Conforme o projeto ganha mais autores e mais features, <strong>regressão fica inevitável</strong>. Uma mudança no painel admin pode quebrar a moderação de contribuições sem que ninguém perceba. Testes automatizados são a rede de segurança que permite escalar o número de pessoas mexendo no código sem perder qualidade — e dão confiança para o time da PUCRS aceitar contribuições externas no futuro.`
     },
+    'chaves-corporativas': {
+      title: 'Chaves de API na conta corporativa',
+      body: `<p>Hoje todas as chaves vivem em <strong>contas pessoais</strong> de quem desenvolveu o projeto. Antes de operar em produção institucional sob a marca TecnoPUC, migrar para contas corporativas:</p>
+      <ul>
+        <li><strong>Google Gemini API</strong> — <code>GEMINI_API_KEY</code>: chat, embeddings, voz Live e tradução de queries multilíngues. Migrar para projeto Google Cloud da PUCRS com billing institucional.</li>
+        <li><strong>Supabase</strong> — <code>SUPABASE_URL</code> + <code>SUPABASE_SERVICE_ROLE_KEY</code>: banco vetorial, contribuições, settings, multi-admin. Mover projeto para organização corporativa ou recriar e migrar dados.</li>
+        <li><strong>Upstash Redis</strong> — <code>UPSTASH_REDIS_REST_URL</code> + <code>UPSTASH_REDIS_REST_TOKEN</code>: rate limit no chat, admin, contribuições e ingest. Recriar instância na conta da instituição.</li>
+        <li><strong>Resend</strong> — <code>RESEND_API_KEY</code> + domínio verificado para <code>EMAIL_FROM</code>. Casa diretamente com a pendência de domínio próprio.</li>
+        <li><strong>Netlify</strong> — hosting e deploy. Transferir ownership do site ou recriar deploy sob equipe TecnoPUC.</li>
+      </ul>
+      <p>Em paralelo, padronizar onde os segredos vivem em produção (Netlify env vars), quem tem acesso (acesso compartimentado), e como são rotacionados.</p>`,
+      why: `É <strong>governança e continuidade institucional</strong>. Enquanto as chaves estão em contas pessoais, três riscos coexistem: (1) <strong>billing</strong> — qualquer custo de Gemini, Supabase ou Upstash é cobrado de pessoa física, sem rastreabilidade orçamentária; (2) <strong>continuidade</strong> — se a pessoa sair, a conta vai junto, e o serviço fica refém de uma transferência que pode nunca acontecer; (3) <strong>compliance e auditoria</strong> — uma instituição pública precisa que dados de visitantes, e-mails de contribuidores e logs de uso vivam sob ownership institucional, não pessoal. Migrar antes de abrir para tráfego real é mais barato do que migrar com produção rodando.`
+    },
 
     // ===== Slide 8 — Visão de futuro =====
     'empresas-network': {
@@ -1776,10 +1795,11 @@
       why: `Produto <strong>data-driven</strong> em vez de intuitivo. Em vez de a equipe de comunicação gastar tempo escrevendo conteúdo que ninguém pergunta, ela vê em painel "estas 20 perguntas da última semana ficaram sem resposta boa" e endereça especificamente. <strong>Otimiza o ROI de cada hora investida em curadoria da base</strong> — recurso escasso em qualquer time institucional.`
     },
     multilingue: {
-      title: 'Multilíngue (EN / ES)',
-      body: `<p>O TecnoPUC recebe regularmente <strong>delegações internacionais</strong> — investidores, universidades parceiras, programas de cooperação. A visão é detectar o idioma da pergunta e responder no mesmo idioma, com a base de conhecimento <strong>traduzida progressivamente</strong> para inglês e espanhol.</p>
-      <p>Início pelos documentos institucionais mais visitados (visão geral do parque, hubs, residência). Documentos não traduzidos voltam ao português com aviso.</p>`,
-      why: `<strong>Posiciona o parque como interlocutor global</strong>. Hoje uma delegação precisa de tradutor humano ou material institucional impresso em outro idioma. Um chatbot multilíngue 24/7 atende qualquer visita <strong>sem custo adicional por evento</strong> e mantém a mesma qualidade de informação no idioma do interlocutor — algo difícil de garantir com tradutores ad-hoc.`
+      title: 'Multilíngue (PT / EN / ES / ZH)',
+      body: `<p>Suporte ponta-a-ponta para <strong>português, inglês, espanhol e chinês simplificado</strong>. Switcher no header (canto superior direito) com nomes nativos, persistência em <code>localStorage</code> e detecção automática de <code>navigator.language</code> na primeira visita. Toda a UI traduzida — header, sugestões, input, hubs, contribuir, cookie banner — via dicionários tipados em <code>src/i18n/</code>.</p>
+      <p>O <strong>RAG é multilíngue</strong> sem precisar duplicar a base: a pergunta do usuário é traduzida para PT-BR via <strong>Gemini Flash</strong> antes do embedding (mantendo nomes próprios como TecnoPUC, PUCRS), o recall vetorial usa os mesmos chunks PT já indexados, e o system prompt instrui o modelo a responder no idioma do usuário. Cache LRU em memória reduz custo em queries repetidas.</p>
+      <p>O <strong>modo voz</strong> recebe o mesmo system prompt traduzido via <code>/api/voice-context?locale=</code>; o <code>gemini-2.5-flash-native-audio-latest</code> é multilíngue nativo. Trocar de idioma com sessão de voz ativa encerra a sessão atual — basta reabrir para iniciar com o idioma novo.</p>`,
+      why: `<strong>Posiciona o parque como interlocutor global</strong>. TecnoPUC recebe regularmente delegações internacionais — investidores, universidades parceiras, programas de cooperação. Um chatbot multilíngue 24/7 atende qualquer visita <strong>sem custo adicional por evento</strong>, sem tradutor humano, e mantém a mesma qualidade de informação no idioma do interlocutor. A escolha por traduzir a query (em vez da base inteira) <strong>preserva a curadoria PT</strong> como fonte única da verdade — o conteúdo institucional não fica desatualizado em uma versão e atualizado em outra.`
     },
     'feedback-inline': {
       title: 'Feedback inline na resposta',
