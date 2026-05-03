@@ -39,7 +39,7 @@ src/
   components/
     layout/AppShell.tsx               # Monta tudo: chat + ContribuirButton + ContribuirLayer
     stage/                            # T 3D, background, feedback layer
-    t-core/                           # TCore3D + máquina de estados
+    t-core/                           # TCore3D (Canvas r3f) + TMesh (GLB) + TCoreFallback (SVG) + TStateMachine
     radial-menu/                      # Menu radial dos hubs
     responses/                        # ResponseLayer + ResponseFocusCard (modal de chat)
     input/                            # InputZone, TextInputDock, suggestion chips, voice

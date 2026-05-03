@@ -23,6 +23,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link
+          rel="preload"
+          as="fetch"
+          href="/assets/t-3d/t-core.glb"
+          type="model/gltf-binary"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         {children}
         <CookieBanner />

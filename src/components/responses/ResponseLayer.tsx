@@ -31,13 +31,43 @@ function ThinkingDots() {
 }
 
 export function ResponseLayer({ responses, userMessages, isStreaming, streamingText, onClose }: ResponseLayerProps) {
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
+  const stickToBottomRef = useRef(true);
+  const programmaticScrollRef = useRef(false);
   const [copied, setCopied] = useState(false);
   const t = useT();
 
+  // Se o usuário rola para cima, pausamos o auto-follow. Volta a seguir
+  // quando ele rola até perto do fim. O flag programmatic ignora os scroll
+  // events que nós mesmos disparamos via scrollTop.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [responses, streamingText, isStreaming]);
+    const el = messagesRef.current;
+    if (!el) return;
+    const handleScroll = () => {
+      if (programmaticScrollRef.current) {
+        programmaticScrollRef.current = false;
+        return;
+      }
+      const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+      stickToBottomRef.current = distance < 60;
+    };
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Nova mensagem do usuário = ele acabou de interagir, então reativamos o
+  // auto-scroll mesmo que ele estivesse rolado para cima lendo algo.
+  useEffect(() => {
+    stickToBottomRef.current = true;
+  }, [userMessages.length]);
+
+  useEffect(() => {
+    if (!stickToBottomRef.current) return;
+    const el = messagesRef.current;
+    if (!el) return;
+    programmaticScrollRef.current = true;
+    el.scrollTop = el.scrollHeight;
+  }, [responses, streamingText, isStreaming, userMessages]);
 
   const turns = Math.max(userMessages.length, responses.length);
 
@@ -87,7 +117,7 @@ export function ResponseLayer({ responses, userMessages, isStreaming, streamingT
       </div>
 
       {/* Messages */}
-      <div className="chat-messages">
+      <div className="chat-messages" ref={messagesRef}>
         {Array.from({ length: turns }).map((_, i) => (
           <div key={i} className="turn">
             {userMessages[i] && (
@@ -120,7 +150,6 @@ export function ResponseLayer({ responses, userMessages, isStreaming, streamingT
             <div className="chat-bubble assistant-bubble"><ThinkingDots /></div>
           </div>
         )}
-        <div ref={bottomRef} />
       </div>
 
       <style jsx>{`

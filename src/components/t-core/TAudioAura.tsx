@@ -59,8 +59,10 @@ export function TAudioAura() {
         }
         .aura-ring {
           position: absolute;
-          width: calc(var(--t, 500px) * 0.66);
-          height: calc(var(--t, 500px) * 0.66);
+          inset: 0;
+          margin: auto;
+          width: calc(var(--t, 500px) * 0.792);
+          height: calc(var(--t, 500px) * 0.792);
           border-radius: 50%;
           border: 1.5px solid;
         }
