@@ -55,22 +55,32 @@ export interface AppSettings {
   maxTokens: number;
 }
 
-export async function getSettings(): Promise<AppSettings> {
+// Cache em memória do AppSettings (global, sem PII).
+// TTL curto + invalidação explícita no PUT do admin garantem que mudanças
+// propagam no máximo em SETTINGS_CACHE_TTL_MS para usuários do mesmo
+// processo. Em ambiente serverless, instâncias diferentes têm caches
+// independentes — a propagação cross-instância depende do TTL.
+const SETTINGS_CACHE_TTL_MS = 60_000;
+let cachedSettings: AppSettings | null = null;
+let cachedSettingsExpiry = 0;
+let inFlightFetch: Promise<AppSettings> | null = null;
+
+const DEFAULT_SETTINGS: AppSettings = {
+  system_prompt: 'Você é um assistente virtual experiente do TecnoPUC. Responda com base no contexto fornecido.',
+  temperature: 0.5,
+  thinkingLevel: 'low',
+  similarityThreshold: 0.65,
+  matchCount: 5,
+  voice: 'Aoede',
+  maxTokens: 1024,
+};
+
+async function fetchSettingsFromDb(): Promise<AppSettings> {
   const { data, error } = await supabase
     .from('chatbot_settings')
     .select('setting_key, setting_value');
 
-  const defaultSettings: AppSettings = {
-    system_prompt: 'Você é um assistente virtual experiente do TecnoPUC. Responda com base no contexto fornecido.',
-    temperature: 0.5,
-    thinkingLevel: 'low',
-    similarityThreshold: 0.65,
-    matchCount: 5,
-    voice: 'Aoede',
-    maxTokens: 1024
-  };
-
-  if (error || !data) return defaultSettings;
+  if (error || !data) return DEFAULT_SETTINGS;
 
   const settings = data.reduce((acc: Record<string, string>, row) => {
     acc[row.setting_key] = row.setting_value;
@@ -78,14 +88,40 @@ export async function getSettings(): Promise<AppSettings> {
   }, {});
 
   return {
-    system_prompt: settings.system_prompt || defaultSettings.system_prompt,
-    temperature: settings.temperature ? parseFloat(settings.temperature) : defaultSettings.temperature,
-    thinkingLevel: (settings.thinkingLevel as 'low' | 'high') || defaultSettings.thinkingLevel,
-    similarityThreshold: settings.similarityThreshold ? (parseFloat(settings.similarityThreshold) / 100) : defaultSettings.similarityThreshold,
-    matchCount: settings.matchCount ? parseInt(settings.matchCount) : defaultSettings.matchCount,
-    voice: settings.voice || defaultSettings.voice,
-    maxTokens: settings.maxTokens ? parseInt(settings.maxTokens) : defaultSettings.maxTokens,
+    system_prompt: settings.system_prompt || DEFAULT_SETTINGS.system_prompt,
+    temperature: settings.temperature ? parseFloat(settings.temperature) : DEFAULT_SETTINGS.temperature,
+    thinkingLevel: (settings.thinkingLevel as 'low' | 'high') || DEFAULT_SETTINGS.thinkingLevel,
+    similarityThreshold: settings.similarityThreshold ? (parseFloat(settings.similarityThreshold) / 100) : DEFAULT_SETTINGS.similarityThreshold,
+    matchCount: settings.matchCount ? parseInt(settings.matchCount) : DEFAULT_SETTINGS.matchCount,
+    voice: settings.voice || DEFAULT_SETTINGS.voice,
+    maxTokens: settings.maxTokens ? parseInt(settings.maxTokens) : DEFAULT_SETTINGS.maxTokens,
   };
+}
+
+export async function getSettings(): Promise<AppSettings> {
+  const now = Date.now();
+  if (cachedSettings && now < cachedSettingsExpiry) {
+    return cachedSettings;
+  }
+  // Single-flight: se já existe um fetch em andamento, todos esperam o mesmo.
+  if (inFlightFetch) {
+    return inFlightFetch;
+  }
+  inFlightFetch = fetchSettingsFromDb()
+    .then((settings) => {
+      cachedSettings = settings;
+      cachedSettingsExpiry = Date.now() + SETTINGS_CACHE_TTL_MS;
+      return settings;
+    })
+    .finally(() => {
+      inFlightFetch = null;
+    });
+  return inFlightFetch;
+}
+
+export function invalidateSettingsCache(): void {
+  cachedSettings = null;
+  cachedSettingsExpiry = 0;
 }
 
 // Busca documentos similares à query via pgvector

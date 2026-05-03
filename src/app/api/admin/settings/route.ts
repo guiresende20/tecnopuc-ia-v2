@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, invalidateSettingsCache } from '@/lib/supabase';
 import {
   adminLimiter,
   adminLoginLimiter,
@@ -92,8 +92,9 @@ export async function PUT(req: NextRequest) {
         .upsert(updates, { onConflict: 'setting_key' });
 
       if (error) throw error;
+      invalidateSettingsCache();
     }
-    
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[/api/admin/settings PUT]', err);
