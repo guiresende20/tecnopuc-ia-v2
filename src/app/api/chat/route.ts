@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { generateEmbedding, streamChat, buildSystemPrompt, ChatMessage } from '@/lib/gemini';
-import { matchDocuments, getSettings } from '@/lib/supabase';
+import { hybridMatchDocuments, getSettings } from '@/lib/supabase';
 import { chatLimiter, enforceLimit, getClientIp } from '@/lib/rate-limit';
 import { isLocale, DEFAULT_LOCALE, type Locale } from '@/i18n/locales';
 
@@ -64,11 +64,17 @@ export async function POST(req: NextRequest) {
       generateEmbedding(query),
     ]);
 
-    // 2. Buscar os chunks mais relevantes no Supabase (pgvector) dinamicamente
-    const relevantDocs = await matchDocuments(
+    // 2. Buscar os chunks mais relevantes via hybrid search (pgvector + FTS via RRF).
+    //    Chunks só-vetoriais ainda respeitam settings.similarityThreshold; chunks
+    //    que vieram do FTS (fts_rank presente) passam direto — o match literal já
+    //    confirma relevância e RRF cuida da ordenação.
+    const candidates = await hybridMatchDocuments(
       queryEmbedding,
+      query,
       settings.matchCount,
-      settings.similarityThreshold
+    );
+    const relevantDocs = candidates.filter(
+      (d) => d.fts_rank != null || (d.similarity ?? 0) >= settings.similarityThreshold,
     );
 
     // 3. Montar o contexto com os documentos recuperados
@@ -103,6 +109,8 @@ export async function POST(req: NextRequest) {
           relevantDocs.map((d) => ({
             source: d.metadata?.source,
             similarity: d.similarity?.toFixed(2),
+            fts_rank: d.fts_rank?.toFixed(3),
+            rrf_score: d.rrf_score?.toFixed(4),
           }))
         ),
       },

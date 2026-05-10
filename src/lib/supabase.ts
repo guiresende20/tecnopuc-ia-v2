@@ -29,7 +29,9 @@ export interface Document {
     chunkIndex: number;
     category?: string;    // ex: "empresa", "servico", "evento"
   };
-  similarity?: number;
+  similarity?: number;    // cosine similarity (vector side)
+  fts_rank?: number;      // ts_rank_cd (FTS side, presente no hybrid)
+  rrf_score?: number;     // score combinado RRF (presente no hybrid)
 }
 
 export interface KnowledgeSource {
@@ -139,6 +141,53 @@ export async function matchDocuments(
   if (error) {
     console.error('[Supabase] Erro na busca de documentos:', error);
     throw new Error(`Erro na busca vetorial: ${error.message}`);
+  }
+
+  return (data as Document[]) ?? [];
+}
+
+// Hybrid search: combina pgvector (semântico) com FTS (literal) via Reciprocal
+// Rank Fusion. Usado quando a RPC hybrid_match_documents existe no Postgres
+// (ver hybrid-search-setup.sql). Resolve casos onde embedding falha em siglas
+// e nomes próprios (IPaq, FabLab, Apple) que aparecem literalmente nos chunks.
+
+// Pré-processa a query para o lado FTS, decidindo entre AND e OR conforme
+// a forma da pergunta:
+// 1. Se houver tokens com letra maiúscula (proper nouns como Apple/TecnoPUC,
+//    siglas como IPaq, CamelCase como FabLab), ANDa SÓ esses. São os termos
+//    distintivos — casar todos isola exatamente o chunk relevante.
+// 2. Sem destaque, AND para queries de 1-2 tokens (precisão) e OR para 3+
+//    tokens (recall em frases naturais onde palavras comuns não-stopword
+//    quebrariam o AND default do websearch_to_tsquery).
+function buildFtsQuery(text: string): string {
+  const tokens = text
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length >= 2);
+  if (tokens.length === 0) return '';
+
+  const highlighted = tokens.filter((t) => t !== t.toLowerCase());
+  if (highlighted.length > 0) return highlighted.join(' ');
+
+  if (tokens.length <= 2) return tokens.join(' ');
+  return tokens.join(' OR ');
+}
+
+export async function hybridMatchDocuments(
+  queryEmbedding: number[],
+  queryText: string,
+  matchCount = 10,
+): Promise<Document[]> {
+  const { data, error } = await supabase.rpc('hybrid_match_documents', {
+    query_embedding: queryEmbedding,
+    query_text: buildFtsQuery(queryText),
+    match_count: matchCount,
+  });
+
+  if (error) {
+    console.error('[Supabase] Erro na busca híbrida:', error);
+    throw new Error(`Erro na busca híbrida: ${error.message}`);
   }
 
   return (data as Document[]) ?? [];

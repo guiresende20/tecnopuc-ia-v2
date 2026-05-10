@@ -1,0 +1,272 @@
+{
+  "version": "2026-05-10",
+  "description": "Eval set de retrieval do TecnoPUC RAG. Cada query traz expected_sources (filenames em knowledge/) usados como ground truth para Recall@K, MRR e Hit@K.",
+  "metrics_at_k": [1, 3, 5, 10],
+  "queries": [
+    {
+      "id": "q01",
+      "category": "factual_basic",
+      "locale": "pt",
+      "query": "o que é o TecnoPUC?",
+      "expected_sources": ["sobre-o-tecnopuc.md", "scrape-quem-somos.md"],
+      "notes": "Pergunta institucional mais básica."
+    },
+    {
+      "id": "q02",
+      "category": "factual_basic",
+      "locale": "pt",
+      "query": "onde fica o TecnoPUC?",
+      "expected_sources": ["sobre-o-tecnopuc.md"],
+      "notes": "Localização."
+    },
+    {
+      "id": "q03",
+      "category": "factual_basic",
+      "locale": "pt",
+      "query": "quando o TecnoPUC foi fundado?",
+      "expected_sources": ["sobre-o-tecnopuc.md"],
+      "notes": "Data factual (2003)."
+    },
+    {
+      "id": "q04",
+      "category": "factual_basic",
+      "locale": "pt",
+      "query": "qual a missão do TecnoPUC?",
+      "expected_sources": ["sobre-o-tecnopuc.md"],
+      "notes": "Missão institucional."
+    },
+
+    {
+      "id": "q05",
+      "category": "proper_noun",
+      "locale": "pt",
+      "query": "o que é o IPaq?",
+      "expected_sources": ["ecossistema-e-pesquisa.md"],
+      "notes": "Sigla rara — embedding tende a confundir, FTS resolve por match literal."
+    },
+    {
+      "id": "q06",
+      "category": "proper_noun",
+      "locale": "pt",
+      "query": "me fale sobre o InsCer",
+      "expected_sources": ["ecossistema-e-pesquisa.md"],
+      "notes": "Sigla do Instituto do Cérebro."
+    },
+    {
+      "id": "q07",
+      "category": "proper_noun",
+      "locale": "pt",
+      "query": "como funciona o Tecnopuc Garage?",
+      "expected_sources": ["scrape-negocios.md", "scrape-cases.md"],
+      "notes": "Programa nominado."
+    },
+    {
+      "id": "q08",
+      "category": "proper_noun",
+      "locale": "pt",
+      "query": "o que é o FabLab do TecnoPUC?",
+      "expected_sources": ["servicos-e-infraestrutura.md"],
+      "notes": "Termo técnico — 'Laboratório de Fabricação Digital'."
+    },
+    {
+      "id": "q09",
+      "category": "proper_noun",
+      "locale": "pt",
+      "query": "quem é a NoHarm.ai?",
+      "expected_sources": ["scrape-cases.md"],
+      "notes": "Empresa específica com ponto no nome (case difícil para tokenização)."
+    },
+    {
+      "id": "q10",
+      "category": "proper_noun",
+      "locale": "pt",
+      "query": "o que é o HANGAR?",
+      "expected_sources": ["scrape-faca-parte.md"],
+      "notes": "Caixa-alta + termo curto — embedding tende a errar."
+    },
+
+    {
+      "id": "q11",
+      "category": "short_ambiguous",
+      "locale": "pt",
+      "query": "hubs",
+      "expected_sources": ["scrape-hubs.md", "scrape-home.md"],
+      "notes": "Query de 1 palavra — vector traz ruído."
+    },
+    {
+      "id": "q12",
+      "category": "short_ambiguous",
+      "locale": "pt",
+      "query": "empresas",
+      "expected_sources": ["empresas-residentes.md", "scrape-membros.md"],
+      "notes": "Termo genérico — vector pulveriza."
+    },
+    {
+      "id": "q13",
+      "category": "short_ambiguous",
+      "locale": "pt",
+      "query": "programas",
+      "expected_sources": ["scrape-faca-parte.md", "scrape-talentos.md", "scrape-negocios.md"],
+      "notes": "Termo abrangente."
+    },
+
+    {
+      "id": "q14",
+      "category": "multilingual_en",
+      "locale": "en",
+      "query": "which companies are residents at TecnoPUC?",
+      "expected_sources": ["empresas-residentes.md"],
+      "notes": "Cross-lingual — embedding multilíngue deve cobrir, FTS em PT não ajuda."
+    },
+    {
+      "id": "q15",
+      "category": "multilingual_en",
+      "locale": "en",
+      "query": "what is TecnoPUC?",
+      "expected_sources": ["sobre-o-tecnopuc.md", "scrape-quem-somos.md"],
+      "notes": "Mesma pergunta da q01 em EN."
+    },
+    {
+      "id": "q16",
+      "category": "multilingual_en",
+      "locale": "en",
+      "query": "tell me about the FabLab",
+      "expected_sources": ["servicos-e-infraestrutura.md"],
+      "notes": "Termo técnico em EN — FabLab é igual em ambos idiomas."
+    },
+
+    {
+      "id": "q17",
+      "category": "multilingual_es",
+      "locale": "es",
+      "query": "¿qué empresas están en el TecnoPUC?",
+      "expected_sources": ["empresas-residentes.md"],
+      "notes": "ES cross-lingual."
+    },
+    {
+      "id": "q18",
+      "category": "multilingual_es",
+      "locale": "es",
+      "query": "¿cómo puedo participar del TecnoPUC?",
+      "expected_sources": ["scrape-faca-parte.md"],
+      "notes": "Como entrar no parque."
+    },
+
+    {
+      "id": "q19",
+      "category": "multilingual_zh",
+      "locale": "zh",
+      "query": "TecnoPUC 是什么?",
+      "expected_sources": ["sobre-o-tecnopuc.md", "scrape-quem-somos.md"],
+      "notes": "Mandarim — teste forte para embedding multilíngue."
+    },
+    {
+      "id": "q20",
+      "category": "multilingual_zh",
+      "locale": "zh",
+      "query": "TecnoPUC 有哪些公司?",
+      "expected_sources": ["empresas-residentes.md"],
+      "notes": "ZH para 'quais empresas'."
+    },
+
+    {
+      "id": "q21",
+      "category": "intent_fine",
+      "locale": "pt",
+      "query": "como posso participar do TecnoPUC sem ser uma empresa residente?",
+      "expected_sources": ["scrape-faca-parte.md", "scrape-talentos.md"],
+      "notes": "Negação — vector tende a focar em 'ser residente'."
+    },
+    {
+      "id": "q22",
+      "category": "intent_fine",
+      "locale": "pt",
+      "query": "tem programa para quem ainda só tem uma ideia de negócio?",
+      "expected_sources": ["scrape-negocios.md", "scrape-faca-parte.md"],
+      "notes": "Tecnopuc Garage atende 'ideação'."
+    },
+    {
+      "id": "q23",
+      "category": "intent_fine",
+      "locale": "pt",
+      "query": "quero investir em startups do parque, como faço?",
+      "expected_sources": ["scrape-faca-parte.md"],
+      "notes": "Perfil investidor — Marsha University Venture Capital."
+    },
+
+    {
+      "id": "q24",
+      "category": "specific_topic",
+      "locale": "pt",
+      "query": "tem hub de inteligência artificial?",
+      "expected_sources": ["scrape-hubs.md"],
+      "notes": "Hub NAVI."
+    },
+    {
+      "id": "q25",
+      "category": "specific_topic",
+      "locale": "pt",
+      "query": "tem hub de saúde?",
+      "expected_sources": ["scrape-hubs.md"],
+      "notes": "BioHub."
+    },
+    {
+      "id": "q26",
+      "category": "specific_topic",
+      "locale": "pt",
+      "query": "tem alguma área para agronegócio?",
+      "expected_sources": ["scrape-hubs.md"],
+      "notes": "Celeiro AgFood Hub."
+    },
+    {
+      "id": "q27",
+      "category": "specific_topic",
+      "locale": "pt",
+      "query": "como o TecnoPUC se conecta com a PUCRS?",
+      "expected_sources": ["ecossistema-e-pesquisa.md", "sobre-o-tecnopuc.md"],
+      "notes": "Integração universidade-parque."
+    },
+
+    {
+      "id": "q28",
+      "category": "specific_company",
+      "locale": "pt",
+      "query": "a Apple tem alguma coisa no TecnoPUC?",
+      "expected_sources": ["scrape-cases.md"],
+      "notes": "Apple Developer Academy."
+    },
+    {
+      "id": "q29",
+      "category": "specific_company",
+      "locale": "pt",
+      "query": "a HP atua no TecnoPUC?",
+      "expected_sources": ["empresas-residentes.md", "scrape-cases.md"],
+      "notes": "HP Inc. residente + case Falaê."
+    },
+    {
+      "id": "q30",
+      "category": "specific_company",
+      "locale": "pt",
+      "query": "Epic Games tem escritório em Porto Alegre?",
+      "expected_sources": ["scrape-cases.md"],
+      "notes": "Aquiris virou Epic Games Brasil."
+    },
+
+    {
+      "id": "q31",
+      "category": "service_infra",
+      "locale": "pt",
+      "query": "tem coworking?",
+      "expected_sources": ["servicos-e-infraestrutura.md", "scrape-ambientes.md"],
+      "notes": "Infraestrutura — termo curto."
+    },
+    {
+      "id": "q32",
+      "category": "service_infra",
+      "locale": "pt",
+      "query": "quais laboratórios estão disponíveis para empresas residentes?",
+      "expected_sources": ["servicos-e-infraestrutura.md"],
+      "notes": "P&D, FabLab, laboratórios PUCRS."
+    }
+  ]
+}
