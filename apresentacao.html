@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TecnoPUC IA — Apresentação</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%230099ff'/%3E%3Cstop offset='0.5' stop-color='%2300e5ff'/%3E%3Cstop offset='1' stop-color='%238d3d8f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='4' y='4' width='56' height='56' rx='12' fill='url(%23g)'/%3E%3Ctext x='32' y='46' font-family='Space Grotesk,Arial,sans-serif' font-weight='700' font-size='40' text-anchor='middle' fill='%23fff'%3ET%3C/text%3E%3C/svg%3E">
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
 <link href="./apresentacao_files/css2" rel="stylesheet">
@@ -826,13 +827,169 @@
     to   { transform: rotate(360deg); }
   }
 
-  /* ── Toggle de modo fixo (top-right, só aparece após escolher modo) ── */
+  /* ── Slide intro (manifesto + Three.js) ── */
+  .slide.intro {
+    padding: 0;
+    overflow: hidden;
+  }
+  .intro-three-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  /* Flash do big bang: clarão central que expande e some */
+  .intro-flash {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: radial-gradient(circle at center,
+      rgba(255,255,255,0.95) 0%,
+      rgba(220,240,255,0.85) 8%,
+      rgba(0,229,255,0.55) 22%,
+      rgba(0,153,255,0.25) 40%,
+      transparent 70%);
+    opacity: 0;
+    transform: scale(0.15);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    filter: blur(2px);
+  }
+  .slide.intro.phase-bang .intro-flash {
+    animation: introFlash 1.6s cubic-bezier(0.15, 0.7, 0.25, 1) forwards;
+  }
+  @keyframes introFlash {
+    0%   { opacity: 0;   transform: scale(0.15); }
+    8%   { opacity: 1;   transform: scale(1.0); }
+    28%  { opacity: 0.85; transform: scale(1.6); }
+    100% { opacity: 0;   transform: scale(2.8); }
+  }
+  /* Shockwaves: anéis em expansão */
+  .intro-shockwave {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 120px;
+    height: 120px;
+    margin: -60px 0 0 -60px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 229, 255, 0.9);
+    box-shadow:
+      0 0 50px rgba(0, 229, 255, 0.55),
+      0 0 100px rgba(141, 61, 143, 0.3),
+      inset 0 0 30px rgba(255, 255, 255, 0.35);
+    opacity: 0;
+    transform: scale(0.05);
+    pointer-events: none;
+    z-index: 2;
+    will-change: transform, opacity;
+  }
+  .slide.intro.phase-bang .intro-shockwave {
+    animation: shockwave 2.4s cubic-bezier(0.15, 0.85, 0.3, 1) forwards;
+  }
+  .slide.intro.phase-bang .intro-shockwave-2 {
+    animation: shockwave 2.8s cubic-bezier(0.2, 0.9, 0.3, 1) 0.25s forwards;
+    border-color: rgba(141, 61, 143, 0.7);
+    border-width: 1.5px;
+  }
+  @keyframes shockwave {
+    0%   { opacity: 0;    transform: scale(0.05); }
+    12%  { opacity: 1;    transform: scale(1.0); }
+    100% { opacity: 0;    transform: scale(50); }
+  }
+  .intro-manifest {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 56px 88px;
+    pointer-events: none;
+  }
+  .intro-title {
+    font-size: 78px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    background: linear-gradient(120deg, #fff 0%, #b9d8ff 50%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.9s ease, transform 0.9s ease;
+    margin-bottom: 18px;
+  }
+  .intro-tagline {
+    font-size: 22px;
+    font-style: italic;
+    color: var(--cyan);
+    letter-spacing: 0.005em;
+    line-height: 1.4;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.9s ease, transform 0.9s ease;
+    margin-bottom: 36px;
+    max-width: 720px;
+    text-shadow: 0 0 18px rgba(0, 229, 255, 0.4);
+  }
+  .intro-body {
+    font-size: 17px;
+    color: var(--t-text-dim);
+    line-height: 1.75;
+    max-width: 640px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.9s ease, transform 0.9s ease;
+  }
+  .intro-body strong {
+    color: #e8f4ff;
+    font-weight: 600;
+  }
+  .intro-body .intro-stanza {
+    margin-bottom: 14px;
+  }
+  .intro-body .intro-stanza:last-child {
+    margin-bottom: 0;
+  }
+  .intro-anywhere {
+    margin-top: 26px;
+    font-size: 13px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.9s ease, transform 0.9s ease;
+  }
+  /* Fases reveladas progressivamente via classes adicionadas pelo JS */
+  .slide.intro.phase-title  .intro-title    { opacity: 1; transform: translateY(0); }
+  .slide.intro.phase-tag    .intro-tagline  { opacity: 1; transform: translateY(0); }
+  .slide.intro.phase-body   .intro-body     { opacity: 1; transform: translateY(0); }
+  .slide.intro.phase-any    .intro-anywhere { opacity: 1; transform: translateY(0); }
+  .intro-three-canvas {
+    transition: opacity 1.4s ease;
+  }
+  .slide.intro.phase-fadeout .intro-three-canvas { opacity: 0; }
+
+  @media (max-width: 720px) {
+    .intro-manifest { padding: 22px 18px 96px; }
+    .intro-title    { font-size: 44px; }
+    .intro-tagline  { font-size: 16px; margin-bottom: 22px; }
+    .intro-body     { font-size: 14px; line-height: 1.65; }
+    .intro-anywhere { font-size: 11px; letter-spacing: 0.22em; }
+  }
+
+  /* ── Toggle de modo fixo (top-right, visível em todos os slides) ── */
   .mode-toggle {
     position: fixed;
     top: 16px;
     right: 24px;
     z-index: 30;
-    display: none;
+    display: inline-flex;
     gap: 4px;
     padding: 4px;
     background: var(--glass);
@@ -842,7 +999,6 @@
     -webkit-backdrop-filter: blur(14px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
   }
-  body[data-mode] .mode-toggle { display: inline-flex; }
   .mode-toggle-btn {
     border: 0;
     background: transparent;
@@ -1109,7 +1265,7 @@
 </head>
 <body>
 
-<div class="progress"><div class="progress-bar" id="progressBar" style="width: 10%;"></div></div>
+<div class="progress"><div class="progress-bar" id="progressBar" style="width: 8%;"></div></div>
 
 <canvas class="bg-network" id="bgNetwork"></canvas>
 
@@ -1120,8 +1276,33 @@
 
 <div class="deck" id="deck">
 
-  <!-- ============ SLIDE 1 — CAPA ============ -->
-  <section class="slide cover active" data-slide="1">
+  <!-- ============ SLIDE 1 — INTRO / MANIFESTO ============ -->
+  <section class="slide intro active" data-slide="1" id="introSlide">
+    <canvas class="intro-three-canvas" id="introCanvas"></canvas>
+    <div class="intro-flash" id="introFlash"></div>
+    <div class="intro-shockwave" id="introShockwave"></div>
+    <div class="intro-shockwave intro-shockwave-2" id="introShockwave2"></div>
+    <div class="intro-manifest">
+      <h1 class="intro-title">TECNOPUC IA</h1>
+      <p class="intro-tagline">Onde o parque pensa em voz alta.</p>
+      <div class="intro-body">
+        <div class="intro-stanza">
+          Uma <strong>wiki viva</strong>, escrita por quem habita o TecnoPUC.<br>
+          Empresas, hubs, programas, gente em movimento —<br>
+          todo o ecossistema cabendo numa conversa.
+        </div>
+        <div class="intro-stanza">
+          Que <strong>acelera</strong> o que já está pronto.<br>
+          Que <strong>conecta</strong> o que ainda não se reconheceu parente.<br>
+          Que <strong>posiciona</strong> o parque pro futuro que já chegou.
+        </div>
+      </div>
+      <div class="intro-anywhere">Anywhere · qualquer idioma · qualquer hora · qualquer tela</div>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 2 — CAPA ============ -->
+  <section class="slide cover" data-slide="2">
     <div class="cover-content">
       <div class="cover-t-3d" id="coverT3D">
         <div class="cover-t-3d-inner" id="coverT3DInner">
@@ -1162,6 +1343,81 @@
     </div>
   </section>
 
+  <!-- ============ SLIDE 3 — APRESENTAÇÃO INSTITUCIONAL ============ -->
+  <section class="slide" data-slide="3" id="aboutSlide">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Apresentação institucional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>03 / 12 — Apresentação institucional</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Apresentação institucional</h1>
+    <p class="slide-subtitle">
+      O TecnoPUC IA é uma <strong>wiki viva alimentada pela comunidade do parque</strong> e acessível por chat conversacional. Conecta pessoas a informações, programas, empresas e hubs — em qualquer idioma, qualquer hora, qualquer tela. Abaixo, como o projeto se ancora nos quatro eixos estratégicos do TecnoPUC.
+    </p>
+
+    <div class="grid grid-2" style="gap: 18px;">
+      <article class="card">
+        <span class="tag cyan">Eixo 1</span>
+        <h3>Conexões e Experiências</h3>
+        <p>Um <strong>ponto de contato vivo</strong> com o parque, disponível 24/7. Voz e texto coexistem; o T 3D ancora uma experiência imersiva. Conecta visitantes, residentes e curiosos a hubs, empresas e programas em poucos cliques.</p>
+        <ul style="margin-top: 8px;">
+          <li>Conversação multimodal (texto + voz nativa)</li>
+          <li>Interface 3D imersiva como identidade do parque</li>
+          <li>Atalhos institucionais via menu radial</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag">Eixo 2</span>
+        <h3>Negócios e Inovação</h3>
+        <p>Surfacing dos <strong>programas de aceleração, residência e mentoria</strong>. Reduz a fricção entre curiosidade e ação — quem chega perguntando sai sabendo o próximo passo dentro do ecossistema.</p>
+        <ul style="margin-top: 8px;">
+          <li>Vitrine pra empresas residentes e cases de impacto</li>
+          <li>Porta de entrada pra parcerias e investidores</li>
+          <li>Resposta consistente em qualquer canal (anywhere)</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Eixo 3</span>
+        <h3>P&amp;D e Design</h3>
+        <p>O próprio projeto é <strong>P&amp;D aplicado</strong> — RAG híbrido, embeddings multilíngue, voz multimodal, interface 3D. Demonstra na prática a capacidade do parque em IA conversacional e design de experiência.</p>
+        <ul style="margin-top: 8px;">
+          <li>Stack moderna (Next.js 16, Three.js, Gemini)</li>
+          <li>Busca semântica + literal via Reciprocal Rank Fusion</li>
+          <li>Arquitetura pronta pra multi-tenant e novos parques</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Eixo 4</span>
+        <h3>Talentos e Futuros</h3>
+        <p>Vitrine pra <strong>estudantes, pesquisadores e talentos internacionais</strong>. Multilíngue desde a base, alcança delegações sem tradutor humano. Modelo participativo — qualquer um pode contribuir conhecimento sob curadoria.</p>
+        <ul style="margin-top: 8px;">
+          <li>Respostas em PT, EN, ES e ZH no idioma de quem pergunta</li>
+          <li>Contribuições da comunidade com moderação</li>
+          <li>Posiciona o parque pro futuro que já chegou</li>
+        </ul>
+      </article>
+    </div>
+
+    <div style="display: flex; gap: 18px; justify-content: center; margin-top: 22px; flex-wrap: wrap;">
+      <span class="tag cyan" style="font-size: 12px;">Construção</span>
+      <span class="tag purple" style="font-size: 12px;">Colaboração</span>
+      <span class="tag" style="font-size: 12px;">Futuro</span>
+      <span class="tag cyan" style="font-size: 12px;">Tecnologia</span>
+    </div>
+  </section>
+
   <!-- ============ SLIDE 2 — FEATURES ============ -->
   <section class="slide" data-slide="2" data-mode="tecnica">
     <header class="slide-header">
@@ -1174,7 +1430,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>02 / 10 — Features</span>
+        <span>04 / 12 — Features</span>
       </div>
     </header>
 
@@ -1234,7 +1490,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>03 / 10 — Serviços externos</span>
+        <span>05 / 12 — Serviços externos</span>
       </div>
     </header>
 
@@ -1318,7 +1574,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>04 / 10 — Stack técnico</span>
+        <span>06 / 12 — Stack técnico</span>
       </div>
     </header>
 
@@ -1397,7 +1653,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>05 / 10 — Busca híbrida</span>
+        <span>07 / 12 — Busca híbrida</span>
       </div>
     </header>
 
@@ -1481,7 +1737,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>06 / 10 — Segurança</span>
+        <span>08 / 12 — Segurança</span>
       </div>
     </header>
 
@@ -1553,7 +1809,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>07 / 10 — Roadmap</span>
+        <span>09 / 12 — Roadmap</span>
       </div>
     </header>
 
@@ -1613,7 +1869,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>08 / 10 — Operacional</span>
+        <span>10 / 12 — Operacional</span>
       </div>
     </header>
 
@@ -1661,7 +1917,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>09 / 10 — Visão de futuro</span>
+        <span>11 / 12 — Visão de futuro</span>
       </div>
     </header>
 
@@ -1721,7 +1977,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>10 / 10 — Glossário</span>
+        <span>12 / 12 — Glossário</span>
       </div>
     </header>
 
@@ -1829,7 +2085,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>02 / 10 — O que ele faz</span>
+        <span>04 / 12 — O que ele faz</span>
       </div>
     </header>
 
@@ -1889,7 +2145,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>03 / 10 — Ajudantes</span>
+        <span>05 / 12 — Ajudantes</span>
       </div>
     </header>
 
@@ -1973,7 +2229,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>04 / 10 — Peças por dentro</span>
+        <span>06 / 12 — Peças por dentro</span>
       </div>
     </header>
 
@@ -2046,7 +2302,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>05 / 10 — Duas formas de procurar</span>
+        <span>07 / 12 — Duas formas de procurar</span>
       </div>
     </header>
 
@@ -2120,7 +2376,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>06 / 10 — Segurança</span>
+        <span>08 / 12 — Segurança</span>
       </div>
     </header>
 
@@ -2192,7 +2448,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>07 / 10 — Em construção</span>
+        <span>09 / 12 — Em construção</span>
       </div>
     </header>
 
@@ -2252,7 +2508,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>08 / 10 — Coisas chatas mas importantes</span>
+        <span>10 / 12 — Coisas chatas mas importantes</span>
       </div>
     </header>
 
@@ -2300,7 +2556,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>09 / 10 — Sonhos pra mais tarde</span>
+        <span>11 / 12 — Sonhos pra mais tarde</span>
       </div>
     </header>
 
@@ -2360,7 +2616,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>10 / 10 — Dicionário fácil</span>
+        <span>12 / 12 — Dicionário fácil</span>
       </div>
     </header>
 
@@ -2471,7 +2727,7 @@
 
 <nav class="nav">
   <button id="prev" aria-label="Anterior">‹</button>
-  <span class="counter" id="counter">01 / 10</span>
+  <span class="counter" id="counter">01 / 03</span>
   <button id="next" aria-label="Próximo">›</button>
 </nav>
 
@@ -2483,14 +2739,18 @@
   /* ── Navegação com filtro por modo ── */
   const counter = document.getElementById('counter');
   const progressBar = document.getElementById('progressBar');
+  const introSlide = document.getElementById('introSlide');
   const coverSlide = document.querySelector('section.cover');
-  let visible = [coverSlide];   // antes da escolha, só a capa
+  const aboutSlide = document.getElementById('aboutSlide');
+  // Antes da escolha de modo: intro + capa + apresentação institucional (3 slides).
+  // Conteúdo do modo entra ao escolher (9 técnicos OU 9 ELI10 → 12 totais).
+  let visible = [introSlide, coverSlide, aboutSlide];
   let current = 0;
   let mode = null;              // 'tecnica' | 'eli10'
 
   function rebuildVisible() {
     const modal = mode ? Array.from(document.querySelectorAll('.slide[data-mode="' + mode + '"]')) : [];
-    visible = [coverSlide].concat(modal);
+    visible = [introSlide, coverSlide, aboutSlide].concat(modal);
   }
 
   function show(i) {
@@ -2514,25 +2774,37 @@
     document.body.setAttribute('data-mode', m);
     rebuildVisible();
     syncModeToggle();
-    // primeiro modo escolhido: pula da capa pra slide 2
-    // troca de modo via toggle: mantém posição equivalente (mesmo número)
-    show(wasUnset ? 1 : Math.min(current, visible.length - 1));
+    // Primeiro modo escolhido: avança um slide (mantém fluxo natural intro → capa →
+    //   apresentação institucional → conteúdo). Troca via toggle: mantém posição.
+    show(wasUnset ? Math.min(current + 1, visible.length - 1)
+                  : Math.min(current, visible.length - 1));
   }
 
   document.querySelectorAll('[data-mode-choice]').forEach((btn) => {
     btn.addEventListener('click', () => setMode(btn.getAttribute('data-mode-choice')));
   });
 
+  // Avanço com tratamento especial pro slide intro:
+  // - Se animação ainda rolando (phase-cta ausente): primeira tecla pula só a animação
+  // - Se animação concluída: avança normalmente pra capa
+  function advance() {
+    if (current === 0 && introSlide && !introSlide.classList.contains('phase-cta')) {
+      if (typeof window.__introSkip === 'function') window.__introSkip();
+      return;
+    }
+    show(current + 1);
+  }
+
   document.getElementById('prev').onclick = () => show(current - 1);
-  document.getElementById('next').onclick = () => show(current + 1);
+  document.getElementById('next').onclick = () => advance();
 
   document.addEventListener('keydown', (e) => {
-    // Atalhos de seleção de modo (só funcionam na capa)
-    if (current === 0 && !mode) {
+    // Atalhos de seleção de modo (válidos enquanto nenhum modo foi escolhido)
+    if (!mode) {
       if (e.key === '1') { setMode('tecnica'); return; }
       if (e.key === '2') { setMode('eli10');   return; }
     }
-    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') show(current + 1);
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { advance(); return; }
     if (e.key === 'ArrowLeft' || e.key === 'PageUp') show(current - 1);
     if (e.key === 'Home') show(0);
     if (e.key === 'End') show(visible.length - 1);
@@ -2555,7 +2827,7 @@
     const dx = e.changedTouches[0].screenX - touchStartX;
     const dy = e.changedTouches[0].screenY - touchStartY;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      if (dx < 0) show(current + 1);
+      if (dx < 0) advance();
       else show(current - 1);
     }
   }, { passive: true });
@@ -2667,6 +2939,268 @@
       resize();
       init();
     });
+  })();
+
+  /* ── Intro Three.js: partículas formando T → explodem → fade ── */
+  (function () {
+    const canvas = document.getElementById('introCanvas');
+    const slide = document.getElementById('introSlide');
+    if (!canvas || !slide || typeof THREE === 'undefined') {
+      // Fallback: sem Three.js, revela texto direto
+      if (slide) {
+        slide.classList.add('phase-title', 'phase-tag', 'phase-body', 'phase-any', 'phase-cta', 'phase-fadeout');
+      }
+      return;
+    }
+
+    // === Setup cena ===
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+    camera.position.set(0, 0, 7);
+
+    function resize() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // === Pontos-alvo: T centralizado no XY ===
+    // Top bar: x ∈ [-2.5, 2.5], y ∈ [1.5, 2.3]
+    // Stem:    x ∈ [-0.45, 0.45], y ∈ [-2.3, 1.5]
+    const targets = [];
+    // Top bar grid 9 × 3 = 27 pontos
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < 3; j++) {
+        targets.push([
+          -2.5 + (i / 8) * 5.0,
+          1.5 + (j / 2) * 0.8,
+        ]);
+      }
+    }
+    // Stem grid 3 × 13 = 39 pontos
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 13; j++) {
+        targets.push([
+          -0.45 + (i / 2) * 0.9,
+          -2.3 + (j / 12) * 3.8,
+        ]);
+      }
+    }
+
+    // === Partículas ===
+    const COUNT = window.innerWidth < 720 ? 320 : 600;
+    const positions = new Float32Array(COUNT * 3);
+    const initials  = new Float32Array(COUNT * 3);
+    const finals    = new Float32Array(COUNT * 3);
+    const velocities = new Float32Array(COUNT * 3);
+
+    for (let i = 0; i < COUNT; i++) {
+      // Posição inicial: espalhada num "shell" externo
+      const r = 6 + Math.random() * 4;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = (Math.random() - 0.5) * Math.PI * 0.6;
+      initials[i * 3 + 0] = r * Math.cos(theta) * Math.cos(phi);
+      initials[i * 3 + 1] = r * Math.sin(phi) * 2;
+      initials[i * 3 + 2] = r * Math.sin(theta) * Math.cos(phi) * 0.4;
+
+      // Posição alvo: um dos pontos do T + offset suave
+      const t = targets[i % targets.length];
+      finals[i * 3 + 0] = t[0] + (Math.random() - 0.5) * 0.18;
+      finals[i * 3 + 1] = t[1] + (Math.random() - 0.5) * 0.18;
+      finals[i * 3 + 2] = (Math.random() - 0.5) * 0.25;
+
+      positions[i * 3 + 0] = initials[i * 3 + 0];
+      positions[i * 3 + 1] = initials[i * 3 + 1];
+      positions[i * 3 + 2] = initials[i * 3 + 2];
+    }
+
+    // Textura de brilho radial (criada em canvas inline)
+    const glowCanvas = document.createElement('canvas');
+    glowCanvas.width = glowCanvas.height = 64;
+    const gctx = glowCanvas.getContext('2d');
+    const grad = gctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0,    'rgba(255,255,255,1)');
+    grad.addColorStop(0.2,  'rgba(180,235,255,0.9)');
+    grad.addColorStop(0.5,  'rgba(0,229,255,0.5)');
+    grad.addColorStop(1,    'rgba(0,229,255,0)');
+    gctx.fillStyle = grad;
+    gctx.fillRect(0, 0, 64, 64);
+    const glowTexture = new THREE.CanvasTexture(glowCanvas);
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.22,
+      map: glowTexture,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      opacity: 1.0,
+      color: 0xffffff,
+    });
+
+    const points = new THREE.Points(geometry, material);
+    scene.add(points);
+
+    // === Orquestração das fases (timing dramático, ~19s total) ===
+    const T_FORM_END  = 8000;    // 0–8s:   convergir
+    const T_HOLD_END  = 11000;   // 8–11s:  T vibra (3s de tensão antes do bang)
+    const EXPLODE_END = 15000;   // 12–15s: BIG BANG — explode com flash+shockwave
+    const FADE_END    = 19000;   // 15–19s: fade do canvas + texto surge
+
+    let startTime = null;
+    let rafId = null;
+    let exploded = false;
+    let stopped = false;
+
+    function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+    function easeInQuad(x)   { return x * x; }
+
+    function updatePhases(t) {
+      // Texto SÓ surge depois do big bang (t > EXPLODE_END), sequência rápida
+      if (t > 15500) slide.classList.add('phase-title');
+      if (t > 16200) slide.classList.add('phase-tag');
+      if (t > 17000) slide.classList.add('phase-body');
+      if (t > 17800) slide.classList.add('phase-any');
+      if (t > 18500) slide.classList.add('phase-cta', 'phase-fadeout');
+    }
+
+    function animate(now) {
+      if (stopped) return;
+      if (startTime === null) startTime = now;
+      const t = now - startTime;
+      updatePhases(t);
+
+      const pos = geometry.attributes.position.array;
+
+      if (t < T_FORM_END) {
+        // Fase 1: convergir suave (ease-out)
+        const k = easeOutCubic(t / T_FORM_END);
+        for (let i = 0; i < COUNT; i++) {
+          const i3 = i * 3;
+          pos[i3]     = initials[i3]     + (finals[i3]     - initials[i3])     * k;
+          pos[i3 + 1] = initials[i3 + 1] + (finals[i3 + 1] - initials[i3 + 1]) * k;
+          pos[i3 + 2] = initials[i3 + 2] + (finals[i3 + 2] - initials[i3 + 2]) * k;
+        }
+        // Pulso de brilho conforme converge
+        material.size = 0.22 + k * 0.06;
+      } else if (t < T_HOLD_END) {
+        // Fase 2: T vibra — jitter cresce nos últimos segundos (tensão antes do bang)
+        const localT = (t - T_FORM_END) / (T_HOLD_END - T_FORM_END); // 0..1
+        // Vibração leve no início, intensa perto do bang (ease-in quadrático)
+        const jitterMag = 0.02 + localT * localT * 0.12;
+        // Pulso global de brilho acelerando
+        const pulseHz = 4 + localT * 16; // 4Hz → 20Hz
+        const brightPulse = (Math.sin(t * pulseHz * 0.001 * Math.PI * 2) * 0.5 + 0.5);
+        for (let i = 0; i < COUNT; i++) {
+          const i3 = i * 3;
+          // Jitter pseudo-aleatório por partícula via seno em alta frequência
+          const seed = i * 0.37;
+          pos[i3]     = finals[i3]     + Math.sin(t * 0.04 + seed)        * jitterMag;
+          pos[i3 + 1] = finals[i3 + 1] + Math.sin(t * 0.045 + seed * 1.3) * jitterMag;
+          pos[i3 + 2] = finals[i3 + 2] + Math.sin(t * 0.05 + seed * 2.1)  * jitterMag * 0.6;
+        }
+        material.size = 0.30 + brightPulse * 0.18 + localT * 0.10;
+        material.opacity = 0.95 + brightPulse * 0.05;
+      } else if (t < EXPLODE_END) {
+        // Fase 3: BIG BANG — calcula velocidades só uma vez, com energia bem maior
+        if (!exploded) {
+          for (let i = 0; i < COUNT; i++) {
+            const i3 = i * 3;
+            const dx = finals[i3];
+            const dy = finals[i3 + 1];
+            const dz = finals[i3 + 2];
+            const mag = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+            // Velocidade alta com bastante variação (range 2-3x da versão anterior)
+            const speed = 0.06 + Math.random() * 0.10;
+            velocities[i3]     = (dx / mag) * speed + (Math.random() - 0.5) * 0.02;
+            velocities[i3 + 1] = (dy / mag) * speed + (Math.random() - 0.5) * 0.02;
+            velocities[i3 + 2] = (Math.random() - 0.5) * 0.12;
+          }
+          exploded = true;
+          // Dispara o flash + shockwave via CSS
+          slide.classList.add('phase-bang');
+        }
+        // Cresce os pontos no momento do bang (efeito de "estouro"), depois encolhe
+        const explodeT = (t - T_HOLD_END) / (EXPLODE_END - T_HOLD_END); // 0..1
+        material.size = 0.50 - explodeT * 0.30; // 0.50 → 0.20
+        for (let i = 0; i < COUNT; i++) {
+          const i3 = i * 3;
+          pos[i3]     += velocities[i3];
+          pos[i3 + 1] += velocities[i3 + 1];
+          pos[i3 + 2] += velocities[i3 + 2];
+          // Drag fraco — partículas mantêm momento por mais tempo
+          velocities[i3]     *= 0.992;
+          velocities[i3 + 1] *= 0.992;
+          velocities[i3 + 2] *= 0.995;
+        }
+      } else if (t < FADE_END) {
+        // Fase 4: continuação do drift + fade
+        const fadeK = (t - EXPLODE_END) / (FADE_END - EXPLODE_END);
+        material.opacity = 1 - easeInQuad(fadeK);
+        for (let i = 0; i < COUNT; i++) {
+          const i3 = i * 3;
+          pos[i3]     += velocities[i3];
+          pos[i3 + 1] += velocities[i3 + 1];
+          pos[i3 + 2] += velocities[i3 + 2];
+        }
+      } else {
+        // Fim: para e libera GPU
+        cleanup();
+        return;
+      }
+
+      geometry.attributes.position.needsUpdate = true;
+      renderer.render(scene, camera);
+      rafId = requestAnimationFrame(animate);
+    }
+
+    function start() {
+      if (rafId !== null) return;
+      stopped = false;
+      startTime = null;
+      rafId = requestAnimationFrame(animate);
+    }
+
+    function cleanup() {
+      stopped = true;
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      // Mantém o canvas vazio (transparente) — textos manifesto continuam visíveis
+      renderer.clear();
+    }
+
+    // Skip: pula pro estado final da animação (texto totalmente visível, canvas vazio)
+    function skip() {
+      if (stopped) return;
+      slide.classList.add('phase-title', 'phase-tag', 'phase-body', 'phase-any', 'phase-cta', 'phase-fadeout');
+      cleanup();
+    }
+
+    // Observer: se usuário sair do slide antes da animação terminar, pula pro final
+    // (evita voltar e ver uma animação congelada no meio).
+    // NÃO reinicia ao voltar — uma vez feita, permanece no estado final pelo resto da sessão.
+    const observer = new MutationObserver(() => {
+      if (!slide.classList.contains('active') && !stopped) {
+        skip();
+      }
+    });
+    observer.observe(slide, { attributes: true, attributeFilter: ['class'] });
+
+    // Expor skip pro keydown handler
+    window.__introSkip = skip;
+
+    // Inicia (slide intro já está ativo no load)
+    start();
   })();
 
   /* ── Detail modal: explicações por card ── */
