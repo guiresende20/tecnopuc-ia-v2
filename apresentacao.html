@@ -864,6 +864,52 @@
     28%  { opacity: 0.85; transform: scale(1.6); }
     100% { opacity: 0;   transform: scale(2.8); }
   }
+  /* Pre-roll: 3 frases gigantes antes da animação começar */
+  .intro-preroll {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .intro-preroll-word {
+    position: absolute;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(56px, 11vw, 168px);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    background: linear-gradient(120deg, #fff 0%, #b9d8ff 50%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0;
+    transform: translateY(24px);
+    text-shadow: 0 0 80px rgba(0, 229, 255, 0.4);
+    white-space: nowrap;
+  }
+  /* Pre-roll só aparece enquanto a classe phase-preroll está ativa */
+  .slide.intro.phase-preroll .intro-preroll-1 {
+    animation: prerollWord 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) 0s forwards;
+  }
+  .slide.intro.phase-preroll .intro-preroll-2 {
+    animation: prerollWord 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) 1.8s forwards;
+  }
+  .slide.intro.phase-preroll .intro-preroll-3 {
+    animation: prerollWord 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) 3.6s forwards;
+  }
+  @keyframes prerollWord {
+    0%   { opacity: 0; transform: translateY(24px) scale(0.96); }
+    18%  { opacity: 1; transform: translateY(0)    scale(1); }
+    78%  { opacity: 1; transform: translateY(0)    scale(1); }
+    100% { opacity: 0; transform: translateY(-12px) scale(1.02); }
+  }
+  .slide.intro:not(.phase-preroll) .intro-preroll {
+    display: none;
+  }
+
   /* Shockwaves: anéis em expansão */
   .intro-shockwave {
     position: absolute;
@@ -891,6 +937,15 @@
     animation: shockwave 2.8s cubic-bezier(0.2, 0.9, 0.3, 1) 0.25s forwards;
     border-color: rgba(141, 61, 143, 0.7);
     border-width: 1.5px;
+  }
+  /* Onda secundária: eco da detonação, sutil e mais lenta */
+  .slide.intro.phase-bang .intro-shockwave-3 {
+    animation: shockwave 3.2s cubic-bezier(0.25, 0.95, 0.35, 1) 0.7s forwards;
+    border-color: rgba(0, 229, 255, 0.5);
+    border-width: 1px;
+    box-shadow:
+      0 0 30px rgba(0, 229, 255, 0.4),
+      inset 0 0 18px rgba(255, 255, 255, 0.2);
   }
   @keyframes shockwave {
     0%   { opacity: 0;    transform: scale(0.05); }
@@ -1277,11 +1332,17 @@
 <div class="deck" id="deck">
 
   <!-- ============ SLIDE 1 — INTRO / MANIFESTO ============ -->
-  <section class="slide intro active" data-slide="1" id="introSlide">
+  <section class="slide intro active phase-preroll" data-slide="1" id="introSlide">
+    <div class="intro-preroll" id="introPreroll">
+      <span class="intro-preroll-word intro-preroll-1">Any place,</span>
+      <span class="intro-preroll-word intro-preroll-2">any time,</span>
+      <span class="intro-preroll-word intro-preroll-3">anywhere.</span>
+    </div>
     <canvas class="intro-three-canvas" id="introCanvas"></canvas>
     <div class="intro-flash" id="introFlash"></div>
     <div class="intro-shockwave" id="introShockwave"></div>
     <div class="intro-shockwave intro-shockwave-2" id="introShockwave2"></div>
+    <div class="intro-shockwave intro-shockwave-3" id="introShockwave3"></div>
     <div class="intro-manifest">
       <h1 class="intro-title">TECNOPUC IA</h1>
       <p class="intro-tagline">Onde o parque pensa em voz alta.</p>
@@ -1293,7 +1354,7 @@
         </div>
         <div class="intro-stanza">
           Que <strong>acelera</strong> o que já está pronto.<br>
-          Que <strong>conecta</strong> o que ainda não se reconheceu parente.<br>
+          Que <strong>conecta, transforma e inova</strong>.<br>
           Que <strong>posiciona</strong> o parque pro futuro que já chegou.
         </div>
       </div>
@@ -1355,7 +1416,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>03 / 12 — Apresentação institucional</span>
+        <span>03 / 16 — Apresentação institucional</span>
       </div>
     </header>
 
@@ -1390,7 +1451,7 @@
       <article class="card">
         <span class="tag purple">Eixo 3</span>
         <h3>P&amp;D e Design</h3>
-        <p>O próprio projeto é <strong>P&amp;D aplicado</strong> — RAG híbrido, embeddings multilíngue, voz multimodal, interface 3D. Demonstra na prática a capacidade do parque em IA conversacional e design de experiência.</p>
+        <p>O próprio projeto é <strong>P&amp;D aplicado</strong> — RAG híbrido, embeddings multilíngue, voz multimodal, interface 3D. Demonstra na prática a capacidade do parque em IA conversacional e design de experiência — e a capacidade institucional de <strong>inovar e experimentar</strong>.</p>
         <ul style="margin-top: 8px;">
           <li>Stack moderna (Next.js 16, Three.js, Gemini)</li>
           <li>Busca semântica + literal via Reciprocal Rank Fusion</li>
@@ -1418,6 +1479,111 @@
     </div>
   </section>
 
+  <!-- ============ SLIDE 4 — ORIGEM (técnica) ============ -->
+  <section class="slide" data-slide="4" data-mode="tecnica">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>04 / 16 — Origem</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Origem do projeto</h1>
+    <p class="slide-subtitle">
+      Por que o TecnoPUC criou um assistente conversacional próprio em vez de adotar um chatbot genérico.
+    </p>
+
+    <div class="grid grid-2" style="gap: 18px;">
+      <article class="card">
+        <span class="tag cyan">Dor 1</span>
+        <h3>Volume crescente de perguntas repetitivas</h3>
+        <p>Equipe de atendimento gastando tempo respondendo as mesmas dúvidas — horários, programas, hubs, processos de residência. Trabalho de baixa diferenciação consumindo banda de quem podia estar criando.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Dor 2</span>
+        <h3>Informação dispersa em múltiplos canais</h3>
+        <p>Site institucional, redes sociais, materiais impressos, contatos diretos. O usuário precisa cruzar várias fontes pra montar uma resposta — fricção real entre curiosidade e ação.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag">Dor 3</span>
+        <h3>Atendimento humano não escala</h3>
+        <p>Funciona em horário comercial, em português, com fila quando há alta demanda. Visitas internacionais, alunos noturnos ou empreendedores fora do horário ficam desatendidos.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Oportunidade</span>
+        <h3>LLMs maturaram pra RAG factual</h3>
+        <p>A combinação <strong>embeddings + recuperação + geração restrita ao contexto</strong> permite hoje um agente <strong>preciso, factual e auditável</strong> — sem alucinação fora do escopo. Era inviável há 2 anos; agora é base.</p>
+      </article>
+    </div>
+
+    <p style="margin-top: 18px; padding: 14px 22px; background: var(--glass); border-left: 3px solid var(--cyan); border-radius: 8px; font-size: 14px; color: var(--t-text); line-height: 1.55;">
+      <strong style="color: var(--cyan); display: block; margin-bottom: 4px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase;">Por isso o TecnoPUC IA</strong>
+      Um único ponto de contato, <strong>factual e auditável</strong>, disponível 24/7, multilíngue, com base curada pela comunidade — substituindo nada, mas <strong>complementando o atendimento humano</strong> nas perguntas que não precisam de pessoa.
+    </p>
+  </section>
+
+  <!-- ============ SLIDE 5 — PARA QUEM É (técnica) ============ -->
+  <section class="slide" data-slide="5" data-mode="tecnica">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>05 / 16 — Para quem é</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Para quem é</h1>
+    <p class="slide-subtitle">
+      Quatro personas atendidas pelo assistente, com a dor que ele endereça e o ganho que entrega.
+    </p>
+
+    <div class="grid grid-2" style="gap: 18px;">
+      <article class="card">
+        <span class="tag cyan">Persona 1</span>
+        <h3>Aluno PUCRS / Estudante</h3>
+        <p><strong>Dor:</strong> sabe que o parque existe ao lado, mas não conhece programas, oportunidades de estágio ou áreas de pesquisa relevantes pro seu curso.</p>
+        <p style="margin-top: 8px;"><strong>Ganho:</strong> descobre em segundos quais hubs, programas e empresas residentes conectam com seu interesse — atalho pra residência, estágio ou projeto.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Persona 2</span>
+        <h3>Empresa residente / Empreendedor</h3>
+        <p><strong>Dor:</strong> navegar entre múltiplos canais pra entender benefícios, processos de entrada/saída, parcerias possíveis e cases de outras empresas residentes.</p>
+        <p style="margin-top: 8px;"><strong>Ganho:</strong> resposta direta e factual sobre infraestrutura, condições de residência, programas de aceleração e conexões com outros residentes.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag">Persona 3</span>
+        <h3>Visitante / Delegação internacional</h3>
+        <p><strong>Dor:</strong> barreira de idioma, falta de tour guiado fora do horário, dificuldade de mapear o ecossistema sem ajuda humana qualificada.</p>
+        <p style="margin-top: 8px;"><strong>Ganho:</strong> conversa em <strong>PT/EN/ES/ZH</strong>, navega autonomamente, recebe a mesma qualidade de informação que um tour guiado.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Persona 4</span>
+        <h3>Time interno TecnoPUC</h3>
+        <p><strong>Dor:</strong> tempo gasto respondendo as mesmas perguntas básicas via e-mail, telefone, redes sociais — pouco volume de cada, alto custo de atenção.</p>
+        <p style="margin-top: 8px;"><strong>Ganho:</strong> primeira camada de triagem automática — sobra mais tempo pra parcerias, eventos, gestão e curadoria de conteúdo na base.</p>
+      </article>
+    </div>
+  </section>
+
   <!-- ============ SLIDE 2 — FEATURES ============ -->
   <section class="slide" data-slide="2" data-mode="tecnica">
     <header class="slide-header">
@@ -1430,7 +1596,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>04 / 12 — Features</span>
+        <span>06 / 16 — Features</span>
       </div>
     </header>
 
@@ -1478,6 +1644,137 @@
     </div>
   </section>
 
+  <!-- ============ SLIDE 7 — CASOS REAIS (técnica) ============ -->
+  <section class="slide" data-slide="7" data-mode="tecnica">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>07 / 16 — Casos reais</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Casos de uso reais</h1>
+    <p class="slide-subtitle">
+      Quatro interações típicas que o assistente já resolve hoje — cada uma exercita uma capacidade diferente do sistema.
+    </p>
+
+    <div class="grid grid-2" style="gap: 18px;">
+      <article class="card">
+        <span class="tag cyan">Caso 1</span>
+        <h3>Aluno descobre programa</h3>
+        <p><strong>Pergunta:</strong> "Tenho interesse em IA, tem alguma coisa no TecnoPUC pra mim?"</p>
+        <p style="margin-top: 8px;"><strong>Pipeline:</strong> embedding multilíngue → busca híbrida → 3 chunks relevantes (hub, programa, empresas residentes).</p>
+        <p style="margin-top: 8px;"><strong>Resposta:</strong> identifica o hub temático + programa de residência + 2 empresas da área, com link pro próximo passo.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Caso 2</span>
+        <h3>Empresa internacional</h3>
+        <p><strong>Pergunta (em inglês):</strong> "What's the application process for the residency program?"</p>
+        <p style="margin-top: 8px;"><strong>Pipeline:</strong> detecta locale=en, embedding direto (sem tradução), resposta em inglês com base traduzida progressivamente.</p>
+        <p style="margin-top: 8px;"><strong>Resposta:</strong> processo passo-a-passo, requisitos, contatos — barreira de idioma resolvida sem tradutor humano.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag">Caso 3</span>
+        <h3>Pergunta com sigla</h3>
+        <p><strong>Pergunta:</strong> "O que é o IPaq?" (sigla interna específica)</p>
+        <p style="margin-top: 8px;"><strong>Pipeline:</strong> embedding sozinho falharia (sigla não cruza bem semanticamente). Busca híbrida pega via FTS literal + RRF fundiu o ranking.</p>
+        <p style="margin-top: 8px;"><strong>Resposta:</strong> conteúdo correto sobre o programa, sem precisar de mapeamento manual de sinônimos.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Caso 4</span>
+        <h3>Comunidade ensinando o sistema</h3>
+        <p><strong>Trigger:</strong> empresa residente vê informação desatualizada sobre ela mesma na resposta.</p>
+        <p style="margin-top: 8px;"><strong>Fluxo:</strong> envia correção pelo formulário → valida e-mail → entra na fila de moderação → admin aprova → chunked + embedded + indexado.</p>
+        <p style="margin-top: 8px;"><strong>Resultado:</strong> próxima pergunta sobre a empresa já reflete a correção. Base institucional cresce com inteligência distribuída.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 8 — COMPARAÇÃO (técnica) ============ -->
+  <section class="slide" data-slide="8" data-mode="tecnica">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>08 / 16 — Comparação</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Diferencial competitivo</h1>
+    <p class="slide-subtitle">
+      Como o TecnoPUC IA se diferencia de chatbots institucionais tradicionais. Não é FAQ com cara nova — é uma camada institucional auditável.
+    </p>
+
+    <div class="stack-card">
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1.2fr; padding: 12px 22px;">
+        <span class="label">Aspecto</span>
+        <span class="label" style="color: var(--color-ocre-light);">Chatbot tradicional</span>
+        <span class="label" style="color: var(--cyan);">TecnoPUC IA</span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1.2fr; padding: 10px 22px;">
+        <span class="value">Base de conhecimento</span>
+        <span class="value">Scripts/FAQ fixos</span>
+        <span class="value"><strong>RAG sobre base curada + comunidade</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1.2fr; padding: 10px 22px;">
+        <span class="value">Modalidade</span>
+        <span class="value">Só texto</span>
+        <span class="value"><strong>Texto + voz multimodal nativa</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1.2fr; padding: 10px 22px;">
+        <span class="value">Idioma</span>
+        <span class="value">Único (PT)</span>
+        <span class="value"><strong>PT / EN / ES / ZH</strong> (detecta automático)</span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1.2fr; padding: 10px 22px;">
+        <span class="value">Interface</span>
+        <span class="value">Caixinha de chat</span>
+        <span class="value"><strong>T 3D + menu radial + estados visuais</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1.2fr; padding: 10px 22px;">
+        <span class="value">Atualizar conhecimento</span>
+        <span class="value">Reprogramar/redeploy</span>
+        <span class="value"><strong>Upload no admin sem deploy</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1.2fr; padding: 10px 22px;">
+        <span class="value">Comunidade contribui</span>
+        <span class="value">Não suporta</span>
+        <span class="value"><strong>Fluxo com moderação + rastreabilidade</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1.2fr; padding: 10px 22px;">
+        <span class="value">Alucinação</span>
+        <span class="value">Pode escapar do escopo</span>
+        <span class="value"><strong>Restrito ao contexto recuperado</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1.2fr; padding: 10px 22px;">
+        <span class="value">Auditoria</span>
+        <span class="value">Logs simples</span>
+        <span class="value"><strong>Cada resposta rastreável ao chunk fonte</strong></span>
+      </div>
+    </div>
+
+    <p style="margin-top: 18px; padding: 14px 22px; background: var(--glass); border-left: 3px solid var(--cyan); border-radius: 8px; font-size: 14px; color: var(--t-text); line-height: 1.55;">
+      <strong style="color: var(--cyan); display: block; margin-bottom: 4px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase;">Posicionamento</strong>
+      Não é um chatbot de FAQ com cara nova. É um <strong>interlocutor institucional auditável e participativo</strong> — proximidade da PUCRS, alcance de um produto.
+    </p>
+  </section>
+
   <!-- ============ SLIDE 3 — SERVIÇOS EXTERNOS ============ -->
   <section class="slide" data-slide="3" data-mode="tecnica">
     <header class="slide-header">
@@ -1490,7 +1787,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>05 / 12 — Serviços externos</span>
+        <span>09 / 16 — Serviços externos</span>
       </div>
     </header>
 
@@ -1574,7 +1871,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>06 / 12 — Stack técnico</span>
+        <span>10 / 16 — Stack técnico</span>
       </div>
     </header>
 
@@ -1653,7 +1950,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>07 / 12 — Busca híbrida</span>
+        <span>11 / 16 — Busca híbrida</span>
       </div>
     </header>
 
@@ -1737,7 +2034,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>08 / 12 — Segurança</span>
+        <span>12 / 16 — Segurança</span>
       </div>
     </header>
 
@@ -1809,7 +2106,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>09 / 12 — Roadmap</span>
+        <span>13 / 16 — Roadmap</span>
       </div>
     </header>
 
@@ -1869,7 +2166,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>10 / 12 — Operacional</span>
+        <span>14 / 16 — Operacional</span>
       </div>
     </header>
 
@@ -1917,7 +2214,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>11 / 12 — Visão de futuro</span>
+        <span>15 / 16 — Visão de futuro</span>
       </div>
     </header>
 
@@ -1977,7 +2274,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>12 / 12 — Glossário</span>
+        <span>16 / 16 — Glossário</span>
       </div>
     </header>
 
@@ -2073,6 +2370,111 @@
   <!-- ============ SLIDES ELI10 (data-mode="eli10") ============ -->
   <!-- ============================================================ -->
 
+  <!-- ============ SLIDE 4 ELI10 — ORIGEM ============ -->
+  <section class="slide" data-slide="4" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>04 / 16 — Por que existe</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Por que esse robô existe?</h1>
+    <p class="slide-subtitle">
+      A motivação por trás do projeto, sem termos difíceis.
+    </p>
+
+    <div class="grid grid-2" style="gap: 18px;">
+      <article class="card">
+        <span class="tag cyan">Problema 1</span>
+        <h3>Pergunta a mesma coisa toda hora</h3>
+        <p>Todo dia chega a mesma pergunta: "Que horas abre?", "Tem programa pra mim?", "Onde fica o Hub X?". O time responde, responde, responde. <strong>Cansa.</strong></p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Problema 2</span>
+        <h3>Informação espalhada em mil lugares</h3>
+        <p>Quem chega olha o site, depois o Instagram, depois liga, depois pergunta pra alguém. <strong>Falta um lugar só</strong> que sabe tudo de uma vez.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag">Problema 3</span>
+        <h3>Gente atende só em horário comercial</h3>
+        <p>Quem atende é humano. Humano não escala. Funciona só de dia, só em português, e quando enche, vira fila. <strong>Gente de fora ou à noite fica desatendida.</strong></p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Oportunidade</span>
+        <h3>IA virou boa o suficiente</h3>
+        <p>Há 2 anos, robôs inventavam respostas. Agora a gente consegue um robô que <strong>lê documentos, encontra a parte certa e só fala o que tá escrito</strong>. Antes era inviável. Hoje dá.</p>
+      </article>
+    </div>
+
+    <p style="margin-top: 18px; padding: 14px 22px; background: var(--glass); border-left: 3px solid var(--cyan); border-radius: 8px; font-size: 14px; color: var(--t-text); line-height: 1.55;">
+      <strong style="color: var(--cyan); display: block; margin-bottom: 4px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase;">Por isso o robô</strong>
+      Um <strong>lugar só</strong> que sabe tudo, atende 24/7, em várias línguas, com revisão humana de quem ensina. Não substitui ninguém — <strong>libera o time</strong> pra fazer coisas que só gente faz.
+    </p>
+  </section>
+
+  <!-- ============ SLIDE 5 ELI10 — PARA QUEM É ============ -->
+  <section class="slide" data-slide="5" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>05 / 16 — Pra quem é</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Pra quem é esse robô</h1>
+    <p class="slide-subtitle">
+      Quatro tipos de pessoa que o robô ajuda de jeitos diferentes.
+    </p>
+
+    <div class="grid grid-2" style="gap: 18px;">
+      <article class="card">
+        <span class="tag cyan">Pessoa 1</span>
+        <h3>Aluno curioso</h3>
+        <p>Tá na PUCRS, sabe que o parque existe ali do lado mas <strong>não faz ideia</strong> do que tem dentro pra ele. Procura programa, estágio, projeto.</p>
+        <p style="margin-top: 8px;"><strong>O robô ajuda:</strong> mostra rapidinho o que combina com o curso dele e como entrar.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Pessoa 2</span>
+        <h3>Empresa querendo entrar</h3>
+        <p>Tem um negócio, ouviu falar do TecnoPUC, quer saber <strong>se cabe lá dentro</strong> — como entra, quanto custa, quais benefícios.</p>
+        <p style="margin-top: 8px;"><strong>O robô ajuda:</strong> explica residência, programas e benefícios sem precisar marcar reunião.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag">Pessoa 3</span>
+        <h3>Gente de fora visitando</h3>
+        <p>Visitante internacional, jornalista, investidor — não fala português, não tem tempo de tour, quer entender <strong>o que esse lugar é</strong>.</p>
+        <p style="margin-top: 8px;"><strong>O robô ajuda:</strong> fala inglês, espanhol e chinês. Pessoa descobre o parque sozinha, na hora que quiser.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Pessoa 4</span>
+        <h3>Quem trabalha no TecnoPUC</h3>
+        <p>O time do TecnoPUC respondendo as mesmas perguntas todo dia: <strong>"que horas abre?"</strong>, <strong>"tem evento hoje?"</strong>, <strong>"quem é fulano?"</strong>.</p>
+        <p style="margin-top: 8px;"><strong>O robô ajuda:</strong> tira as perguntas chatas da mão deles. Eles focam no que precisa de gente.</p>
+      </article>
+    </div>
+  </section>
+
   <!-- ============ SLIDE 2 ELI10 — O QUE ELE FAZ ============ -->
   <section class="slide" data-slide="2" data-mode="eli10">
     <header class="slide-header">
@@ -2085,7 +2487,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>04 / 12 — O que ele faz</span>
+        <span>06 / 16 — O que ele faz</span>
       </div>
     </header>
 
@@ -2133,6 +2535,131 @@
     </div>
   </section>
 
+  <!-- ============ SLIDE 7 ELI10 — CASOS REAIS ============ -->
+  <section class="slide" data-slide="7" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>07 / 16 — Casos de uso</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Como o robô ajuda no dia a dia</h1>
+    <p class="slide-subtitle">
+      Quatro situações reais que ele já resolve hoje — cada uma mostra algo diferente que ele sabe fazer.
+    </p>
+
+    <div class="grid grid-2" style="gap: 18px;">
+      <article class="card">
+        <span class="tag cyan">Caso 1</span>
+        <h3>Aluno curioso</h3>
+        <p><strong>Pergunta:</strong> "Tem coisa de IA aqui?"</p>
+        <p style="margin-top: 8px;"><strong>O que rola:</strong> o robô vasculha o caderno, acha o pedaço sobre IA, e responde: tem esse hub, esse programa, essas empresas.</p>
+        <p style="margin-top: 8px;"><strong>Resultado:</strong> aluno descobre 3 coisas que ele nem sabia que existiam.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Caso 2</span>
+        <h3>Visitante estrangeiro</h3>
+        <p><strong>Pergunta (em inglês):</strong> "How do I apply for the residency?"</p>
+        <p style="margin-top: 8px;"><strong>O que rola:</strong> robô percebe que tá em inglês, responde em inglês. Sem tradutor, sem fila.</p>
+        <p style="margin-top: 8px;"><strong>Resultado:</strong> investidor estrangeiro entendeu o processo no celular dele, no horário dele.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag">Caso 3</span>
+        <h3>Pergunta com sigla esquisita</h3>
+        <p><strong>Pergunta:</strong> "O que é o IPaq?"</p>
+        <p style="margin-top: 8px;"><strong>O que rola:</strong> antes, robô não achava porque "IPaq" é uma sigla. Agora, ele procura <strong>de dois jeitos ao mesmo tempo</strong> (significado e palavras exatas), aí acha.</p>
+        <p style="margin-top: 8px;"><strong>Resultado:</strong> ninguém precisou cadastrar sinônimos. Robô entende sigla naturalmente.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Caso 4</span>
+        <h3>Comunidade ensinando o robô</h3>
+        <p><strong>O que rola:</strong> empresa percebe que tem info errada sobre ela. Manda correção pelo formulário, confirma e-mail, admin lê e aprova. Em segundos, virou parte da memória do robô.</p>
+        <p style="margin-top: 8px;"><strong>Resultado:</strong> próximo aluno que perguntar sobre essa empresa <strong>já vê a info certa</strong>. Sem reunião, sem deploy, sem programador.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 8 ELI10 — COMPARAÇÃO ============ -->
+  <section class="slide" data-slide="8" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>08 / 16 — Diferente dos outros</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Por que é diferente dos outros robôs</h1>
+    <p class="slide-subtitle">
+      Comparação simples entre um robô institucional comum e o robô do TecnoPUC.
+    </p>
+
+    <div class="stack-card">
+      <div class="stack-row" style="grid-template-columns: 1.3fr 1.1fr 1.3fr; padding: 12px 22px;">
+        <span class="label">O que importa</span>
+        <span class="label" style="color: var(--color-ocre-light);">Robô comum</span>
+        <span class="label" style="color: var(--cyan);">Robô TecnoPUC</span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.3fr 1.1fr 1.3fr; padding: 10px 22px;">
+        <span class="value">De onde tira resposta</span>
+        <span class="value">Roteiro fixo</span>
+        <span class="value"><strong>Estuda 13 documentos vivos</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.3fr 1.1fr 1.3fr; padding: 10px 22px;">
+        <span class="value">Como você conversa</span>
+        <span class="value">Só por escrito</span>
+        <span class="value"><strong>Escrito OU por voz</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.3fr 1.1fr 1.3fr; padding: 10px 22px;">
+        <span class="value">Idioma</span>
+        <span class="value">Só português</span>
+        <span class="value"><strong>4 línguas (PT, EN, ES, ZH)</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.3fr 1.1fr 1.3fr; padding: 10px 22px;">
+        <span class="value">Cara dele</span>
+        <span class="value">Caixinha sem graça</span>
+        <span class="value"><strong>T 3D girando, brilhando</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.3fr 1.1fr 1.3fr; padding: 10px 22px;">
+        <span class="value">Atualizar informação</span>
+        <span class="value">Precisa de programador</span>
+        <span class="value"><strong>Pessoa do time sobe arquivo</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.3fr 1.1fr 1.3fr; padding: 10px 22px;">
+        <span class="value">Comunidade pode ensinar</span>
+        <span class="value">Não</span>
+        <span class="value"><strong>Sim, com revisão</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.3fr 1.1fr 1.3fr; padding: 10px 22px;">
+        <span class="value">Inventa coisa?</span>
+        <span class="value">Às vezes inventa</span>
+        <span class="value"><strong>Não — só fala o que tá no caderno</strong></span>
+      </div>
+    </div>
+
+    <p style="margin-top: 18px; padding: 14px 22px; background: var(--glass); border-left: 3px solid var(--cyan); border-radius: 8px; font-size: 14px; color: var(--t-text); line-height: 1.55;">
+      <strong style="color: var(--cyan); display: block; margin-bottom: 4px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase;">Em uma frase</strong>
+      É <strong>robô de FAQ com superpoderes</strong>: sabe muito, fala bonito, não inventa e <strong>aprende com a comunidade</strong>.
+    </p>
+  </section>
+
   <!-- ============ SLIDE 3 ELI10 — AJUDANTES ============ -->
   <section class="slide" data-slide="3" data-mode="eli10">
     <header class="slide-header">
@@ -2145,7 +2672,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>05 / 12 — Ajudantes</span>
+        <span>09 / 16 — Ajudantes</span>
       </div>
     </header>
 
@@ -2229,7 +2756,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>06 / 12 — Peças por dentro</span>
+        <span>10 / 16 — Peças por dentro</span>
       </div>
     </header>
 
@@ -2302,7 +2829,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>07 / 12 — Duas formas de procurar</span>
+        <span>11 / 16 — Duas formas de procurar</span>
       </div>
     </header>
 
@@ -2376,7 +2903,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>08 / 12 — Segurança</span>
+        <span>12 / 16 — Segurança</span>
       </div>
     </header>
 
@@ -2448,7 +2975,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>09 / 12 — Em construção</span>
+        <span>13 / 16 — Em construção</span>
       </div>
     </header>
 
@@ -2508,7 +3035,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>10 / 12 — Coisas chatas mas importantes</span>
+        <span>14 / 16 — Coisas chatas mas importantes</span>
       </div>
     </header>
 
@@ -2556,7 +3083,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>11 / 12 — Sonhos pra mais tarde</span>
+        <span>15 / 16 — Sonhos pra mais tarde</span>
       </div>
     </header>
 
@@ -2616,7 +3143,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>12 / 12 — Dicionário fácil</span>
+        <span>16 / 16 — Dicionário fácil</span>
       </div>
     </header>
 
@@ -2866,6 +3393,20 @@
     const ctx = canvas.getContext('2d');
     let particles = [];
 
+    // Mouse reactivity: posição atual + se está ativa (dentro da janela)
+    let mouseX = -9999, mouseY = -9999;
+    let mouseActive = false;
+    const MOUSE_RADIUS    = 160;
+    const MOUSE_RADIUS_SQ = MOUSE_RADIUS * MOUSE_RADIUS;
+    const MOUSE_FORCE     = 0.18;     // intensidade da atração
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      mouseActive = true;
+    });
+    window.addEventListener('mouseleave', () => { mouseActive = false; });
+    window.addEventListener('blur',       () => { mouseActive = false; });
+
     function resize() {
       const dpr = window.devicePixelRatio || 1;
       canvas.width = window.innerWidth * dpr;
@@ -2897,6 +3438,27 @@
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
+
+        // Mouse reactivity: atrai sutilmente partículas próximas ao cursor
+        if (mouseActive) {
+          const mdx = mouseX - p.x;
+          const mdy = mouseY - p.y;
+          const md2 = mdx * mdx + mdy * mdy;
+          if (md2 < MOUSE_RADIUS_SQ && md2 > 1) {
+            const md = Math.sqrt(md2);
+            const force = (1 - md / MOUSE_RADIUS) * MOUSE_FORCE;
+            p.vx += (mdx / md) * force;
+            p.vy += (mdy / md) * force;
+          }
+        }
+        // Cap de velocidade pra não acelerar infinito quando mouse fica parado
+        const vmag2 = p.vx * p.vx + p.vy * p.vy;
+        if (vmag2 > 4) {
+          const vmag = Math.sqrt(vmag2);
+          p.vx = (p.vx / vmag) * 2;
+          p.vy = (p.vy / vmag) * 2;
+        }
+
         p.x += p.vx; p.y += p.vy;
         if (p.x < 0 || p.x > w) p.vx *= -1;
         if (p.y < 0 || p.y > h) p.vy *= -1;
@@ -2958,7 +3520,9 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-    camera.position.set(0, 0, 7);
+    // Posição inicial da câmera (será animada por fase: dolly)
+    const CAM_BASE_Z = 7;
+    camera.position.set(0, 0, CAM_BASE_Z);
 
     function resize() {
       const w = window.innerWidth;
@@ -2988,16 +3552,17 @@
       for (let j = 0; j < 13; j++) {
         targets.push([
           -0.45 + (i / 2) * 0.9,
-          -2.3 + (j / 12) * 3.8,
+          -2.3 + (j / 16) * 3.8,
         ]);
       }
     }
 
     // === Partículas ===
     const COUNT = window.innerWidth < 720 ? 320 : 600;
-    const positions = new Float32Array(COUNT * 3);
-    const initials  = new Float32Array(COUNT * 3);
-    const finals    = new Float32Array(COUNT * 3);
+    const positions  = new Float32Array(COUNT * 3);
+    const prevPos    = new Float32Array(COUNT * 3); // pra trails na explosão
+    const initials   = new Float32Array(COUNT * 3);
+    const finals     = new Float32Array(COUNT * 3);
     const velocities = new Float32Array(COUNT * 3);
 
     for (let i = 0; i < COUNT; i++) {
@@ -3049,16 +3614,42 @@
     const points = new THREE.Points(geometry, material);
     scene.add(points);
 
-    // === Orquestração das fases (timing dramático, ~19s total) ===
+    // === Trails: LineSegments do prevPos → pos, visíveis só na explosão ===
+    const trailPositions = new Float32Array(COUNT * 2 * 3); // 2 vértices por linha
+    const trailGeometry = new THREE.BufferGeometry();
+    trailGeometry.setAttribute('position', new THREE.BufferAttribute(trailPositions, 3));
+    const trailMaterial = new THREE.LineBasicMaterial({
+      transparent: true,
+      opacity: 0.7,
+      color: 0x00e5ff,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const trails = new THREE.LineSegments(trailGeometry, trailMaterial);
+    trails.visible = false;
+    scene.add(trails);
+
+    // === Orquestração das fases ===
+    // Pré-roll roda antes via CSS (3 frases × 1.8s = 5.4s).
+    // Quando phase-preroll é removido, start() é chamado e animate() conta t=0 daqui.
+    const PRE_ROLL_DURATION = 5400;
     const T_FORM_END  = 8000;    // 0–8s:   convergir
-    const T_HOLD_END  = 11000;   // 8–11s:  T vibra (3s de tensão antes do bang)
-    const EXPLODE_END = 15000;   // 12–15s: BIG BANG — explode com flash+shockwave
+    const T_HOLD_END  = 11000;   // 8–11s:  T vibra (tensão antes do bang)
+    const EXPLODE_END = 15000;   // 11–15s: BIG BANG
     const FADE_END    = 19000;   // 15–19s: fade do canvas + texto surge
+
+    // Cores por fase (lerp suave entre boundaries)
+    const COLOR_FORM  = new THREE.Color(0xb0d0ff); // azul-branco frio
+    const COLOR_HOLD  = new THREE.Color(0xffffff); // branco incandescente
+    const COLOR_BANG  = new THREE.Color(0xffd680); // amarelo quente
+    const COLOR_DRIFT = new THREE.Color(0xb0e0ff); // cyan claro
+    const COLOR_FADE  = new THREE.Color(0x9a7aff); // roxo
 
     let startTime = null;
     let rafId = null;
     let exploded = false;
     let stopped = false;
+    let preRollTimeout = null;
 
     function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
     function easeInQuad(x)   { return x * x; }
@@ -3079,6 +3670,11 @@
       updatePhases(t);
 
       const pos = geometry.attributes.position.array;
+      // Salva posição prévia pra trails (lines do prev → current)
+      for (let i = 0; i < COUNT * 3; i++) prevPos[i] = pos[i];
+
+      let camZ = CAM_BASE_Z;       // posição da câmera nessa fase
+      const color = material.color;
 
       if (t < T_FORM_END) {
         // Fase 1: convergir suave (ease-out)
@@ -3089,19 +3685,20 @@
           pos[i3 + 1] = initials[i3 + 1] + (finals[i3 + 1] - initials[i3 + 1]) * k;
           pos[i3 + 2] = initials[i3 + 2] + (finals[i3 + 2] - initials[i3 + 2]) * k;
         }
-        // Pulso de brilho conforme converge
         material.size = 0.22 + k * 0.06;
+        // Dolly: câmera puxa pra trás conforme T se forma (mostra escala)
+        camZ = 9 - 2 * k;            // 9 → 7
+        // Cor: azul-frio → branco
+        color.lerpColors(COLOR_FORM, COLOR_HOLD, k);
+        trails.visible = false;
       } else if (t < T_HOLD_END) {
-        // Fase 2: T vibra — jitter cresce nos últimos segundos (tensão antes do bang)
-        const localT = (t - T_FORM_END) / (T_HOLD_END - T_FORM_END); // 0..1
-        // Vibração leve no início, intensa perto do bang (ease-in quadrático)
+        // Fase 2: T vibra
+        const localT = (t - T_FORM_END) / (T_HOLD_END - T_FORM_END);
         const jitterMag = 0.02 + localT * localT * 0.12;
-        // Pulso global de brilho acelerando
-        const pulseHz = 4 + localT * 16; // 4Hz → 20Hz
+        const pulseHz = 4 + localT * 16;
         const brightPulse = (Math.sin(t * pulseHz * 0.001 * Math.PI * 2) * 0.5 + 0.5);
         for (let i = 0; i < COUNT; i++) {
           const i3 = i * 3;
-          // Jitter pseudo-aleatório por partícula via seno em alta frequência
           const seed = i * 0.37;
           pos[i3]     = finals[i3]     + Math.sin(t * 0.04 + seed)        * jitterMag;
           pos[i3 + 1] = finals[i3 + 1] + Math.sin(t * 0.045 + seed * 1.3) * jitterMag;
@@ -3109,8 +3706,11 @@
         }
         material.size = 0.30 + brightPulse * 0.18 + localT * 0.10;
         material.opacity = 0.95 + brightPulse * 0.05;
+        camZ = 7 + Math.sin(t * 0.012) * 0.08; // pequena oscilação na câmera
+        color.copy(COLOR_HOLD); // mantém branco
+        trails.visible = false;
       } else if (t < EXPLODE_END) {
-        // Fase 3: BIG BANG — calcula velocidades só uma vez, com energia bem maior
+        // Fase 3: BIG BANG
         if (!exploded) {
           for (let i = 0; i < COUNT; i++) {
             const i3 = i * 3;
@@ -3118,31 +3718,55 @@
             const dy = finals[i3 + 1];
             const dz = finals[i3 + 2];
             const mag = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
-            // Velocidade alta com bastante variação (range 2-3x da versão anterior)
             const speed = 0.06 + Math.random() * 0.10;
             velocities[i3]     = (dx / mag) * speed + (Math.random() - 0.5) * 0.02;
             velocities[i3 + 1] = (dy / mag) * speed + (Math.random() - 0.5) * 0.02;
             velocities[i3 + 2] = (Math.random() - 0.5) * 0.12;
           }
           exploded = true;
-          // Dispara o flash + shockwave via CSS
           slide.classList.add('phase-bang');
         }
-        // Cresce os pontos no momento do bang (efeito de "estouro"), depois encolhe
-        const explodeT = (t - T_HOLD_END) / (EXPLODE_END - T_HOLD_END); // 0..1
-        material.size = 0.50 - explodeT * 0.30; // 0.50 → 0.20
+        const explodeT = (t - T_HOLD_END) / (EXPLODE_END - T_HOLD_END);
+        material.size = 0.50 - explodeT * 0.30;
         for (let i = 0; i < COUNT; i++) {
           const i3 = i * 3;
           pos[i3]     += velocities[i3];
           pos[i3 + 1] += velocities[i3 + 1];
           pos[i3 + 2] += velocities[i3 + 2];
-          // Drag fraco — partículas mantêm momento por mais tempo
           velocities[i3]     *= 0.992;
           velocities[i3 + 1] *= 0.992;
           velocities[i3 + 2] *= 0.995;
         }
+        // Dolly impact: câmera salta pra perto no bang, depois recua
+        if (explodeT < 0.12) {
+          camZ = 4.5 + (7 - 4.5) * (explodeT / 0.12);     // 4.5 → 7
+        } else {
+          camZ = 7 + 1.5 * easeOutCubic((explodeT - 0.12) / 0.88); // 7 → 8.5
+        }
+        // Cor: bang amarelo quente nos primeiros 18%, depois drift cyan
+        if (explodeT < 0.18) {
+          color.copy(COLOR_BANG);
+        } else {
+          const k = (explodeT - 0.18) / 0.82;
+          color.lerpColors(COLOR_BANG, COLOR_DRIFT, easeOutCubic(k));
+        }
+        // Trails visíveis e brilhando — atualiza geometry com prev → current
+        trails.visible = true;
+        trailMaterial.opacity = 0.7 * (1 - explodeT * 0.5); // 0.7 → 0.35
+        const tp = trailGeometry.attributes.position.array;
+        for (let i = 0; i < COUNT; i++) {
+          const i6 = i * 6;
+          const i3 = i * 3;
+          tp[i6]     = prevPos[i3];
+          tp[i6 + 1] = prevPos[i3 + 1];
+          tp[i6 + 2] = prevPos[i3 + 2];
+          tp[i6 + 3] = pos[i3];
+          tp[i6 + 4] = pos[i3 + 1];
+          tp[i6 + 5] = pos[i3 + 2];
+        }
+        trailGeometry.attributes.position.needsUpdate = true;
       } else if (t < FADE_END) {
-        // Fase 4: continuação do drift + fade
+        // Fase 4: drift + fade + dolly out + cor pra roxo
         const fadeK = (t - EXPLODE_END) / (FADE_END - EXPLODE_END);
         material.opacity = 1 - easeInQuad(fadeK);
         for (let i = 0; i < COUNT; i++) {
@@ -3151,12 +3775,28 @@
           pos[i3 + 1] += velocities[i3 + 1];
           pos[i3 + 2] += velocities[i3 + 2];
         }
+        camZ = 8.5 + fadeK * 1.5;   // 8.5 → 10
+        color.lerpColors(COLOR_DRIFT, COLOR_FADE, fadeK);
+        trailMaterial.opacity = 0.35 * (1 - fadeK);
+        // Continua atualizando trails durante o fade (até sumirem)
+        const tp = trailGeometry.attributes.position.array;
+        for (let i = 0; i < COUNT; i++) {
+          const i6 = i * 6;
+          const i3 = i * 3;
+          tp[i6]     = prevPos[i3];
+          tp[i6 + 1] = prevPos[i3 + 1];
+          tp[i6 + 2] = prevPos[i3 + 2];
+          tp[i6 + 3] = pos[i3];
+          tp[i6 + 4] = pos[i3 + 1];
+          tp[i6 + 5] = pos[i3 + 2];
+        }
+        trailGeometry.attributes.position.needsUpdate = true;
       } else {
-        // Fim: para e libera GPU
         cleanup();
         return;
       }
 
+      camera.position.z = camZ;
       geometry.attributes.position.needsUpdate = true;
       renderer.render(scene, camera);
       rafId = requestAnimationFrame(animate);
@@ -3179,10 +3819,12 @@
       renderer.clear();
     }
 
-    // Skip: pula pro estado final da animação (texto totalmente visível, canvas vazio)
+    // Skip: pula pro estado final (encerra pré-roll + textos visíveis + canvas vazio)
     function skip() {
       if (stopped) return;
+      slide.classList.remove('phase-preroll');
       slide.classList.add('phase-title', 'phase-tag', 'phase-body', 'phase-any', 'phase-cta', 'phase-fadeout');
+      if (preRollTimeout) { clearTimeout(preRollTimeout); preRollTimeout = null; }
       cleanup();
     }
 
@@ -3199,8 +3841,12 @@
     // Expor skip pro keydown handler
     window.__introSkip = skip;
 
-    // Inicia (slide intro já está ativo no load)
-    start();
+    // Inicia o pré-roll (CSS via classe phase-preroll já presente no HTML).
+    // Quando termina (5.4s), remove a classe e dispara a animação Three.js.
+    preRollTimeout = setTimeout(() => {
+      slide.classList.remove('phase-preroll');
+      start();
+    }, PRE_ROLL_DURATION);
   })();
 
   /* ── Detail modal: explicações por card ── */
