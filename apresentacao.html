@@ -4,6 +4,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TecnoPUC IA — Apresentação</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%230099ff'/%3E%3Cstop offset='0.5' stop-color='%2300e5ff'/%3E%3Cstop offset='1' stop-color='%238d3d8f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='4' y='4' width='56' height='56' rx='12' fill='url(%23g)'/%3E%3Ctext x='32' y='46' font-family='Space Grotesk,Arial,sans-serif' font-weight='700' font-size='40' text-anchor='middle' fill='%23fff'%3ET%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
 <link href="./apresentacao_files/css2" rel="stylesheet">
@@ -766,6 +767,233 @@
     50%      { transform: translateX(5px); }
   }
 
+  /* ── Network global de fundo (atrás dos slides, acima do body bg) ── */
+  .bg-network {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+  }
+  body[data-mode] .bg-network { opacity: 0.42; }
+  /* Deck precisa ficar acima do canvas pra conteúdo aparecer na frente */
+  .deck { z-index: 1; }
+
+  /* ── T 3D na capa (CSS extrudado) ── */
+  .cover-t-3d {
+    width: 180px;
+    height: 180px;
+    perspective: 900px;
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+  /* Halo radial pulsante */
+  .cover-t-3d::after {
+    content: '';
+    position: absolute;
+    inset: -90px;
+    background: radial-gradient(circle, rgba(0, 229, 255, 0.42) 0%, rgba(0, 153, 255, 0.22) 30%, rgba(141, 61, 143, 0.16) 55%, transparent 75%);
+    pointer-events: none;
+    z-index: -1;
+    animation: tHaloPulse 3.8s ease-in-out infinite;
+    filter: blur(2px);
+  }
+  /* Anel orbital rotativo (halo "sólido") */
+  .cover-t-3d::before {
+    content: '';
+    position: absolute;
+    inset: -28px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 229, 255, 0.45);
+    box-shadow:
+      0 0 24px rgba(0, 229, 255, 0.35) inset,
+      0 0 36px rgba(0, 229, 255, 0.30);
+    pointer-events: none;
+    animation: tRingSpin 9s linear infinite;
+    mask: conic-gradient(from 0deg, transparent 0deg, #000 40deg, #000 320deg, transparent 360deg);
+    -webkit-mask: conic-gradient(from 0deg, transparent 0deg, #000 40deg, #000 320deg, transparent 360deg);
+  }
+  @keyframes tHaloPulse {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.12); }
+  }
+  @keyframes tRingSpin {
+    from { transform: rotate(0deg);   }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* ── Toggle de modo fixo (top-right, só aparece após escolher modo) ── */
+  .mode-toggle {
+    position: fixed;
+    top: 16px;
+    right: 24px;
+    z-index: 30;
+    display: none;
+    gap: 4px;
+    padding: 4px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  }
+  body[data-mode] .mode-toggle { display: inline-flex; }
+  .mode-toggle-btn {
+    border: 0;
+    background: transparent;
+    color: var(--t-text-dim);
+    font-family: inherit;
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+    white-space: nowrap;
+  }
+  .mode-toggle-btn:hover {
+    color: var(--t-text);
+  }
+  .mode-toggle-btn.is-active {
+    background: linear-gradient(135deg, rgba(0, 153, 255, 0.35), rgba(0, 229, 255, 0.25));
+    color: #fff;
+    box-shadow: 0 0 14px rgba(0, 229, 255, 0.3);
+  }
+  @media (max-width: 720px) {
+    .mode-toggle { top: 10px; right: 10px; }
+    .mode-toggle-btn { font-size: 10px; padding: 6px 10px; letter-spacing: 0.04em; }
+  }
+  .cover-t-3d-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transform: rotateY(-12deg) rotateX(8deg);
+    transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
+    animation: coverTFloat 6s ease-in-out infinite alternate;
+  }
+  .cover-t-3d-inner.tilting {
+    animation: none;
+  }
+  @keyframes coverTFloat {
+    from { transform: rotateY(-18deg) rotateX(10deg); }
+    to   { transform: rotateY(14deg)  rotateX(-4deg); }
+  }
+  .t-face {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 152px;
+    line-height: 1;
+    color: rgba(0, 229, 255, var(--o, 0.5));
+    text-shadow: 0 0 10px rgba(0, 229, 255, calc(var(--o, 0.5) * 0.55));
+    transform: translateZ(var(--z, 0px));
+    user-select: none;
+    pointer-events: none;
+  }
+  .t-face-front {
+    color: #fff;
+    text-shadow:
+      0 0 22px rgba(0, 229, 255, 0.85),
+      0 0 50px rgba(0, 153, 255, 0.55),
+      0 0 80px rgba(141, 61, 143, 0.45);
+  }
+
+  /* ── Seletor de modo (capa) ── */
+  .mode-selector {
+    display: flex;
+    gap: 18px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: coverIn 1.1s ease both;
+    animation-delay: 0.3s;
+    opacity: 0;
+    animation-fill-mode: forwards;
+  }
+  .mode-button {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 18px 26px;
+    border-radius: 14px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    cursor: pointer;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    text-align: left;
+    min-width: 270px;
+    font-family: inherit;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+  }
+  .mode-button::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.55;
+  }
+  .mode-button:hover {
+    transform: translateY(-3px);
+    border-color: var(--cyan);
+    box-shadow: 0 0 32px rgba(0, 229, 255, 0.28);
+  }
+  .mode-button-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .mode-button-icon {
+    color: var(--cyan);
+    font-size: 18px;
+  }
+  .mode-button-title {
+    color: #fff;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  .mode-button-desc {
+    color: var(--t-text-dim);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .mode-button-kbd {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    opacity: 0.75;
+  }
+
+  /* ── Visibilidade por modo ── */
+  .slide[data-mode] { display: none !important; }
+  body[data-mode='tecnica'] .slide[data-mode='tecnica'] { display: flex !important; }
+  body[data-mode='eli10']   .slide[data-mode='eli10']   { display: flex !important; }
+
+  /* ── Mobile do seletor + T 3D ── */
+  @media (max-width: 720px) {
+    .cover-t-3d { width: 130px; height: 130px; }
+    .t-face { font-size: 108px; }
+    .mode-selector { flex-direction: column; gap: 12px; margin-top: 22px; }
+    .mode-button { min-width: 0; width: 100%; padding: 14px 18px; }
+  }
+
   /* ── Tablet ── */
   @media (max-width: 1024px) {
     .slide {
@@ -881,15 +1109,30 @@
 </head>
 <body>
 
-<div class="progress"><div class="progress-bar" id="progressBar" style="width: 11.1111%;"></div></div>
+<div class="progress"><div class="progress-bar" id="progressBar" style="width: 10%;"></div></div>
+
+<canvas class="bg-network" id="bgNetwork"></canvas>
+
+<div class="mode-toggle" id="modeToggle" role="group" aria-label="Trocar versão">
+  <button class="mode-toggle-btn" type="button" data-mode-choice="tecnica">Técnica</button>
+  <button class="mode-toggle-btn" type="button" data-mode-choice="eli10">ELI10</button>
+</div>
 
 <div class="deck" id="deck">
 
   <!-- ============ SLIDE 1 — CAPA ============ -->
   <section class="slide cover active" data-slide="1">
-    <canvas class="cover-canvas" id="coverCanvas" width="1920" height="945" style="width: 1920px; height: 945px;"></canvas>
     <div class="cover-content">
-      <div class="cover-t"></div>
+      <div class="cover-t-3d" id="coverT3D">
+        <div class="cover-t-3d-inner" id="coverT3DInner">
+          <span class="t-face" style="--z:-24px; --o:0.16;">T</span>
+          <span class="t-face" style="--z:-18px; --o:0.26;">T</span>
+          <span class="t-face" style="--z:-12px; --o:0.38;">T</span>
+          <span class="t-face" style="--z:-6px;  --o:0.55;">T</span>
+          <span class="t-face" style="--z:0px;   --o:0.78;">T</span>
+          <span class="t-face t-face-front" style="--z:6px; --o:1;">T</span>
+        </div>
+      </div>
       <h1 class="cover-title">TECNOPUC IA</h1>
       <p class="cover-subtitle">
         Assistente conversacional do Parque Científico e Tecnológico da PUCRS — multimodal, com RAG, voz e contribuições da comunidade.
@@ -898,16 +1141,29 @@
         <span class="dot"></span>
         <span>Apresentação institucional · 2026</span>
       </div>
-      <div class="cover-cta">
-        <span>Pressione</span>
-        <kbd>→</kbd>
-        <span>para começar</span>
+      <div class="mode-selector" id="modeSelector">
+        <button class="mode-button" data-mode-choice="tecnica" type="button">
+          <div class="mode-button-row">
+            <span class="mode-button-icon">◉</span>
+            <span class="mode-button-title">Versão técnica</span>
+          </div>
+          <span class="mode-button-desc">Detalhada, com métricas, termos técnicos e arquitetura</span>
+          <span class="mode-button-kbd">tecla 1</span>
+        </button>
+        <button class="mode-button" data-mode-choice="eli10" type="button">
+          <div class="mode-button-row">
+            <span class="mode-button-icon">✦</span>
+            <span class="mode-button-title">Versão fácil (ELI10)</span>
+          </div>
+          <span class="mode-button-desc">Sem termos técnicos, com analogias, pra qualquer público</span>
+          <span class="mode-button-kbd">tecla 2</span>
+        </button>
       </div>
     </div>
   </section>
 
   <!-- ============ SLIDE 2 — FEATURES ============ -->
-  <section class="slide" data-slide="2">
+  <section class="slide" data-slide="2" data-mode="tecnica">
     <header class="slide-header">
       <div class="brand">
         <div class="brand-t"></div>
@@ -918,7 +1174,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>02 / 09 — Features</span>
+        <span>02 / 10 — Features</span>
       </div>
     </header>
 
@@ -967,7 +1223,7 @@
   </section>
 
   <!-- ============ SLIDE 3 — SERVIÇOS EXTERNOS ============ -->
-  <section class="slide" data-slide="3">
+  <section class="slide" data-slide="3" data-mode="tecnica">
     <header class="slide-header">
       <div class="brand">
         <div class="brand-t"></div>
@@ -978,7 +1234,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>03 / 09 — Serviços externos</span>
+        <span>03 / 10 — Serviços externos</span>
       </div>
     </header>
 
@@ -1051,7 +1307,7 @@
   </section>
 
   <!-- ============ SLIDE 4 — STACK TÉCNICO ============ -->
-  <section class="slide" data-slide="4">
+  <section class="slide" data-slide="4" data-mode="tecnica">
     <header class="slide-header">
       <div class="brand">
         <div class="brand-t"></div>
@@ -1062,7 +1318,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>04 / 09 — Stack técnico</span>
+        <span>04 / 10 — Stack técnico</span>
       </div>
     </header>
 
@@ -1081,7 +1337,7 @@
       <div class="stack-row">
         <span class="label">3D &amp; Animação</span>
         <span class="value">
-          <code>Three.js</code><code>react-three-fiber</code><code>drei</code><code>Framer Motion</code>
+          <code>Three.js</code><code>react-three-fiber</code><code>drei</code><code>Framer Motion</code> — asset <code>.glb</code> real do T (5,3 MB → <strong>198 KB</strong> via resize + WebP) com preload no <code>&lt;head&gt;</code>.
         </span>
       </div>
       <div class="stack-row">
@@ -1093,13 +1349,19 @@
       <div class="stack-row">
         <span class="label">Backend</span>
         <span class="value">
-          <code>Next.js API Routes</code> serverless — RAG pipeline, ingestão, voice token e admin.
+          <code>Next.js API Routes</code> serverless — RAG pipeline, ingestão, voice token e admin. <code>/api/chat</code> roda em <strong>edge runtime</strong> (cold start menor, geo-distribuído) com cache in-memory de settings (TTL 60s, single-flight, invalidação no PUT).
         </span>
       </div>
       <div class="stack-row">
         <span class="label">IA</span>
         <span class="value">
-          <code>@google/generative-ai</code><code>@google/genai</code> — embeddings, geração e Live API.
+          <code>@google/generative-ai</code><code>@google/genai</code> — embeddings, geração e Live API. <code>gemini-embedding-2-preview</code> é <strong>multilíngue</strong> (PT/EN/ES/ZH direto, sem tradução prévia).
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">Busca híbrida</span>
+        <span class="value">
+          <code>pgvector</code> + <code>tsvector</code> (GIN) — RPC <code>hybrid_match_documents</code> combina os dois rankings via <strong>Reciprocal Rank Fusion</strong> (rrf_k = 60).
         </span>
       </div>
       <div class="stack-row">
@@ -1123,8 +1385,8 @@
     </div>
   </section>
 
-  <!-- ============ SLIDE 5 — SEGURANÇA ============ -->
-  <section class="slide" data-slide="5">
+  <!-- ============ SLIDE 5 — BUSCA HÍBRIDA ============ -->
+  <section class="slide" data-slide="5" data-mode="tecnica">
     <header class="slide-header">
       <div class="brand">
         <div class="brand-t"></div>
@@ -1135,7 +1397,91 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>05 / 09 — Segurança</span>
+        <span>05 / 10 — Busca híbrida</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Busca híbrida no RAG</h1>
+    <p class="slide-subtitle">
+      Combinamos busca semântica (<code style="background:rgba(0,153,255,0.1);padding:1px 6px;border-radius:4px;color:#b9d8ff">pgvector</code>) com Full-Text Search via <strong>Reciprocal Rank Fusion</strong> no Postgres. Resolve falhas em siglas, nomes próprios e termos institucionais.
+    </p>
+
+    <div class="grid grid-2" style="gap: 18px;">
+      <article class="card" style="border-color: rgba(234,152,47,0.45);">
+        <span class="tag">Antes</span>
+        <h3>Só busca vetorial</h3>
+        <p>Pergunta → embedding → similaridade no Supabase <code style="background:rgba(234,152,47,0.10);padding:1px 6px;border-radius:4px;color:#f3c98a">pgvector</code>. Um único ranking, baseado em significado.</p>
+        <ul style="margin-top: 8px;">
+          <li>Siglas literais (<strong>IPaq</strong>, <strong>FabLab</strong>) cruzavam mal</li>
+          <li>Nomes próprios (<strong>Apple</strong>, <strong>EDP</strong>) idem</li>
+          <li>Recall@5 = 0,792 — cerca de 1 em cada 5 chunks relevantes ficava de fora</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Depois</span>
+        <h3>Vetor + FTS via RRF</h3>
+        <p>Mesmo embedding + Full-Text Search no Postgres (configs <code style="background:rgba(0,153,255,0.10);padding:1px 6px;border-radius:4px;color:#b9d8ff">simple</code>, <code style="background:rgba(0,153,255,0.10);padding:1px 6px;border-radius:4px;color:#b9d8ff">portuguese</code>, <code style="background:rgba(0,153,255,0.10);padding:1px 6px;border-radius:4px;color:#b9d8ff">english</code>). Dois rankings fundidos via Reciprocal Rank Fusion.</p>
+        <ul style="margin-top: 8px;">
+          <li>Siglas e nomes próprios casam pelo FTS literal</li>
+          <li>Embedding multilíngue cobre PT / EN / ES / ZH</li>
+          <li>Recall@5 = 0,911 — sobe 11,9 pp</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="stack-card" style="margin-top: 18px;">
+      <div class="stack-row" style="grid-template-columns: 1.2fr 1fr 1fr 0.7fr; padding: 12px 22px;">
+        <span class="label">Métrica</span>
+        <span class="label" style="color: var(--color-ocre-light);">Antes (só vetor)</span>
+        <span class="label" style="color: var(--cyan);">Depois (híbrido)</span>
+        <span class="label">Δ</span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.2fr 1fr 1fr 0.7fr; padding: 10px 22px;">
+        <span class="value">Hit@5</span>
+        <span class="value">0,875</span>
+        <span class="value"><strong style="color:#fff;">0,969</strong></span>
+        <span class="value" style="color: var(--cyan);">+9,4 pp</span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.2fr 1fr 1fr 0.7fr; padding: 10px 22px;">
+        <span class="value">Recall@5</span>
+        <span class="value">0,792</span>
+        <span class="value"><strong style="color:#fff;">0,911</strong></span>
+        <span class="value" style="color: var(--cyan);">+11,9 pp</span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.2fr 1fr 1fr 0.7fr; padding: 10px 22px;">
+        <span class="value">MRR (Mean Reciprocal Rank)</span>
+        <span class="value">0,664</span>
+        <span class="value"><strong style="color:#fff;">0,797</strong></span>
+        <span class="value" style="color: var(--cyan);">+0,13</span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.2fr 1fr 1fr 0.7fr; padding: 10px 22px;">
+        <span class="value">Latência p95</span>
+        <span class="value">560 ms</span>
+        <span class="value">647 ms</span>
+        <span class="value" style="color: var(--color-ocre-light);">+87 ms</span>
+      </div>
+    </div>
+
+    <p style="margin-top: 18px; padding: 14px 22px; background: var(--glass); border-left: 3px solid var(--cyan); border-radius: 8px; font-size: 14px; color: var(--t-text); line-height: 1.55;">
+      <strong style="color: var(--cyan); display: block; margin-bottom: 4px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase;">Por que importa</strong>
+      A base do TecnoPUC é cheia de siglas (IPaq, FabLab), nomes de empresas e termos institucionais — exatamente onde embedding sozinho falha. O ganho é mensurável (Recall@5 +11,9 pp) e o custo de latência é marginal (+87 ms p95). Avaliado num eval set de 32 queries multilíngues em <code style="background:rgba(0,153,255,0.10);padding:1px 6px;border-radius:4px;color:#b9d8ff">scripts/eval-retrieval.ts</code>.
+    </p>
+  </section>
+
+  <!-- ============ SLIDE 6 — SEGURANÇA ============ -->
+  <section class="slide" data-slide="6" data-mode="tecnica">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Assistente conversacional</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>06 / 10 — Segurança</span>
       </div>
     </header>
 
@@ -1195,8 +1541,8 @@
     </div>
   </section>
 
-  <!-- ============ SLIDE 6 — ROADMAP ============ -->
-  <section class="slide" data-slide="6">
+  <!-- ============ SLIDE 7 — ROADMAP ============ -->
+  <section class="slide" data-slide="7" data-mode="tecnica">
     <header class="slide-header">
       <div class="brand">
         <div class="brand-t"></div>
@@ -1207,7 +1553,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>06 / 09 — Roadmap</span>
+        <span>07 / 10 — Roadmap</span>
       </div>
     </header>
 
@@ -1255,8 +1601,8 @@
     </div>
   </section>
 
-  <!-- ============ SLIDE 7 — OPERACIONAL ============ -->
-  <section class="slide" data-slide="7">
+  <!-- ============ SLIDE 8 — OPERACIONAL ============ -->
+  <section class="slide" data-slide="8" data-mode="tecnica">
     <header class="slide-header">
       <div class="brand">
         <div class="brand-t"></div>
@@ -1267,7 +1613,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>07 / 09 — Operacional</span>
+        <span>08 / 10 — Operacional</span>
       </div>
     </header>
 
@@ -1303,8 +1649,8 @@
     </div>
   </section>
 
-  <!-- ============ SLIDE 8 — VISÃO DE FUTURO ============ -->
-  <section class="slide" data-slide="8">
+  <!-- ============ SLIDE 9 — VISÃO DE FUTURO ============ -->
+  <section class="slide" data-slide="9" data-mode="tecnica">
     <header class="slide-header">
       <div class="brand">
         <div class="brand-t"></div>
@@ -1315,7 +1661,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>08 / 09 — Visão de futuro</span>
+        <span>09 / 10 — Visão de futuro</span>
       </div>
     </header>
 
@@ -1363,8 +1709,8 @@
     </div>
   </section>
 
-  <!-- ============ SLIDE 9 — GLOSSÁRIO ============ -->
-  <section class="slide" data-slide="9">
+  <!-- ============ SLIDE 10 — GLOSSÁRIO ============ -->
+  <section class="slide" data-slide="10" data-mode="tecnica">
     <header class="slide-header">
       <div class="brand">
         <div class="brand-t"></div>
@@ -1375,7 +1721,7 @@
       </div>
       <div class="slide-meta">
         <span class="dot"></span>
-        <span>09 / 09 — Glossário</span>
+        <span>10 / 10 — Glossário</span>
       </div>
     </header>
 
@@ -1467,6 +1813,645 @@
     </div>
   </section>
 
+  <!-- ============================================================ -->
+  <!-- ============ SLIDES ELI10 (data-mode="eli10") ============ -->
+  <!-- ============================================================ -->
+
+  <!-- ============ SLIDE 2 ELI10 — O QUE ELE FAZ ============ -->
+  <section class="slide" data-slide="2" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>02 / 10 — O que ele faz</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">O que esse robô faz</h1>
+    <p class="slide-subtitle">
+      Imagina um colega que leu todos os livros sobre o TecnoPUC e nunca esquece nada. É mais ou menos isso.
+    </p>
+
+    <div class="grid grid-3">
+      <article class="card" data-detail="rag">
+        <div class="card-icon">◉</div>
+        <h3>Conversa por escrito</h3>
+        <p>Você pergunta. Ele corre até o caderno gigante de informações. Acha o pedaço certo. Só depois disso responde. Se não tá no caderno, ele fala "não sei" — não inventa.</p>
+      </article>
+
+      <article class="card" data-detail="voz">
+        <div class="card-icon">◐</div>
+        <h3>Conversa por voz</h3>
+        <p>Você fala no microfone. Ele entende. Pensa. Responde falando de volta. Tipo um walkie-talkie inteligente. Tem 5 vozes diferentes pra escolher.</p>
+      </article>
+
+      <article class="card" data-detail="interface3d">
+        <div class="card-icon">▲</div>
+        <h3>O T 3D no meio</h3>
+        <p>No centro da tela tem um "T" brilhando e girando. É o coração do robô. Quando ele tá ouvindo, o T pulsa. Quando tá pensando, fica concentrado. Quando fala, dança junto.</p>
+      </article>
+
+      <article class="card" data-detail="admin">
+        <div class="card-icon">⌘</div>
+        <h3>Sala de controle</h3>
+        <p>Um adulto responsável entra com senha e pode ensinar coisas novas pro robô — subindo PDFs, escrevendo textos, ou mudando a personalidade dele. Sem precisar de programador.</p>
+      </article>
+
+      <article class="card" data-detail="contribuicoes">
+        <div class="card-icon">✦</div>
+        <h3>Sugestões de qualquer um</h3>
+        <p>Qualquer pessoa pode mandar uma ideia pra ensinar pro robô. Mas antes de virar memória dele, alguém da equipe lê e dá "ok". É tipo lição de casa: você faz, mas a professora corrige.</p>
+      </article>
+
+      <article class="card" data-detail="base">
+        <div class="card-icon">≣</div>
+        <h3>Memória escolhida com cuidado</h3>
+        <p>O robô tem 13 "capítulos" pra estudar — sobre o parque, empresas, programas, hubs. Tudo escolhido com carinho. Conteúdo ruim entra = resposta ruim sai. Por isso só entra coisa de qualidade.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 3 ELI10 — AJUDANTES ============ -->
+  <section class="slide" data-slide="3" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>03 / 10 — Ajudantes</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Os ajudantes invisíveis</h1>
+    <p class="slide-subtitle">
+      O robô não faz tudo sozinho. Ele liga pra outras empresas que sabem fazer coisas específicas muito bem.
+    </p>
+
+    <div class="grid grid-3">
+      <article class="card">
+        <span class="tag cyan">Cérebro</span>
+        <h3>Google Gemini</h3>
+        <ul>
+          <li>É quem realmente pensa</li>
+          <li>Entende as perguntas</li>
+          <li>Cria as respostas</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Memória</span>
+        <h3>Supabase</h3>
+        <ul>
+          <li>O armário onde fica tudo</li>
+          <li>Acha rápido pelo significado</li>
+          <li>Tem cofre extra de segurança</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag">Porteiro</span>
+        <h3>Upstash Redis</h3>
+        <ul>
+          <li>Conta quantas perguntas você faz</li>
+          <li>Barra quem abusa</li>
+          <li>Protege contra spam</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Carteiro</span>
+        <h3>Resend</h3>
+        <ul>
+          <li>Manda os e-mails de confirmação</li>
+          <li>Cada link dura 1 hora</li>
+          <li>Em produção, vai ter domínio próprio</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Casa</span>
+        <h3>Netlify</h3>
+        <ul>
+          <li>O terreno onde o robô mora</li>
+          <li>Atualiza sozinho quando muda algo</li>
+          <li>Mostra prévia de cada mudança</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag">Álbum</span>
+        <h3>GitHub</h3>
+        <ul>
+          <li>Guarda todas as versões do código</li>
+          <li>Se quebrar, dá pra voltar</li>
+          <li>Histórico completo de quem mudou o quê</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 4 ELI10 — PEÇAS ============ -->
+  <section class="slide" data-slide="4" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>04 / 10 — Peças por dentro</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">As peças por dentro</h1>
+    <p class="slide-subtitle">
+      Tipo Lego. Cada peça faz uma coisa. Juntas, elas formam o robô.
+    </p>
+
+    <div class="stack-card">
+      <div class="stack-row">
+        <span class="label">A tela que você vê</span>
+        <span class="value">
+          <code>Next.js 16</code><code>React 19</code><code>TypeScript</code><code>Tailwind v4</code> — as ferramentas pra desenhar tudo o que aparece na sua frente.
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">3D &amp; brilhos</span>
+        <span class="value">
+          <code>Three.js</code><code>react-three-fiber</code><code>drei</code><code>Framer Motion</code> — agora o T é um <strong>modelo 3D de verdade</strong> (e não mais um desenho). A gente "espremeu" o arquivo de 5 MB pra 200 KB pra carregar rapidinho.
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">Caderno do site</span>
+        <span class="value">
+          <code>Zustand</code> — o caderninho que o site usa pra lembrar do que tá acontecendo agora (você tá ouvindo? falando? abriu o menu?).
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">Salas escondidas</span>
+        <span class="value">
+          <code>Next.js API Routes</code> — as "salas" invisíveis no servidor onde as perguntas são processadas longe dos olhos. A sala principal (do chat) agora fica em <strong>vários lugares ao mesmo tempo no mundo</strong>, pra responder mais rápido pra quem tá longe.
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">Conexão com o cérebro</span>
+        <span class="value">
+          <code>@google/generative-ai</code><code>@google/genai</code> — as bibliotecas que sabem conversar com o Gemini. Agora o cérebro entende <strong>várias línguas direto</strong> (português, inglês, espanhol, chinês), sem precisar traduzir antes.
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">Engolidor de PDFs</span>
+        <span class="value">
+          <code>pdf2json</code> (PDFs)<code>cheerio</code> + <code>turndown</code> (sites)<code>react-markdown</code> + <code>remark-gfm</code> (mostrar) — pega arquivos e sites e transforma em texto que o robô consegue estudar.
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">Conexão com o armário</span>
+        <span class="value">
+          <code>@supabase/supabase-js</code> + <code>pgvector</code><code>@upstash/redis</code><code>@upstash/ratelimit</code> — agora o armário sabe procurar <strong>de dois jeitos ao mesmo tempo</strong> (pelo significado e pelas palavras exatas), aí encontra muito mais coisa certa.
+        </span>
+      </div>
+      <div class="stack-row">
+        <span class="label">Ferramentas de quem programa</span>
+        <span class="value">
+          <code>tsx</code><code>ESLint 9</code><code>Turbopack</code><code>dotenv</code> — coisinhas que ajudam a programar sem fazer besteira.
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 5 ELI10 — DUAS FORMAS DE PROCURAR ============ -->
+  <section class="slide" data-slide="5" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>05 / 10 — Duas formas de procurar</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Duas formas de procurar ao mesmo tempo</h1>
+    <p class="slide-subtitle">
+      Antes, o robô às vezes não entendia siglas como <strong>IPaq</strong> ou <strong>FabLab</strong>. Agora ele procura de <strong>dois jeitos ao mesmo tempo</strong> (pelo significado e pelas palavras exatas) e junta os melhores resultados — então acerta muito mais.
+    </p>
+
+    <div class="grid grid-2" style="gap: 18px;">
+      <article class="card" style="border-color: rgba(234,152,47,0.45);">
+        <span class="tag">Antes</span>
+        <h3>Procurava só pelo significado</h3>
+        <p>O robô lia sua pergunta, "traduzia" pra uma ideia, e procurava trechos com ideia parecida. <strong>Funciona ótimo pra frases normais</strong>, mas tropeçava em siglas, nomes próprios e palavras pouco usadas.</p>
+        <ul style="margin-top: 8px;">
+          <li>"O que é o <strong>IPaq</strong>?" — às vezes não achava</li>
+          <li>"Quem é a <strong>Apple</strong> no parque?" — idem</li>
+          <li>Acertava nos 5 primeiros em <strong>87,5%</strong> das perguntas</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Agora</span>
+        <h3>Procura significado <em>e</em> palavras exatas</h3>
+        <p>O robô faz <strong>duas buscas ao mesmo tempo</strong> — uma pelo significado e outra pelas palavras literais — e junta os melhores de cada uma. <strong>Igual procurar no Google e na sua memória ao mesmo tempo.</strong></p>
+        <ul style="margin-top: 8px;">
+          <li>Acerta siglas e nomes próprios direitinho</li>
+          <li>Continua bom em perguntas naturais</li>
+          <li>Acerta nos 5 primeiros em <strong>96,9%</strong> das perguntas</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="stack-card" style="margin-top: 18px;">
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1fr; padding: 12px 22px;">
+        <span class="label">O que medimos</span>
+        <span class="label" style="color: var(--color-ocre-light);">Antes</span>
+        <span class="label" style="color: var(--cyan);">Agora</span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1fr; padding: 10px 22px;">
+        <span class="value">Acerta nos 5 primeiros resultados</span>
+        <span class="value">87,5%</span>
+        <span class="value"><strong style="color:#fff;">96,9%</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1fr; padding: 10px 22px;">
+        <span class="value">Pega todos os trechos certos</span>
+        <span class="value">79,2%</span>
+        <span class="value"><strong style="color:#fff;">91,1%</strong></span>
+      </div>
+      <div class="stack-row" style="grid-template-columns: 1.4fr 1fr 1fr; padding: 10px 22px;">
+        <span class="value">Tempo pra responder</span>
+        <span class="value">560 ms</span>
+        <span class="value">647 ms <span style="color: rgba(180,235,255,0.5); font-size: 13px;">(só 87 ms a mais)</span></span>
+      </div>
+    </div>
+
+    <p style="margin-top: 18px; padding: 14px 22px; background: var(--glass); border-left: 3px solid var(--cyan); border-radius: 8px; font-size: 14px; color: var(--t-text); line-height: 1.55;">
+      <strong style="color: var(--cyan); display: block; margin-bottom: 4px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase;">Por que isso importa</strong>
+      A base do TecnoPUC tem muitas siglas e nomes próprios (IPaq, FabLab, empresas, programas). É exatamente onde o robô antigo tropeçava. Agora ele acerta quase <strong>1 em cada 10 perguntas a mais</strong> que antes — e quase não fica mais lento.
+    </p>
+  </section>
+
+  <!-- ============ SLIDE 6 ELI10 — SEGURANÇA ============ -->
+  <section class="slide" data-slide="6" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>06 / 10 — Segurança</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">As trancas e os cadeados</h1>
+    <p class="slide-subtitle">
+      Como a gente protege o robô e as pessoas que conversam com ele.
+    </p>
+
+    <div class="grid grid-4">
+      <article class="card">
+        <span class="tag cyan">Chaves</span>
+        <h3>Chaves no cofre do servidor</h3>
+        <p>A chave pra usar o cérebro do Gemini fica no cofre do servidor. <strong>Nunca chega no seu computador.</strong> Igual cadeado: você usa, mas não leva pra casa.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag">Voz</span>
+        <h3>Senha temporária pra voz</h3>
+        <p>Pra usar a voz, o servidor cria uma "senha de visitante" que só vale 30 minutos e só pode ser usada uma vez. <strong>Se vazar, vira lixo logo.</strong></p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Banco</span>
+        <h3>Cofre dentro do cofre</h3>
+        <p>Mesmo que alguém invada um pedacinho, o banco tem uma camada extra que pergunta "você tem permissão?". <strong>Segurança por dentro da segurança.</strong></p>
+      </article>
+
+      <article class="card">
+        <span class="tag">Limites</span>
+        <h3>Porteiro virtual</h3>
+        <p>Tem porteiro em todas as portas. Se alguém ficar fazendo 1000 perguntas por minuto, o porteiro fala <strong>"opa, calma aí"</strong> e bloqueia.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">Pega-bobo</span>
+        <h3>Campo invisível</h3>
+        <p>No formulário tem um campo escondido. Pessoas não veem. <strong>Robôs malvados preenchem.</strong> Quando o sistema vê o campo cheio, joga fora — é robô se passando por gente.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Faxina</span>
+        <h3>Limpeza automática</h3>
+        <p>Todo dia o sistema apaga sozinho contribuições antigas que ninguém validou. <strong>Menos lixo guardado, menos chance de problema.</strong></p>
+      </article>
+
+      <article class="card">
+        <span class="tag cyan">LGPD</span>
+        <h3>Cookies só com seu "ok"</h3>
+        <p>Quando você entra no site, aparece a pergunta: <strong>"posso guardar uns dados?"</strong>. Se você falar não, o site funciona normal e ele não guarda nada. Você manda.</p>
+      </article>
+
+      <article class="card">
+        <span class="tag purple">Contador</span>
+        <h3>Estatísticas só depois do "sim"</h3>
+        <p>O contador de visitas (Google Analytics) <strong>fica desligado, dormindo</strong>, até você aceitar. Sem aceite, nenhuma informação sua sai do navegador.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 7 ELI10 — EM CONSTRUÇÃO ============ -->
+  <section class="slide" data-slide="7" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>07 / 10 — Em construção</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">O que ainda falta fazer</h1>
+    <p class="slide-subtitle">
+      Coisas que a gente já planejou, mas ainda não terminou.
+    </p>
+
+    <div class="grid grid-3">
+      <article class="card" data-detail="selo-comunidade">
+        <span class="tag cyan">Pra logo</span>
+        <h3>Selo "esse veio da galera"</h3>
+        <p>Quando uma resposta usar uma informação que veio da comunidade, vai aparecer um selinho dizendo <strong>"isso aqui foi gente como você que ensinou"</strong>. É justo dar o crédito.</p>
+      </article>
+
+      <article class="card" data-detail="admin-busca">
+        <span class="tag cyan">Pra logo</span>
+        <h3>Caixinha de busca no painel</h3>
+        <p>Hoje, pra achar uma sugestão específica, o admin precisa rolar a lista inteira. Falta um <strong>"buscar"</strong> igual o do Google, só que dentro do painel.</p>
+      </article>
+
+      <article class="card" data-detail="harmonizacao-contribuir">
+        <span class="tag cyan">Pra logo</span>
+        <h3>Visual igualzinho em todo lugar</h3>
+        <p>Tem uma página de contribuir que ainda tá com visual antigo, sem graça. <strong>Falta dar a mesma cara bonita</strong> que o resto do site tem.</p>
+      </article>
+
+      <article class="card" data-detail="paineis-avancados">
+        <span class="tag purple">Pra mais tarde</span>
+        <h3>Gavetas extras</h3>
+        <p>Painéis laterais: um pra abrir uma resposta em <strong>tela cheia</strong>, outro mostrando o histórico da conversa em <strong>linha do tempo</strong>.</p>
+      </article>
+
+      <article class="card" data-detail="onboarding">
+        <span class="tag purple">Pra mais tarde</span>
+        <h3>Tutorial inicial</h3>
+        <p>Tutorial rapidinho ensinando: como falar com o robô, ativar a voz, abrir os menus, ouvir respostas. <strong>Aparece só na primeira vez.</strong></p>
+      </article>
+
+      <article class="card" data-detail="resiliencia-t">
+        <span class="tag purple">Pra mais tarde</span>
+        <h3>T resistente</h3>
+        <p>Em computador antigo o T 3D pode não funcionar. Falta uma <strong>versão 2D simples</strong> pra ele continuar aparecendo bonitinho mesmo nesses casos.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 8 ELI10 — PENDÊNCIAS ============ -->
+  <section class="slide" data-slide="8" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>08 / 10 — Coisas chatas mas importantes</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Coisas chatas mas importantes</h1>
+    <p class="slide-subtitle">
+      Não é código. Mas precisa resolver antes do robô ir pro mundo de verdade.
+    </p>
+
+    <div class="grid grid-2">
+      <article class="card" data-detail="dominio-resend" style="border-color: rgba(234,152,47,0.45);">
+        <span class="tag">Urgente</span>
+        <h3>E-mail de verdade pra mandar confirmações</h3>
+        <p>Hoje os e-mails saem de um endereço de teste, e por isso <strong>só chegam pra uma pessoa</strong>. Pra qualquer outra, somem no caminho. Tem que configurar um e-mail no domínio da PUCRS antes do feature funcionar pra valer.</p>
+      </article>
+
+      <article class="card" data-detail="politica-uso">
+        <span class="tag purple">Lei</span>
+        <h3>Política de privacidade pública</h3>
+        <p>Quando alguém manda dados, a lei pede pra avisar <strong>"vou usar pra X, vou guardar por Y, e você pode pedir pra apagar"</strong>. A gente já apaga sozinho, mas falta colocar isso por escrito num lugar visível.</p>
+      </article>
+
+      <article class="card" data-detail="monitoramento">
+        <span class="tag cyan">Alarme</span>
+        <h3>Aviso quando algo dá errado</h3>
+        <p>Se o robô der problema de madrugada, ninguém fica sabendo até alguém reclamar. Falta um <strong>"alarme"</strong> que avisa o time. Tipo a luzinha da gasolina do carro.</p>
+      </article>
+
+      <article class="card" data-detail="testes-auto">
+        <span class="tag purple">Qualidade</span>
+        <h3>Robô que testa o robô</h3>
+        <p>Hoje, antes de cada atualização, alguém testa tudo na mão. <strong>É lento e dá pra esquecer.</strong> Falta um robô de teste que faz isso sozinho toda vez.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 9 ELI10 — VISÃO DE FUTURO ============ -->
+  <section class="slide" data-slide="9" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>09 / 10 — Sonhos pra mais tarde</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Os sonhos pra mais tarde</h1>
+    <p class="slide-subtitle">
+      Coisas grandes que a gente quer fazer um dia, quando o básico estiver firme.
+    </p>
+
+    <div class="grid grid-3">
+      <article class="card" data-detail="empresas-network">
+        <span class="tag cyan">Visual</span>
+        <h3>Empresas vivas no fundo</h3>
+        <p>Aqueles pontinhos brilhantes que se conectam no fundo da tela um dia vão virar <strong>as empresas reais</strong> que ficam dentro do TecnoPUC. Cada bolinha = uma empresa de verdade.</p>
+      </article>
+
+      <article class="card" data-detail="historico-login">
+        <span class="tag purple">Memória</span>
+        <h3>O robô lembra de você</h3>
+        <p>Hoje, fechou a aba, perdeu a conversa. No futuro, com um login leve, você <strong>volta semana que vem e o robô lembra</strong> de onde vocês pararam.</p>
+      </article>
+
+      <article class="card" data-detail="recomendacao">
+        <span class="tag">Sugestões</span>
+        <h3>Robô que indica o próximo passo</h3>
+        <p>Em vez de só responder, o robô vai <strong>sugerir o que fazer depois</strong>: "ó, você curtiu IA? Tem um programa aqui que combina com isso". Vira guia, não só dicionário.</p>
+      </article>
+
+      <article class="card" data-detail="analytics-gaps">
+        <span class="tag cyan">Dados</span>
+        <h3>Onde a memória falha</h3>
+        <p>Painel admin mostrando <strong>as perguntas que o robô não soube responder</strong>. Aí o time da PUCRS sabe exatamente o que precisa ensinar — em vez de chutar.</p>
+      </article>
+
+      <article class="card" data-detail="multilingue">
+        <span class="tag purple">Mundo</span>
+        <h3>Fala outras línguas</h3>
+        <p>O parque recebe gente do mundo inteiro. O sonho é o robô <strong>responder em inglês ou espanhol</strong>, no idioma de quem perguntou. Sem precisar de tradutor humano.</p>
+      </article>
+
+      <article class="card" data-detail="feedback-inline">
+        <span class="tag">Qualidade</span>
+        <h3>Joinha ou não-curti</h3>
+        <p>Cada resposta vai ter um botãozinho 👍 ou 👎. Se muita gente desbotar numa resposta, <strong>o time sabe o que precisa melhorar</strong> na memória do robô.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 10 ELI10 — DICIONÁRIO ============ -->
+  <section class="slide" data-slide="10" data-mode="eli10">
+    <header class="slide-header">
+      <div class="brand">
+        <div class="brand-t"></div>
+        <div class="brand-name">
+          <strong>TECNOPUC IA</strong>
+          <span>Robô assistente</span>
+        </div>
+      </div>
+      <div class="slide-meta">
+        <span class="dot"></span>
+        <span>10 / 10 — Dicionário fácil</span>
+      </div>
+    </header>
+
+    <h1 class="slide-title">Dicionário fácil</h1>
+    <p class="slide-subtitle">
+      As palavrinhas difíceis dessa apresentação, traduzidas pra quem nunca ouviu antes.
+    </p>
+
+    <div class="glossary-grid">
+
+      <div class="glossary-col">
+        <h3 class="glossary-cat">Cérebro &amp; Memória</h3>
+        <dl class="glossary-list">
+          <div class="glossary-item">
+            <dt>RAG <em>Regra de ouro do robô</em></dt>
+            <dd>"Só posso falar coisas que estão no meu caderno." Antes de responder, o robô lê o pedaço certo do caderno e só depois fala. Por isso ele não inventa coisas.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>Embedding <em>Texto virando número</em></dt>
+            <dd>Jeito que o computador transforma texto em números. "Cachorro" e "pet" viram números parecidos, porque o sentido é parecido. Ajuda o robô a achar coisas pelo significado, não pela palavra exata.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>LLM <em>Modelo de linguagem grande</em></dt>
+            <dd>Robô que leu zilhões de textos e aprendeu a continuar frases. Tipo o auto-completar do celular, mas muito mais inteligente. Gemini, GPT-4 e Claude são exemplos.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>Chunking <em>Cortar em pedaços</em></dt>
+            <dd>Pegar um livro grande e cortar em pedacinhos. Fica mais fácil de achar a parte certa quando você tem uma pergunta — ninguém procura uma frase específica no livro inteiro.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>System prompt <em>Manual de boas maneiras</em></dt>
+            <dd>As primeiras instruções que o robô lê antes de qualquer conversa. Tipo "seja educado, fale em português, nunca invente respostas". É o jeitinho dele.</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="glossary-col">
+        <h3 class="glossary-cat">Banco &amp; Dados</h3>
+        <dl class="glossary-list">
+          <div class="glossary-item">
+            <dt>pgvector <em>Truque do banco</em></dt>
+            <dd>Truque do banco de dados pra guardar aqueles números do embedding. Consegue achar rapidinho "os 5 textos mais parecidos com essa pergunta".</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>RLS <em>Porteiro do banco</em></dt>
+            <dd>Mesmo que alguém entre na sala, o banco pergunta "tem autorização pra ver essa gaveta?". Se não tiver, bloqueia. Cofre dentro do cofre.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>pg_cron <em>Despertador do banco</em></dt>
+            <dd>Despertador dentro do banco. Toda noite ele acorda, faz a faxina (apaga lixo velho), e volta a dormir. Sem ninguém precisar mandar.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>localStorage <em>Caderninho do navegador</em></dt>
+            <dd>Caderninho que o navegador guarda no seu computador. Quando você volta no site, o caderninho ainda tá lá. É onde fica sua escolha sobre cookies, por exemplo.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>Token efêmero <em>Senha rapidinha</em></dt>
+            <dd>Senha que dura pouco tempo. Tipo aqueles códigos que chegam no celular pra logar — depois de uns minutos viram lixo. Se vazar, já morreu.</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="glossary-col">
+        <h3 class="glossary-cat">Conversa &amp; Proteção</h3>
+        <dl class="glossary-list">
+          <div class="glossary-item">
+            <dt>WebSocket <em>Telefone direto</em></dt>
+            <dd>Telefone que fica sempre na linha entre seu navegador e o servidor. Pra voz, isso é ótimo: tudo flui ao mesmo tempo, sem ficar "desligando e ligando".</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>Multimodal <em>Aluno completo</em></dt>
+            <dd>Robô que entende mais de um tipo de coisa: texto, voz, imagem. Tipo aluno que sabe ouvir, ler e ver — não só uma das três.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>Rate limit <em>Limite de perguntas</em></dt>
+            <dd>Limite de quantas perguntas a mesma pessoa pode fazer por hora. Pra gente normal, sobra. Pra robô malvado tentando quebrar o sistema, trava.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>Honeypot <em>Pote de mel pra bot</em></dt>
+            <dd>Campo invisível no formulário. Quem cai nele é robô tentando se passar por gente — humanos não enxergam o campo. Pega-bobo silencioso.</dd>
+          </div>
+          <div class="glossary-item">
+            <dt>LGPD <em>Lei dos dados no Brasil</em></dt>
+            <dd>Lei brasileira que diz: "se você guarda dados de alguém, precisa avisar e deixar a pessoa pedir pra apagar". Por isso aparece aquele aviso de cookies.</dd>
+          </div>
+        </dl>
+      </div>
+
+    </div>
+  </section>
+
 </div>
 
 <div class="detail-overlay" id="detailOverlay" aria-hidden="true">
@@ -1486,7 +2471,7 @@
 
 <nav class="nav">
   <button id="prev" aria-label="Anterior">‹</button>
-  <span class="counter" id="counter">01 / 09</span>
+  <span class="counter" id="counter">01 / 10</span>
   <button id="next" aria-label="Próximo">›</button>
 </nav>
 
@@ -1495,27 +2480,62 @@
 </div>
 
 <script>
-  const slides = document.querySelectorAll('.slide');
-  const total = slides.length;
+  /* ── Navegação com filtro por modo ── */
   const counter = document.getElementById('counter');
   const progressBar = document.getElementById('progressBar');
+  const coverSlide = document.querySelector('section.cover');
+  let visible = [coverSlide];   // antes da escolha, só a capa
   let current = 0;
+  let mode = null;              // 'tecnica' | 'eli10'
+
+  function rebuildVisible() {
+    const modal = mode ? Array.from(document.querySelectorAll('.slide[data-mode="' + mode + '"]')) : [];
+    visible = [coverSlide].concat(modal);
+  }
 
   function show(i) {
+    const total = visible.length;
     current = (i + total) % total;
-    slides.forEach((s, idx) => s.classList.toggle('active', idx === current));
+    visible.forEach((s, idx) => s.classList.toggle('active', idx === current));
     counter.textContent = String(current + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
     progressBar.style.width = ((current + 1) / total * 100) + '%';
   }
+
+  function syncModeToggle() {
+    document.querySelectorAll('.mode-toggle-btn').forEach((btn) => {
+      btn.classList.toggle('is-active', btn.getAttribute('data-mode-choice') === mode);
+    });
+  }
+
+  function setMode(m) {
+    if (m !== 'tecnica' && m !== 'eli10') return;
+    const wasUnset = !mode;
+    mode = m;
+    document.body.setAttribute('data-mode', m);
+    rebuildVisible();
+    syncModeToggle();
+    // primeiro modo escolhido: pula da capa pra slide 2
+    // troca de modo via toggle: mantém posição equivalente (mesmo número)
+    show(wasUnset ? 1 : Math.min(current, visible.length - 1));
+  }
+
+  document.querySelectorAll('[data-mode-choice]').forEach((btn) => {
+    btn.addEventListener('click', () => setMode(btn.getAttribute('data-mode-choice')));
+  });
 
   document.getElementById('prev').onclick = () => show(current - 1);
   document.getElementById('next').onclick = () => show(current + 1);
 
   document.addEventListener('keydown', (e) => {
+    // Atalhos de seleção de modo (só funcionam na capa)
+    if (current === 0 && !mode) {
+      if (e.key === '1') { setMode('tecnica'); return; }
+      if (e.key === '2') { setMode('eli10');   return; }
+    }
     if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') show(current + 1);
     if (e.key === 'ArrowLeft' || e.key === 'PageUp') show(current - 1);
     if (e.key === 'Home') show(0);
-    if (e.key === 'End') show(total - 1);
+    if (e.key === 'End') show(visible.length - 1);
     if (e.key === 'f' || e.key === 'F') {
       if (!document.fullscreenElement) document.documentElement.requestFullscreen();
       else document.exitFullscreen();
@@ -1542,16 +2562,37 @@
 
   show(0);
 
-  /* ── Canvas animado da capa (network de nodos) ── */
+  /* ── T 3D: tilt no mouse (capa) ── */
   (function () {
-    const canvas = document.getElementById('coverCanvas');
-    const coverSlide = document.querySelector('section.cover');
-    if (!canvas || !coverSlide) return;
+    const inner = document.getElementById('coverT3DInner');
+    if (!inner) return;
+    let resetTimer = null;
+
+    coverSlide.addEventListener('mousemove', (e) => {
+      const rect = coverSlide.getBoundingClientRect();
+      const dx = (e.clientX - (rect.left + rect.width / 2)) / rect.width;
+      const dy = (e.clientY - (rect.top + rect.height / 2)) / rect.height;
+      const ry = Math.max(-30, Math.min(30, dx * 38));
+      const rx = Math.max(-22, Math.min(22, -dy * 26));
+      inner.classList.add('tilting');
+      inner.style.transform = 'rotateY(' + ry + 'deg) rotateX(' + rx + 'deg)';
+      clearTimeout(resetTimer);
+    });
+    coverSlide.addEventListener('mouseleave', () => {
+      resetTimer = setTimeout(() => {
+        inner.classList.remove('tilting');
+        inner.style.transform = '';
+      }, 200);
+    });
+  })();
+
+  /* ── Network global de partículas (sempre rodando, fundo) ── */
+  (function () {
+    const canvas = document.getElementById('bgNetwork');
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     let particles = [];
-    let raf = null;
-    let running = false;
 
     function resize() {
       const dpr = window.devicePixelRatio || 1;
@@ -1563,7 +2604,9 @@
     }
 
     function init() {
-      const count = window.innerWidth < 720 ? 38 : 72;
+      // ~3× mais partículas que antes (38→100 mobile, 72→180 desktop)
+      const w = window.innerWidth;
+      const count = w < 720 ? 100 : (w < 1280 ? 140 : 180);
       particles = Array.from({ length: count }, () => ({
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight,
@@ -1577,7 +2620,7 @@
       const w = window.innerWidth;
       const h = window.innerHeight;
       ctx.clearRect(0, 0, w, h);
-      const linkDist = w < 720 ? 110 : 150;
+      const linkDist = w < 720 ? 120 : 160;
       const linkDistSq = linkDist * linkDist;
 
       for (let i = 0; i < particles.length; i++) {
@@ -1592,7 +2635,7 @@
           const dy = q.y - p.y;
           const d2 = dx * dx + dy * dy;
           if (d2 < linkDistSq) {
-            const op = (1 - Math.sqrt(d2) / linkDist) * 0.38;
+            const op = (1 - Math.sqrt(d2) / linkDist) * 0.42;
             ctx.strokeStyle = 'rgba(0, 229, 255, ' + op + ')';
             ctx.lineWidth = 0.7;
             ctx.beginPath();
@@ -1613,41 +2656,21 @@
       }
       ctx.shadowBlur = 0;
 
-      raf = requestAnimationFrame(tick);
-    }
-
-    function start() {
-      if (running) return;
-      running = true;
-      tick();
-    }
-
-    function stop() {
-      running = false;
-      if (raf != null) {
-        cancelAnimationFrame(raf);
-        raf = null;
-      }
+      requestAnimationFrame(tick);
     }
 
     resize();
     init();
-    start();
+    tick();
 
     window.addEventListener('resize', () => {
       resize();
       init();
     });
-
-    const observer = new MutationObserver(() => {
-      if (coverSlide.classList.contains('active')) start();
-      else stop();
-    });
-    observer.observe(coverSlide, { attributes: true, attributeFilter: ['class'] });
   })();
 
   /* ── Detail modal: explicações por card ── */
-  const detailContent = {
+  const detailContentTecnica = {
     // ===== Slide 2 — Features =====
     rag: {
       title: 'Chat com RAG',
@@ -1789,6 +2812,142 @@
     }
   };
 
+  /* ── Detail modal: versão ELI10 ── */
+  const detailContentEli10 = {
+    rag: {
+      title: 'Conversa por escrito',
+      body: `<p>Imagina o robô como um aluno super dedicado. Quando você pergunta algo, ele <strong>não responde de cabeça</strong>. Primeiro corre até o caderno gigante, procura a página certa, lê com calma, e <strong>só depois</strong> escreve a resposta usando aquele pedaço.</p>
+      <p>Se a pergunta não tá no caderno, ele fala um <strong>"não sei dessa parte"</strong>. É como aluno que prefere admitir do que inventar uma resposta na prova. Cada pedacinho do caderno tem uma etiqueta dizendo de onde veio (manual, PDF, ou contribuição da comunidade) — pra dar pra rastrear sempre.</p>`,
+      why: `A gente <strong>não quer um robô fantasioso</strong>. O TecnoPUC é uma instituição séria. Se o robô inventar números de empresas, datas erradas ou programas que não existem, ele tá enganando as pessoas — e isso machuca a credibilidade do parque. Com essa regra, cada resposta pode ser conferida em um documento real. <strong>Robô qualquer fala bobeira; esse aqui só fala o que tá escrito.</strong>`
+    },
+    voz: {
+      title: 'Conversa por voz',
+      body: `<p>Você aperta o microfone, fala. O som vai até o cérebro do Gemini pelo "telefone direto" (chamado WebSocket — é tipo uma ligação que nunca desliga). Ele entende, pensa e <strong>responde falando</strong>, em tempo real. Sem precisar de transcrição no meio do caminho.</p>
+      <p>Tem cinco vozes pra escolher: Puck (alegre), Aoede (suave), Charon (sério), Kore (firme), Fenrir (animado). E tem um truque importante: a <strong>chave secreta do Gemini nunca chega no seu navegador</strong>. O servidor cria um crachá temporário que vale 30 minutinhos, e é só com ele que o seu navegador entra na conversa. Se o crachá vazar, vira pó logo.</p>`,
+      why: `Tem gente que não gosta de digitar. Tem gente que <strong>não consegue digitar</strong> — pessoas com deficiência visual ou motora, por exemplo. E tem situação que digitar é estranho: passeio guiado pelo parque, totem de exposição, demonstração em evento. Voz resolve tudo isso. Além disso, é <strong>diferente</strong>: a maioria dos chatbots por aí ainda só tem caixinha de texto. O TecnoPUC se posiciona como referência em interface conversacional avançada.`
+    },
+    interface3d: {
+      title: 'O T 3D no meio da tela',
+      body: `<p>O símbolo do TecnoPUC é a letra "T". Aqui ela vira um <strong>objeto 3D girando no centro da tela</strong>, como se fosse um cristal mágico. Não é só enfeite — ele é o <strong>coração da conversa</strong>. Tem nove "humores" diferentes: parado, animado (quando você passa o mouse), ouvindo, pensando, respondendo, falando, calmo, na dúvida, com erro. Cada humor tem um visual único.</p>
+      <p>Ao redor do T, fica um <strong>menu redondo</strong> com os atalhos do parque (Hubs, Estrutura, Programas, Sobre). No computador, você passa o mouse em cima e ele abre. No celular, você segura o dedo e ele abre. Quando você fala no microfone, uma "auréola" pulsa ao redor do T no ritmo da sua voz. Quando ele responde, a auréola dança junto com a voz dele.</p>`,
+      why: `Um chatbot comum você abre, conversa, fecha, esquece. Um chatbot com <strong>um cristal 3D que reage à sua voz</strong> você lembra. Vira <strong>identidade visual</strong>. Quando alguém entra no parque, ou vê uma demonstração em evento, esse T fica na cabeça. É marca, não só funcionalidade. E é raro: a maioria dos chatbots institucionais é só caixinha de texto sem graça.`
+    },
+    admin: {
+      title: 'A sala de controle',
+      body: `<p>É a "sala de controle" do robô. Pra entrar, precisa de <strong>usuário e senha</strong> (e dá pra ter vários administradores). Lá dentro tem três abas: <strong>Documentos &amp; PDF</strong> (subir arquivos pra ensinar coisas novas), <strong>Contribuições</strong> (aprovar ou rejeitar sugestões da comunidade), e <strong>Personalidade</strong> (mexer no jeitinho do robô falar).</p>
+      <p>O legal é que <strong>nenhuma mudança precisa de programador</strong>. A pessoa do time de comunicação salva, e na hora já tá valendo. Subiu um PDF novo? Em segundos ele já foi cortado em pedacinhos, virado em números, e guardado na memória do robô. Mudou o jeitinho dele falar? Próxima pergunta já vai sair com o tom novo.</p>`,
+      why: `Imagina se toda vez que o TecnoPUC mudasse uma informação, tivesse que ligar pro programador, esperar uma semana, fazer revisão, fazer deploy... <strong>nada andaria</strong>. Com o painel, o time de comunicação cuida do conteúdo sozinho — igual mexer num blog. <strong>Tempo entre "informação mudou" e "robô já sabe" cai de dias pra minutos.</strong> Isso é o que mantém o robô útil ao longo do tempo, sem virar um assistente desatualizado.`
+    },
+    contribuicoes: {
+      title: 'Sugestões da comunidade',
+      body: `<p>Qualquer pessoa pode mandar uma sugestão pra ensinar pro robô. Mas <strong>tem regra</strong>: você preenche o formulário (com pelo menos 50 letras), bota seu e-mail, escolhe uma categoria. O sistema te manda um link de confirmação. Você clica em até 1 hora. Aí a sugestão entra na fila pra um adulto responsável (admin) ler e dizer se aprova ou não. <strong>Só depois do "ok"</strong> ela vira parte da memória do robô.</p>
+      <p>Tem várias proteções contra abuso. <strong>Pega-bobo invisível</strong> (campo escondido que só robôs malvados preenchem). <strong>Limite</strong>: 10 envios por dia por computador, 3 por dia por e-mail. <strong>Cofre extra no banco</strong> caso alguma camada falhe. E <strong>faxina diária</strong>: sugestões não confirmadas em 24h e rejeitadas em 15 dias somem sozinhas.</p>`,
+      why: `O robô não pode saber tudo de cara — mas ele pode <strong>ir aprendendo com a comunidade</strong>: alunos, professores, empresas residentes. Cada pessoa sabe um pedacinho. Juntando todos, vira uma base bem maior do que qualquer time interno conseguiria fazer sozinho. <strong>Mas com revisão humana sempre</strong> — porque sem revisão, qualquer um podia ensinar bobagem pro robô. É o melhor dos dois mundos: muita gente ajudando, mas com filtro.`
+    },
+    base: {
+      title: 'A memória escolhida com cuidado',
+      body: `<p>O robô estuda <strong>13 documentos</strong> escritos com cuidado, todos em formato Markdown (parecido com texto comum, mas com algumas marcações). Os documentos cobrem: o que é o TecnoPUC, como o ecossistema de inovação funciona, os <strong>hubs</strong> (Saúde, Energia, Imagem, etc), as empresas que moram no parque, os programas (residência, mentoria), os ambientes físicos, os cases de impacto, e a infraestrutura.</p>
+      <p>Pra atualizar, tem um comando rapidinho no computador (<code>npx tsx scripts/ingest.ts</code>) que recalcula tudo. Cada arquivo é cortado em <strong>pedacinhos do tamanho certo</strong> pra caber na "janela de atenção" do Gemini, com um pouco de sobreposição entre os pedaços (pra não perder o sentido na hora do corte).</p>`,
+      why: `Conteúdo ruim na base = resposta ruim na ponta. Por isso a equipe não deixa qualquer coisa entrar. <strong>Curadoria humana antes de virar memória.</strong> Isso garante que o tom de voz, os termos certos e o posicionamento estratégico do TecnoPUC apareçam em cada resposta. Se a gente fosse jogar todo o site da PUCRS dentro sem revisar, viria muito barulho — e o robô ia ficar respondendo coisas erradas ou irrelevantes.`
+    },
+    'selo-comunidade': {
+      title: 'Selo "esse veio da galera"',
+      body: `<p>Quando uma resposta do robô usa um pedacinho que veio de uma sugestão da comunidade (a gente já marca isso no banco com <code>metadata.origem="comunidade"</code>), a ideia é o card da resposta <strong>mostrar um selinho</strong> avisando "ó, isso aqui foi gente como você que ensinou".</p>
+      <p>A informação <strong>já tá lá</strong> desde a primeira contribuição aprovada. Falta só <strong>aparecer pra quem tá conversando</strong> — colocar o selo no visual do card.</p>`,
+      why: `Duas coisas. <strong>Transparência</strong>: a pessoa que tá perguntando entende que a base é viva, que outras pessoas ajudam a construir. E <strong>incentivo pra contribuir</strong>: ver a sua sugestão virando resposta de verdade fecha o ciclo. Você manda, vê o selinho, e fica com vontade de mandar mais. É reconhecimento — e reconhecimento gera engajamento.`
+    },
+    'admin-busca': {
+      title: 'Busca e paginação no painel',
+      body: `<p>Hoje a aba de moderação só tem três botões: pendentes, aprovadas, rejeitadas. Funciona quando tem 20 sugestões. Mas se um dia tiver 500? <strong>Vira tortura.</strong> Falta uma <strong>caixinha de busca</strong> ("achar pelo e-mail" ou "achar pela palavra-chave") e um <strong>botão "próxima página"</strong> pra não carregar tudo de uma vez.</p>
+      <p>Pra implementar: adicionar parâmetros <code>?q=</code> e <code>?page=</code> na rota da API, criar um índice especial no banco (chamado GIN, otimizado pra busca em texto), e botar um componentinho de paginação no painel.</p>`,
+      why: `É <strong>preparação pra dar certo</strong>. Se uma campanha de divulgação trouxer um monte de gente contribuindo, a moderação trava sem busca e paginação. <strong>Justamente quando o projeto tá indo bem</strong> é quando ele precisa estar fluindo — não quebrando. Melhor preparar antes do que correr depois.`
+    },
+    'harmonizacao-contribuir': {
+      title: 'Visual unificado',
+      body: `<p>O formulário <strong>dentro do site</strong> (no modalzinho que abre quando você clica em "CONTRIBUIR") já tá com o visual bonito do projeto — paleta azul, ciano, vidro fosco, brilhinhos. Mas se você abrir o link direto da página <code>/contribuir</code>, cai numa versão antiga, mais sem graça, com Tailwind padrão. <strong>Duas caras pra mesma coisa.</strong></p>
+      <p>É só uma passada de CSS pra deixar igualzinho ao resto.</p>`,
+      why: `Detalhe pequeno, mas importa. Imagina: alguém clica num link e cai numa página apagada, e na seguinte tudo brilha. <strong>Quebra a sensação de que o produto é cuidadoso.</strong> Em apresentação institucional, esse tipo de detalhe é a diferença entre "isso é amador" e "isso é profissional". Não é frescura, é polimento que comunica seriedade.`
+    },
+    'paineis-avancados': {
+      title: 'Gavetas extras',
+      body: `<p>Dois "gavetões" laterais que tão no plano mas ainda não foram feitos. <strong>DetailPanel</strong>: abre uma resposta em tela cheia, com mais espaço, ações de copiar, ouvir de novo, compartilhar. <strong>TimelinePanel</strong>: mostra o histórico da conversa atual numa linha do tempo lateral, dá pra voltar pra qualquer pergunta anterior.</p>
+      <p>Os dois ficam dentro do <code>SidePanelManager</code>, que já existe — hoje ele só tá usando duas das vagas (HubPanel e AudioSettingsPanel).</p>`,
+      why: `Hoje o robô é <strong>"uma pergunta, uma resposta"</strong>. É bom pra perguntinha rápida. Mas pra uso mais sério — visita guiada ao parque, demonstração longa, alguém pesquisando coisa pra trabalho — falta poder voltar em respostas anteriores e ver o conteúdo grande. <strong>É a diferença entre "FAQ inteligente" e "ferramenta de pesquisa".</strong>`
+    },
+    onboarding: {
+      title: 'Tutorial inicial',
+      body: `<p>Quando alguém entra pela primeira vez, aparece um <strong>tutorial rapidinho</strong> ensinando: como digitar pergunta, como ativar o microfone, como abrir os menus dos hubs, como ouvir uma resposta de novo. Tem também o <strong>MobileHoldHint</strong>: um aviso especial pra celular ensinando que o menu redondo abre quando você <strong>segura o dedo no T</strong> — gesto que ninguém adivinha sozinho.</p>
+      <p>Aparece só na primeira visita (a gente lembra usando o caderninho do navegador). Tem botão "pular" sempre disponível.</p>`,
+      why: `A interface tem mecânicas <strong>não óbvias</strong>. Segurar o dedo no T pra abrir menu? Modos texto e voz coexistindo? Hubs ancorados num símbolo? Sem tutorial, o usuário descobre uns 30% das coisas e <strong>nunca vê o resto</strong>. É a diferença entre "ah, é um chatbot legalzinho" e "uau, é uma experiência completa". Tutorial não é frescura, é <strong>chave pra desbloquear o produto inteiro</strong>.`
+    },
+    'resiliencia-t': {
+      title: 'O T resistente',
+      body: `<p>Duas coisas faltam. Primeira: <strong>versão 2D</strong> do T, pra dispositivos sem placa de vídeo decente (raros, mas existem em totens antigos e máquinas compartilhadas). Segunda: <strong>diferenciar visualmente</strong> os estados avançados — hoje "incerteza" (quando o robô tem dúvida da resposta) e "erro" parecem com o estado normal. Falta deixar claro pro usuário "olha, agora é diferente".</p>
+      <p>O fallback 2D é uma versão SVG estática do T, ativada por <em>feature detection</em> no carregamento.</p>`,
+      why: `A interface <strong>não pode depender de hardware moderno</strong>. Em totem institucional, em laboratório, em conexão ruim, o 3D pode falhar — e o robô tem que continuar funcionando com cara reconhecível. <strong>Robustez pro pior cenário.</strong> E diferenciar erro do estado normal evita que o usuário fique tentando achando que é só lentidão.`
+    },
+    'dominio-resend': {
+      title: 'E-mail de verdade pra mandar confirmações',
+      body: `<p>Os e-mails de confirmação saem hoje de <code>onboarding@resend.dev</code>, que é o endereço de teste do Resend. <strong>Tem um detalhe ruim</strong>: esse endereço só consegue mandar e-mail pra dona da conta. Pra qualquer outra pessoa, o e-mail <strong>some no caminho</strong>, sem aviso, sem nada.</p>
+      <p>Pra resolver: o time de TI da PUCRS configura uns registros de DNS (<code>SPF</code>, <code>DKIM</code>, <code>DMARC</code>) num subdomínio próprio (tipo <code>noreply@mail.tecnopuc.pucrs.br</code>) e verifica no painel do Resend. Depois é só atualizar uma variável de ambiente e pronto.</p>`,
+      why: `<strong>Bloqueia o uso real do feature de contribuições.</strong> Enquanto isso não for resolvido, qualquer visitante de fora que tentar contribuir <strong>nunca recebe o link de confirmação</strong> — e a sugestão dele some em 24h. O sistema funciona em demonstração. Mas pra abrir pro mundo, esse passo precisa estar feito. Sem isso, é só vitrine — não funciona pra valer.`
+    },
+    'politica-uso': {
+      title: 'Política de privacidade',
+      body: `<p>O formulário de contribuição coleta <strong>e-mail e conteúdo livre</strong>. A LGPD (a lei) exige uma página pública dizendo: "esses dados são usados pra X, ficam guardados por Y, e você pode pedir pra apagar quando quiser". <strong>Não basta ter o cuidado, tem que dizer publicamente.</strong></p>
+      <p>A faxina automática diária (via <code>pg_cron</code>) <strong>já existe no banco</strong>. Mas tá só no código — falta colocar isso por escrito numa página pra qualquer um ler.</p>`,
+      why: `<strong>Lei é lei.</strong> A LGPD prevê multas significativas, e qualquer reclamação numa instituição educacional escala rápido. Além de ser eticamente correto, ter a política bem escrita e visível é <strong>defesa preventiva</strong>: se um dia alguém questionar, dá pra mostrar. Protege a reputação da PUCRS. <strong>É barato fazer e caro não fazer.</strong>`
+    },
+    monitoramento: {
+      title: 'Aviso quando algo dá errado',
+      body: `<p>Hoje, se algo quebrar de madrugada, <strong>ninguém fica sabendo até alguém reclamar</strong>. Falta instrumentação de produção: contadores de uso (perguntas/dia, tempo de resposta), <strong>alertas em tempo real</strong> quando o robô retorna respostas vazias ou falha em ingerir um documento, e painel de saúde geral.</p>
+      <p>Ferramentas candidatas: Sentry pra erros, Grafana ou Datadog pra métricas, ou estender o próprio painel admin com gráficos.</p>`,
+      why: `Sem monitoramento, <strong>problema só aparece depois de virar problemão</strong>. E pior: a maioria dos usuários frustrados <strong>não reclama, simplesmente vai embora</strong>. Painel converte "tá funcionando bem?" numa pergunta com resposta objetiva, e alerta garante que o time saiba antes do gestor saber pelo telefone tocando.`
+    },
+    'testes-auto': {
+      title: 'Robô que testa o robô',
+      body: `<p>Hoje, antes de cada atualização, alguém precisa <strong>testar tudo na mão</strong>: chat funciona? voz funciona? contribuições funcionam? moderação funciona? ingestão funciona? É lento e dá pra esquecer alguma coisa. Falta <strong>cobertura automatizada</strong>: testes nas funções críticas do RAG (chunking, busca por similaridade), testes nas rotas de API, testes ponta-a-ponta nos fluxos críticos.</p>
+      <p>Stack candidata: Vitest pros testes pequenos, Playwright pros testes de fluxo completo.</p>`,
+      why: `Conforme o projeto recebe mais autores e mais features, <strong>é inevitável quebrar coisa sem perceber</strong>. Uma mudança no painel admin pode estragar a moderação de contribuições silenciosamente. Testes automatizados são a <strong>rede de segurança</strong> que permite o time crescer sem perder qualidade — e dão confiança pro time da PUCRS aceitar contribuições externas no futuro.`
+    },
+    'empresas-network': {
+      title: 'Empresas vivas no fundo',
+      body: `<p>Aqueles pontinhos brilhantes que se conectam no fundo da capa hoje são <strong>abstratos</strong> — só pontinhos genéricos. A visão é fazer cada um virar uma <strong>empresa real</strong> que mora no TecnoPUC. Aproxima o mouse, aparece o nome. Clica, vai pra detalhes. <strong>Densidade dos pontinhos pode até refletir clusters por área</strong> (mais pontos brilhando perto = mais empresas naquela área).</p>
+      <p>Aí o fundo deixa de ser decoração e vira <strong>mapa visual do ecossistema</strong>.</p>`,
+      why: `Reforça o posicionamento do TecnoPUC como <strong>ecossistema, não só prédio</strong>. Cada empresa residente vira parte da apresentação institucional. E o usuário entende visualmente o tamanho e a diversidade do parque <strong>sem precisar ler uma lista</strong>. Pras empresas residentes, é exposição automática de marca dentro do canal oficial — gerando valor reverso pra quem tá no parque.`
+    },
+    'historico-login': {
+      title: 'O robô lembra de você',
+      body: `<p>Hoje cada visita é uma sessão isolada — fechou a aba, perdeu tudo. A visão é ter um <strong>login leve</strong> (Google, ou e-mail mágico, sem senha) e guardar no Supabase as conversas anteriores, contribuições enviadas e hubs visitados.</p>
+      <p>Você volta semana que vem, faz login, e <strong>encontra de onde parou</strong>. Com sugestões tipo "você estava explorando o Hub de Energia, quer continuar?".</p>`,
+      why: `Transforma o robô de <strong>"ferramenta de uma pergunta"</strong> em <strong>"interlocutor contínuo"</strong>. Pra alunos pesquisando empresas, professores buscando programas, empreendedores explorando o parque — ter histórico é a diferença entre uma curiosidade pontual e <strong>uma relação de uso recorrente</strong>. Aumenta retenção e profundidade do engajamento.`
+    },
+    recomendacao: {
+      title: 'Robô que indica o próximo passo',
+      body: `<p>Em vez do robô só responder e parar, ele passa a sugerir o <strong>próximo passo dentro do parque</strong>. Pergunta sobre IA? Ele sugere o Hub de Tecnologias para Imagem + programa de residência + empresa residente da área. <strong>Vira guia, não só dicionário.</strong></p>
+      <p>Implementação: usar o mesmo embedding da pergunta pra fazer matching com catálogos estruturados de hubs, programas e empresas.</p>`,
+      why: `Converte o chatbot em <strong>ferramenta de funil</strong>. Cada interação tem potencial de gerar lead, visita, candidatura — em vez de terminar com a resposta. <strong>É a diferença entre informar passivamente e ativar oportunidades</strong> dentro do parque. O robô deixa de ser custo e passa a ser instrumento estratégico.`
+    },
+    'analytics-gaps': {
+      title: 'Onde a memória falha',
+      body: `<p>Painel admin que destaca <strong>perguntas frequentes que o robô não soube responder bem</strong> — seja por similaridade baixa nos pedaços recuperados, seja porque a pessoa fez follow-up reformulando (sinal de que a primeira resposta não satisfez).</p>
+      <p>Fonte de dados: histórico do GA4 (perguntas) + estatísticas dos retornos do RAG (similaridade) + sinais de feedback inline.</p>`,
+      why: `Produto <strong>orientado por dados</strong> em vez de chute. Em vez do time de comunicação gastar tempo escrevendo conteúdo que ninguém pergunta, vê em painel "essas 20 perguntas da semana ficaram sem resposta boa" e endereça especificamente. <strong>Otimiza o ROI de cada hora investida em curadoria</strong> — recurso escasso em qualquer time.`
+    },
+    multilingue: {
+      title: 'Outras línguas',
+      body: `<p>O TecnoPUC recebe regularmente <strong>delegações internacionais</strong> — investidores, universidades parceiras, programas de cooperação. A visão é detectar o idioma da pergunta e responder no mesmo idioma, com a base traduzida progressivamente pra inglês e espanhol.</p>
+      <p>Começa pelos documentos institucionais mais visitados (visão geral do parque, hubs, residência). Documentos não traduzidos voltam pro português com um aviso.</p>`,
+      why: `<strong>Posiciona o parque como interlocutor global.</strong> Hoje uma delegação precisa de tradutor humano ou material impresso. Robô multilíngue 24/7 atende qualquer visita <strong>sem custo adicional por evento</strong> e mantém qualidade consistente — algo difícil de garantir com tradutores ad-hoc.`
+    },
+    'feedback-inline': {
+      title: 'Joinha ou não-curti',
+      body: `<p>Em cada resposta do robô, dois botões: 👍 / 👎 com campo de comentário opcional. O sinal vai pro painel admin e <strong>alimenta a priorização da curadoria</strong>.</p>
+      <p>Combinado com o "onde a memória falha", fecha o ciclo completo: <em>respostas marcadas como ruins</em> + <em>perguntas sem cobertura</em> = <strong>backlog explícito de melhoria</strong>, ordenado por impacto real.</p>`,
+      why: `Transforma <strong>uso real em direção de produto</strong>. Sem feedback, a base evolui por palpite. Com feedback inline, cada usuário insatisfeito vira <strong>sugestão estruturada de melhoria</strong>, e a base vai sendo refinada exatamente onde mais incomoda — não onde a equipe acha que precisa. <strong>É o melhor sinal de qualidade que um produto conversacional pode ter.</strong>`
+    }
+  };
+
   (function () {
     const overlay = document.getElementById('detailOverlay');
     const titleEl = document.getElementById('detailTitle');
@@ -1796,7 +2955,8 @@
     const whyEl   = document.getElementById('detailWhy');
 
     function open(id) {
-      const data = detailContent[id];
+      const dict = (mode === 'eli10') ? detailContentEli10 : detailContentTecnica;
+      const data = dict[id];
       if (!data) return;
       titleEl.textContent = data.title;
       bodyEl.innerHTML = data.body;
