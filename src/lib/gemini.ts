@@ -23,17 +23,80 @@ const embeddingModel = genAI.getGenerativeModel(
   { model: 'gemini-embedding-2-preview' } // 3072 dimensões nativamente
 );
 
+// Cache em memória de embeddings de query (query string → vetor 768d).
+// Embedding model é determinístico, então o vetor não vence — só rotacionamos
+// pra controlar uso de memória. TTL longo (24h) cobre o ciclo natural de
+// perguntas repetitivas ("o que é o TecnoPUC?", "quais empresas?") sem inflar
+// memória. Em edge runtime, cada isolate tem seu próprio cache; hit rate cai
+// vs. server único, mas o ganho por hit (-300ms) compensa.
+const EMBEDDING_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+const EMBEDDING_CACHE_MAX_ENTRIES = 1000;
+
+interface CachedEmbedding {
+  embedding: number[];
+  expiry: number;
+}
+
+const embeddingCache = new Map<string, CachedEmbedding>();
+const embeddingInFlight = new Map<string, Promise<number[]>>();
+
+function normalizeQuery(text: string): string {
+  return text.trim().toLowerCase();
+}
+
+// Hard cap por LRU-ish: Map preserva ordem de inserção, então drop dos
+// primeiros (mais antigos) quando estoura o teto. Lazy: só prune quando
+// inserimos um novo entry.
+function evictIfNeeded(): void {
+  if (embeddingCache.size <= EMBEDDING_CACHE_MAX_ENTRIES) return;
+  const overflow = embeddingCache.size - EMBEDDING_CACHE_MAX_ENTRIES;
+  const keys = Array.from(embeddingCache.keys()).slice(0, overflow);
+  for (const k of keys) embeddingCache.delete(k);
+}
+
 /**
  * Gera um vetor de embedding (768 dimensões) para um texto via gemini-embedding-2-preview.
  * Usado para indexar documentos e para buscar contexto relevante.
+ *
+ * Cache: queries idênticas (após trim + lowercase) reutilizam o vetor por 24h
+ * dentro do mesmo isolate. Single-flight: chamadas concorrentes do mesmo texto
+ * compartilham uma única chamada à API.
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  // outputDimensionality: 768 trunca o vetor para 768 dims (compatível com ivfflat e o schema do Supabase)
-  const result = await embeddingModel.embedContent({
-    content: { parts: [{ text }], role: 'user' },
-    outputDimensionality: 768,
-  } as Parameters<typeof embeddingModel.embedContent>[0]);
-  return result.embedding.values;
+  const key = normalizeQuery(text);
+
+  // Hit: TTL ainda válido.
+  const cached = embeddingCache.get(key);
+  if (cached && Date.now() < cached.expiry) {
+    return cached.embedding;
+  }
+
+  // Single-flight: alguma chamada da mesma query já está em curso, esperamos.
+  const inFlight = embeddingInFlight.get(key);
+  if (inFlight) return inFlight;
+
+  // Miss: chama o Gemini e popula o cache no sucesso.
+  // outputDimensionality: 768 trunca o vetor (compatível com ivfflat e schema do Supabase).
+  const promise = embeddingModel
+    .embedContent({
+      content: { parts: [{ text }], role: 'user' },
+      outputDimensionality: 768,
+    } as Parameters<typeof embeddingModel.embedContent>[0])
+    .then((result) => {
+      const embedding = result.embedding.values;
+      embeddingCache.set(key, {
+        embedding,
+        expiry: Date.now() + EMBEDDING_CACHE_TTL_MS,
+      });
+      evictIfNeeded();
+      return embedding;
+    })
+    .finally(() => {
+      embeddingInFlight.delete(key);
+    });
+
+  embeddingInFlight.set(key, promise);
+  return promise;
 }
 
 // ------------------------------------------------------------------
