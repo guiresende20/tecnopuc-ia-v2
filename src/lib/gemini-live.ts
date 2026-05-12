@@ -51,10 +51,13 @@ export class GeminiLiveChat {
 
   // `authToken` é um token efêmero emitido pelo servidor via authTokens.create().
   // Não é a chave privada do Gemini — dura ≤30 min e vale ≤1 sessão.
+  // `languageCode` em BCP-47 (pt-BR, en-US, es-US, zh-CN) — passa pro
+  // speechConfig pra ajudar a transcrição/síntese a ficar no idioma certo.
   constructor(
     private authToken: string,
     private callbacks: LiveChatCallbacks,
-    private systemInstruction: string
+    private systemInstruction: string,
+    private languageCode: string = 'pt-BR'
   ) {}
 
   private updateStatus(status: LiveChatStatus) {
@@ -168,6 +171,7 @@ export class GeminiLiveChat {
               responseModalities: ['AUDIO'],
               thinkingConfig: { thinkingLevel: 'low' },
               speechConfig: {
+                languageCode: this.languageCode,
                 voiceConfig: {
                   prebuiltVoiceConfig: {
                     voiceName: 'Puck',

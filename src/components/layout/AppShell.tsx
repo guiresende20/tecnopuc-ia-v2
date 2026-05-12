@@ -122,6 +122,15 @@ export function AppShell() {
 
       if (!ephemeralToken) throw new Error('Token de voz não recebido do servidor.');
 
+      // Mapeia locale do app pro BCP-47 esperado pelo speechConfig da Live API.
+      // Default 'pt-BR' cobre o caso comum; en/es/zh usam variantes padrão.
+      const languageCode =
+        locale === 'pt' ? 'pt-BR' :
+        locale === 'en' ? 'en-US' :
+        locale === 'es' ? 'es-US' :
+        locale === 'zh' ? 'cmn-CN' :
+        'pt-BR';
+
       const chat = new GeminiLiveChat(
         ephemeralToken,
         {
@@ -158,6 +167,7 @@ export function AppShell() {
           },
         },
         systemInstruction,
+        languageCode,
       );
 
       liveChatRef.current = chat;

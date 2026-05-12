@@ -74,7 +74,9 @@ const DEFAULT_SETTINGS: AppSettings = {
   similarityThreshold: 0.65,
   matchCount: 5,
   voice: 'Aoede',
-  maxTokens: 1024,
+  // 512 cobre 99% das respostas institucionais (100-400 tokens típico).
+  // Cap menor = TTLB menor (modelo termina o stream antes).
+  maxTokens: 512,
 };
 
 async function fetchSettingsFromDb(): Promise<AppSettings> {
