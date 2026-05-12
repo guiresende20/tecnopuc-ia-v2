@@ -3393,19 +3393,27 @@
     const ctx = canvas.getContext('2d');
     let particles = [];
 
-    // Mouse reactivity: posição atual + se está ativa (dentro da janela)
+    // Mouse reactivity: atração sutil + damping pra não acumular momento.
+    // O `mouseMoving` é setado a true por ~120ms a cada mousemove, depois cai
+    // pra false. Sem isso, parar o mouse não pararia a "perseguição" — o cursor
+    // continuaria atraindo até a partícula chegar perto.
     let mouseX = -9999, mouseY = -9999;
-    let mouseActive = false;
-    const MOUSE_RADIUS    = 160;
+    let mouseMoving = false;
+    let mouseMoveTimer = null;
+    const MOUSE_RADIUS    = 110;
     const MOUSE_RADIUS_SQ = MOUSE_RADIUS * MOUSE_RADIUS;
-    const MOUSE_FORCE     = 0.18;     // intensidade da atração
+    const MOUSE_FORCE     = 0.035;    // ~5x mais fraca que antes (0.18 → 0.035)
+    const NATURAL_SPEED   = 0.40;     // velocidade-alvo de cruzeiro
+    const DAMPING         = 0.96;     // só aplicado quando partícula tá acima da natural
     window.addEventListener('mousemove', (e) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-      mouseActive = true;
+      mouseMoving = true;
+      clearTimeout(mouseMoveTimer);
+      mouseMoveTimer = setTimeout(() => { mouseMoving = false; }, 120);
     });
-    window.addEventListener('mouseleave', () => { mouseActive = false; });
-    window.addEventListener('blur',       () => { mouseActive = false; });
+    window.addEventListener('mouseleave', () => { mouseMoving = false; });
+    window.addEventListener('blur',       () => { mouseMoving = false; });
 
     function resize() {
       const dpr = window.devicePixelRatio || 1;
@@ -3439,8 +3447,9 @@
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
-        // Mouse reactivity: atrai sutilmente partículas próximas ao cursor
-        if (mouseActive) {
+        // Mouse reactivity: só aplica força enquanto o mouse está se MOVENDO.
+        // Quando para, força some — partícula desacelera naturalmente via damping.
+        if (mouseMoving) {
           const mdx = mouseX - p.x;
           const mdy = mouseY - p.y;
           const md2 = mdx * mdx + mdy * mdy;
@@ -3451,12 +3460,13 @@
             p.vy += (mdy / md) * force;
           }
         }
-        // Cap de velocidade pra não acelerar infinito quando mouse fica parado
+        // Damping: quando partícula está ACIMA da velocidade natural, desacelera.
+        // Partículas em cruzeiro natural não são afetadas. Isso evita acumular
+        // momento ao longo do tempo (queixa de performance).
         const vmag2 = p.vx * p.vx + p.vy * p.vy;
-        if (vmag2 > 4) {
-          const vmag = Math.sqrt(vmag2);
-          p.vx = (p.vx / vmag) * 2;
-          p.vy = (p.vy / vmag) * 2;
+        if (vmag2 > NATURAL_SPEED * NATURAL_SPEED) {
+          p.vx *= DAMPING;
+          p.vy *= DAMPING;
         }
 
         p.x += p.vx; p.y += p.vy;
