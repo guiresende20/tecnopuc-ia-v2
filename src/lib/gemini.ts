@@ -3,7 +3,7 @@
 // - Geração de embeddings (text-embedding-004)
 // - Chat com streaming (Gemini Flash)
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, type GenerationConfig } from '@google/generative-ai';
 import type { Locale } from '@/i18n/locales';
 import { localeDisplayName } from './translation';
 
@@ -75,12 +75,18 @@ ${context}
 /**
  * Streama uma resposta do Gemini com contexto RAG injetado.
  * Retorna um ReadableStream compatível com a Response API do Next.js.
+ *
+ * `thinkingLevel`:
+ * - 'low'  → thinkingBudget: 0 (desliga thinking; corta TTFT em 200-800ms,
+ *            ideal pra RAG onde o contexto já vem injetado)
+ * - 'high' → thinkingBudget: -1 (automático, modelo decide)
  */
 export async function streamChat(
   messages: ChatMessage[],
   systemPrompt: string,
   temperature: number = 0.5,
-  maxOutputTokens: number = 1024
+  maxOutputTokens: number = 1024,
+  thinkingLevel: 'low' | 'high' = 'low',
 ): Promise<ReadableStream<Uint8Array>> {
   const history = messages.slice(0, -1).map((m) => ({
     role: m.role === 'assistant' ? 'model' : 'user',
@@ -89,12 +95,20 @@ export async function streamChat(
 
   const lastMessage = messages[messages.length - 1];
 
+  // O SDK @google/generative-ai (legado) ainda não tipa thinkingConfig, mas o
+  // wire format passa direto pra REST API do Gemini, que aceita o campo.
+  // thinkingBudget: 0 desliga thinking; -1 deixa o modelo decidir.
+  const generationConfig = {
+    temperature,
+    maxOutputTokens,
+    thinkingConfig: {
+      thinkingBudget: thinkingLevel === 'low' ? 0 : -1,
+    },
+  } as unknown as GenerationConfig;
+
   const chatModel = genAI.getGenerativeModel({
     model: 'gemini-2.5-flash',
-    generationConfig: {
-      temperature,
-      maxOutputTokens,
-    },
+    generationConfig,
   });
 
   const chat = chatModel.startChat({

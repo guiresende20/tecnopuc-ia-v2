@@ -93,12 +93,16 @@ export async function POST(req: NextRequest) {
     // 4. Montar o system prompt enriquecido com o contexto RAG + instrução de idioma
     const systemPrompt = buildSystemPrompt(contextText, settings.system_prompt, locale);
 
-    // 5. Iniciar streaming da resposta do Gemini com a temperatura paramétrica e tokens max
+    // 5. Iniciar streaming da resposta do Gemini com temperatura/tokens/thinking paramétricos.
+    //    thinkingLevel='low' (default) desliga thinking → corta TTFT em 200-800ms.
+    //    Pra RAG isso geralmente é certo: o contexto já vem injetado, raramente
+    //    se beneficia de raciocínio interno do modelo.
     const stream = await streamChat(
       messages,
       systemPrompt,
       settings.temperature,
-      settings.maxTokens
+      settings.maxTokens,
+      settings.thinkingLevel,
     );
 
     // 6. Retornar o stream para o frontend (edge runtime chunka automaticamente)
