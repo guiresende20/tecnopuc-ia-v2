@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { generateEmbedding } from '@/lib/gemini';
 import { ingestLimiter, enforceLimit, getClientIp } from '@/lib/rate-limit';
+import { timingSafeEqual } from 'crypto';
 import fs from 'fs';
 import path from 'path';
 
@@ -32,11 +33,22 @@ export async function POST(req: NextRequest) {
   const limited = await enforceLimit(ingestLimiter, getClientIp(req));
   if (limited) return limited;
 
-  // Verificação de segurança
-  const authHeader = req.headers.get('Authorization');
-  const expectedToken = `Bearer ${process.env.INGEST_SECRET}`;
+  // Fail closed: sem INGEST_SECRET configurado, a rota fica desabilitada
+  // (evita "Bearer undefined" como token aceito em deploy mal configurado).
+  const secret = process.env.INGEST_SECRET;
+  if (!secret) {
+    console.error('[/api/ingest] INGEST_SECRET ausente — rota desabilitada.');
+    return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
+  }
 
-  if (!authHeader || authHeader !== expectedToken) {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
+  }
+
+  const provided = Buffer.from(authHeader.slice('Bearer '.length));
+  const expected = Buffer.from(secret);
+  if (provided.length !== expected.length || !timingSafeEqual(provided, expected)) {
     return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
   }
 

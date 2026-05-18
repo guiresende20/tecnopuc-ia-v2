@@ -119,7 +119,7 @@ admin-setup.sql                      # tabelas do painel admin
 O projeto implementa múltiplas camadas defensivas:
 
 - **Tokens efêmeros** para voz — chave privada nunca vai ao cliente
-- **RLS ativo** em todas as tabelas Supabase (service_role bypassa server-side)
+- **Acesso ao Supabase 100% server-side** via `service_role` — chave anônima não é exposta ao cliente. RLS **não** está habilitado nas tabelas (não é necessário enquanto não houver acesso anônimo); se algum dia for reintroduzido `NEXT_PUBLIC_SUPABASE_ANON_KEY`, habilitar `ENABLE ROW LEVEL SECURITY` + policies em `documents`, `knowledge_sources`, `chatbot_settings` e `contribuicoes` antes
 - **Rate limiting** por IP em todas as rotas via Upstash Redis
 - **Security headers** (HSTS, X-Frame-Options, Permissions-Policy, etc)
 - **Validação de tamanho** em queries e uploads
