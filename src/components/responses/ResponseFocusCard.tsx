@@ -4,8 +4,9 @@ import { useState } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ResponseNode } from '@/types/app.types';
-import { useTypewriter } from '@/hooks/useTypewriter';
+import { useTypewriter, type TypewriterOptions } from '@/hooks/useTypewriter';
 import { useT } from '@/i18n';
+import { VideoEmbed } from './VideoEmbed';
 
 const markdownComponents: Components = {
   a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
@@ -15,14 +16,19 @@ interface ResponseFocusCardProps {
   node: ResponseNode;
   isStreaming?: boolean;
   streamingText?: string;
+  typewriterOptions?: TypewriterOptions;
 }
 
-export function ResponseFocusCard({ node, isStreaming, streamingText }: ResponseFocusCardProps) {
+export function ResponseFocusCard({ node, isStreaming, streamingText, typewriterOptions }: ResponseFocusCardProps) {
   const [copied, setCopied] = useState(false);
   const t = useT();
 
   const target = isStreaming ? streamingText ?? '' : node.body ?? '';
-  const displayed = useTypewriter(target);
+  const typed = useTypewriter(target, typewriterOptions);
+  // Nó de voz já finalizado: o texto foi revelado durante o streaming. Mostra
+  // instantâneo pra não re-digitar do zero (que parecia "repetir" no fim).
+  const showInstant = !isStreaming && node.origin === 'voice';
+  const displayed = showInstant ? target : typed;
   const isRevealing = displayed.length < target.length;
   const showCursor = isStreaming || isRevealing;
   const showActions = !isStreaming && !isRevealing;
@@ -41,6 +47,8 @@ export function ResponseFocusCard({ node, isStreaming, streamingText }: Response
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{displayed}</ReactMarkdown>
         {showCursor && <span className="cursor-blink" aria-hidden="true" />}
       </div>
+
+      {!isStreaming && node.video && <VideoEmbed video={node.video} />}
 
       {showActions && (
         <div className="focus-card-actions">

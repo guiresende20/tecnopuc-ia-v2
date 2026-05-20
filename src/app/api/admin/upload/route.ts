@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { generateEmbedding } from '@/lib/gemini';
+import { extractVideoEmbeds } from '@/lib/video-embeds';
 import { authAdmin } from '../settings/route';
 import { adminUploadLimiter, enforceLimit, getClientIp } from '@/lib/rate-limit';
 
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
     // 1. Salva a fonte
     const { data: source, error: sourceError } = await supabase
       .from('knowledge_sources')
-      .insert({ title, content, type: 'pdf_or_text' })
+      .insert({ title, content, type: 'pdf_or_text', video_embeds: extractVideoEmbeds(content) })
       .select('id').single();
 
     if (sourceError || !source) throw sourceError;

@@ -13,6 +13,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { extractVideoEmbeds } from '../src/lib/video-embeds';
 
 // Validação de variáveis de ambiente
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -70,11 +71,13 @@ async function upsertKnowledgeSource(filename: string, title: string, content: s
     .eq('type', 'file')
     .maybeSingle();
 
+  const video_embeds = extractVideoEmbeds(content);
+
   if (existing) {
     // Atualiza conteúdo
     await supabase
       .from('knowledge_sources')
-      .update({ content })
+      .update({ content, video_embeds })
       .eq('id', existing.id);
     return existing.id;
   }
@@ -82,7 +85,7 @@ async function upsertKnowledgeSource(filename: string, title: string, content: s
   // Cria novo registro
   const { data: created, error } = await supabase
     .from('knowledge_sources')
-    .insert({ title, content, type: 'file' })
+    .insert({ title, content, type: 'file', video_embeds })
     .select('id')
     .single();
 

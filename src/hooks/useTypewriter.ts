@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 
-interface Options {
+export interface TypewriterOptions {
   charsPerTick?: number;
   tickMs?: number;
   catchUpRate?: number;
   catchUpThreshold?: number;
 }
 
-export function useTypewriter(target: string, options: Options = {}): string {
+export function useTypewriter(target: string, options: TypewriterOptions = {}): string {
   const {
     charsPerTick = 2,
     tickMs = 18,

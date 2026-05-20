@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { generateEmbedding } from '@/lib/gemini';
+import { extractVideoEmbeds } from '@/lib/video-embeds';
 import { authAdmin } from '../settings/route';
 import { adminLimiter, enforceLimit, getClientIp } from '@/lib/rate-limit';
 
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
     // 1. Salva a fonte
     const { data: source, error: sourceError } = await supabase
       .from('knowledge_sources')
-      .insert({ title, content, type })
+      .insert({ title, content, type, video_embeds: extractVideoEmbeds(content) })
       .select('id').single();
 
     if (sourceError || !source) throw sourceError;
@@ -91,7 +92,7 @@ export async function PUT(req: NextRequest) {
     // 1. Atualizar a fonte (update)
     const { error: sourceError } = await supabase
       .from('knowledge_sources')
-      .update({ title, content })
+      .update({ title, content, video_embeds: extractVideoEmbeds(content) })
       .eq('id', id);
 
     if (sourceError) throw sourceError;

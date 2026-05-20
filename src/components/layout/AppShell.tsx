@@ -49,6 +49,7 @@ export function AppShell() {
 
   // Voice state
   const [voiceStatus, setVoiceStatus] = useState<LiveChatStatus>('disconnected');
+  const [voiceStreamingText, setVoiceStreamingText] = useState('');
   const liveChatRef = useRef<GeminiLiveChat | null>(null);
   const voiceContextCache = useRef<{ systemInstruction: string; ephemeralToken: string } | null>(null);
 
@@ -134,8 +135,15 @@ export function AppShell() {
       const chat = new GeminiLiveChat(
         ephemeralToken,
         {
-          onStatusChange: (status) => setVoiceStatus(status),
+          onStatusChange: (status) => {
+            setVoiceStatus(status);
+            // Fora de "speaking" o streaming parcial não vale mais: ou foi
+            // commitado no onTurnComplete, ou descartado (barge-in/stop/erro).
+            if (status !== 'speaking') setVoiceStreamingText('');
+          },
           onAudioLevel: (level) => setAudioLevel(level),
+          // Texto da fala da IA chegando ao vivo (transcrição) → cresce o card.
+          onTextAction: (t) => setVoiceStreamingText((prev) => prev + t),
           onTurnComplete: (aiText, userText) => {
             // Add voice turn to the conversation visible in the UI
             if (userText.trim()) {
@@ -264,7 +272,7 @@ export function AppShell() {
     setTState('idle');
   }, [setTState]);
 
-  const hasContent = responses.length > 0 || isStreaming;
+  const hasContent = responses.length > 0 || isStreaming || voiceStreamingText.length > 0;
 
   return (
     <div className="app-shell">
@@ -278,6 +286,7 @@ export function AppShell() {
           userMessages={userMessages}
           isStreaming={isStreaming}
           streamingText={streamingText}
+          voiceStreamingText={voiceStreamingText}
           onClose={handleClearConversation}
         />
       </main>
