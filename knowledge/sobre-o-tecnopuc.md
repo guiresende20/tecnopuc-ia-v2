@@ -56,3 +56,7 @@ O diferencial do TecnoPUC está na sua integração profunda com a PUCRS, uma da
 - Talentos em formação nos cursos de graduação, mestrado e doutorado
 - Programas de pesquisa aplicada e desenvolvimento de produtos
 - Financiamento e acesso a editais de pesquisa e inovação
+
+## Vídeo institucional
+
+Conheça o TecnoPUC neste vídeo institucional: https://youtu.be/lDZq-SMi9Ok

@@ -1,4 +1,7 @@
 import type { Locale } from '@/i18n/locales';
+import type { VideoEmbed } from '@/lib/video-embeds';
+
+export type { VideoEmbed };
 
 export type ViewportMode = 'desktop' | 'mobile';
 
@@ -35,6 +38,7 @@ export interface ResponseNode {
   voiceAvailable?: boolean;
   actions?: ResponseAction[];
   sources?: { source: string; similarity: string }[];
+  video?: VideoEmbed | null;
 }
 
 export interface RadialItem {

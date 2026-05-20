@@ -35,10 +35,13 @@ export class GeminiLiveChat {
 
   private currentStatus: LiveChatStatus = 'disconnected';
   private vadFramesAbove = 0;
-  // RMS em float32 (0-1). ~0.025 corta ruído ambiente mas detecta fala normal.
-  private readonly VAD_THRESHOLD = 0.025;
-  // 4096 samples @ 16kHz = ~256ms por frame. 2 frames = ~512ms de fala sustentada.
-  private readonly VAD_MIN_FRAMES = 2;
+  // RMS em float32 (0-1). Subido de 0.025 → 0.045: exige fala claramente acima
+  // do ruído ambiente pra interromper (barge-in), reduzindo cortes por barulho
+  // externo. Se ficar difícil interromper falando normal, baixar de novo.
+  private readonly VAD_THRESHOLD = 0.045;
+  // 4096 samples @ 16kHz = ~256ms por frame. 3 frames = ~768ms de fala
+  // sustentada — filtra ruídos curtos (tosse, batida, porta) que antes cortavam.
+  private readonly VAD_MIN_FRAMES = 3;
 
   // Suavização exponencial assimétrica do nível de input. ScriptProcessor emite
   // a cada ~256ms (4Hz) e o RMS por frame é muito jittery (sílabas vs pausas).
@@ -51,10 +54,13 @@ export class GeminiLiveChat {
 
   // `authToken` é um token efêmero emitido pelo servidor via authTokens.create().
   // Não é a chave privada do Gemini — dura ≤30 min e vale ≤1 sessão.
+  // `languageCode` em BCP-47 (pt-BR, en-US, es-US, zh-CN) — passa pro
+  // speechConfig pra ajudar a transcrição/síntese a ficar no idioma certo.
   constructor(
     private authToken: string,
     private callbacks: LiveChatCallbacks,
-    private systemInstruction: string
+    private systemInstruction: string,
+    private languageCode: string = 'pt-BR'
   ) {}
 
   private updateStatus(status: LiveChatStatus) {
@@ -168,6 +174,7 @@ export class GeminiLiveChat {
               responseModalities: ['AUDIO'],
               thinkingConfig: { thinkingLevel: 'low' },
               speechConfig: {
+                languageCode: this.languageCode,
                 voiceConfig: {
                   prebuiltVoiceConfig: {
                     voiceName: 'Puck',
@@ -178,6 +185,14 @@ export class GeminiLiveChat {
             systemInstruction: {
               parts: [{ text: this.systemInstruction }],
             },
+            // Transcrição server-side da fala (entrada e saída). A saída em AUDIO
+            // continua sendo a única responseModality — a Live API não permite
+            // TEXT+AUDIO juntos —, mas outputAudioTranscription devolve, em
+            // paralelo, o texto exato do que a IA está falando. É assim que se
+            // tem "áudio + texto da mesma resposta": o texto é transcrição da
+            // fala, nunca diverge dela.
+            outputAudioTranscription: {},
+            inputAudioTranscription: {},
           },
         };
         console.log('[TecnoPUC Live] Setup enviado:', setup.setup.model);
@@ -224,6 +239,15 @@ export class GeminiLiveChat {
         // Transcrição do áudio do usuário
         if (msg.serverContent?.inputTranscription?.text) {
           this.currentUserText += msg.serverContent.inputTranscription.text;
+        }
+
+        // Transcrição do áudio da IA — texto exatamente do que está sendo falado.
+        // Acumula em currentAiText (vira a resposta escrita no onTurnComplete) e
+        // streama via onTextAction para exibição ao vivo, sincronizada com a fala.
+        if (msg.serverContent?.outputTranscription?.text) {
+          const t = msg.serverContent.outputTranscription.text;
+          this.currentAiText += t;
+          this.callbacks.onTextAction?.(t);
         }
 
         if (msg.serverContent?.modelTurn) {

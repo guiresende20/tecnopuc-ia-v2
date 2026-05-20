@@ -10,6 +10,7 @@ interface ResponseLayerProps {
   userMessages: { id: string; content: string }[];
   isStreaming: boolean;
   streamingText: string;
+  voiceStreamingText?: string;
   onClose: () => void;
 }
 
@@ -30,7 +31,7 @@ function ThinkingDots() {
   );
 }
 
-export function ResponseLayer({ responses, userMessages, isStreaming, streamingText, onClose }: ResponseLayerProps) {
+export function ResponseLayer({ responses, userMessages, isStreaming, streamingText, voiceStreamingText, onClose }: ResponseLayerProps) {
   const messagesRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
   const programmaticScrollRef = useRef(false);
@@ -67,7 +68,7 @@ export function ResponseLayer({ responses, userMessages, isStreaming, streamingT
     if (!el) return;
     programmaticScrollRef.current = true;
     el.scrollTop = el.scrollHeight;
-  }, [responses, streamingText, isStreaming, userMessages]);
+  }, [responses, streamingText, isStreaming, userMessages, voiceStreamingText]);
 
   const turns = Math.max(userMessages.length, responses.length);
 
@@ -150,6 +151,20 @@ export function ResponseLayer({ responses, userMessages, isStreaming, streamingT
             <div className="chat-bubble assistant-bubble"><ThinkingDots /></div>
           </div>
         )}
+        {/* Modo voz: transcrição da fala da IA crescendo ao vivo durante o
+            speaking. Some quando o turno conclui e o nó final entra em responses. */}
+        {voiceStreamingText && (
+          <div className="chat-msg assistant">
+            <ResponseFocusCard
+              node={{ id: 'voice-streaming', origin: 'voice', type: 'primary' }}
+              isStreaming
+              streamingText={voiceStreamingText}
+              /* ~40 chars/s: ágil mas ainda seguindo o áudio sem adiantar.
+                 catchUp só dispara se ficar bem atrás. */
+              typewriterOptions={{ charsPerTick: 1, tickMs: 25, catchUpRate: 3, catchUpThreshold: 250 }}
+            />
+          </div>
+        )}
       </div>
 
       <style jsx>{`
@@ -159,7 +174,7 @@ export function ResponseLayer({ responses, userMessages, isStreaming, streamingT
           border-radius: 16px;
           display: flex;
           flex-direction: column;
-          max-height: 420px;
+          max-height: min(72vh, 580px);
           backdrop-filter: blur(24px);
           -webkit-backdrop-filter: blur(24px);
           box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 30px rgba(0,100,255,0.1);

@@ -4,15 +4,52 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { generateEmbedding, streamChat, buildSystemPrompt, ChatMessage } from '@/lib/gemini';
-import { hybridMatchDocuments, getSettings } from '@/lib/supabase';
+import { hybridMatchDocuments, getSettings, supabase, type Document } from '@/lib/supabase';
 import { chatLimiter, enforceLimit, getClientIp } from '@/lib/rate-limit';
 import { isLocale, DEFAULT_LOCALE, type Locale } from '@/i18n/locales';
+import type { VideoEmbed } from '@/lib/video-embeds';
 
 export const runtime = 'edge';
 
 // Limites defensivos para controlar custo do Gemini e memória do servidor.
 const MAX_QUERY_CHARS = 2000;   // uma pergunta institucional normal cabe com sobra
 const MAX_HISTORY_TURNS = 50;   // ~25 trocas user/assistant
+
+// Seleciona 1 vídeo para a resposta (estratégia A): caminha pelas sources
+// citadas em ordem de relevância (relevantDocs já vem ordenado pelo RRF) e
+// pega o primeiro vídeo da primeira source que tiver algum. Sem vídeo → null.
+// As sources já passaram pelo filtro de similaridade, então qualquer vídeo
+// aqui vem de uma source comprovadamente relevante.
+async function selectVideoForDocs(relevantDocs: Document[]): Promise<VideoEmbed | null> {
+  const orderedSourceIds: number[] = [];
+  for (const d of relevantDocs) {
+    const raw = d.metadata?.source_id;
+    if (raw == null) continue;
+    const sid = Number(raw);
+    if (!Number.isNaN(sid) && !orderedSourceIds.includes(sid)) {
+      orderedSourceIds.push(sid);
+    }
+  }
+  if (orderedSourceIds.length === 0) return null;
+
+  const { data, error } = await supabase
+    .from('knowledge_sources')
+    .select('id, video_embeds')
+    .in('id', orderedSourceIds);
+  if (error || !data) return null;
+
+  const byId = new Map<number, VideoEmbed[]>();
+  for (const row of data) {
+    const list = Array.isArray(row.video_embeds) ? (row.video_embeds as VideoEmbed[]) : [];
+    byId.set(Number(row.id), list);
+  }
+
+  for (const sid of orderedSourceIds) {
+    const list = byId.get(sid);
+    if (list && list.length > 0) return list[0];
+  }
+  return null;
+}
 
 export async function POST(req: NextRequest) {
   const limited = await enforceLimit(chatLimiter, getClientIp(req));
@@ -93,28 +130,38 @@ export async function POST(req: NextRequest) {
     // 4. Montar o system prompt enriquecido com o contexto RAG + instrução de idioma
     const systemPrompt = buildSystemPrompt(contextText, settings.system_prompt, locale);
 
-    // 5. Iniciar streaming da resposta do Gemini com a temperatura paramétrica e tokens max
-    const stream = await streamChat(
-      messages,
-      systemPrompt,
-      settings.temperature,
-      settings.maxTokens
-    );
+    // 5. Iniciar streaming da resposta do Gemini com temperatura/tokens/thinking paramétricos.
+    //    thinkingLevel='low' (default) desliga thinking → corta TTFT em 200-800ms.
+    //    Pra RAG isso geralmente é certo: o contexto já vem injetado, raramente
+    //    se beneficia de raciocínio interno do modelo.
+    //    A seleção do vídeo roda em paralelo ao setup do stream — não adiciona
+    //    latência perceptível ao TTFB.
+    const [stream, video] = await Promise.all([
+      streamChat(
+        messages,
+        systemPrompt,
+        settings.temperature,
+        settings.maxTokens,
+        settings.thinkingLevel,
+      ),
+      selectVideoForDocs(relevantDocs),
+    ]);
 
     // 6. Retornar o stream para o frontend (edge runtime chunka automaticamente)
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'X-Sources': JSON.stringify(
-          relevantDocs.map((d) => ({
-            source: d.metadata?.source,
-            similarity: d.similarity?.toFixed(2),
-            fts_rank: d.fts_rank?.toFixed(3),
-            rrf_score: d.rrf_score?.toFixed(4),
-          }))
-        ),
-      },
-    });
+    const headers: Record<string, string> = {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'X-Sources': JSON.stringify(
+        relevantDocs.map((d) => ({
+          source: d.metadata?.source,
+          similarity: d.similarity?.toFixed(2),
+          fts_rank: d.fts_rank?.toFixed(3),
+          rrf_score: d.rrf_score?.toFixed(4),
+        }))
+      ),
+    };
+    if (video) headers['X-Video'] = JSON.stringify(video);
+
+    return new Response(stream, { headers });
   } catch (error) {
     console.error('[/api/chat] Erro:', error);
     return NextResponse.json(

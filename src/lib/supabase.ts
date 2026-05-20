@@ -25,7 +25,8 @@ export interface Document {
   id: number;
   content: string;
   metadata: {
-    source: string;       // ex: "empresas-residentes.md"
+    source?: string;      // ex: "empresas-residentes.md" (só no fluxo CLI)
+    source_id?: number | string; // FK para knowledge_sources.id (presente nos 4 fluxos)
     chunkIndex: number;
     category?: string;    // ex: "empresa", "servico", "evento"
   };
@@ -74,7 +75,9 @@ const DEFAULT_SETTINGS: AppSettings = {
   similarityThreshold: 0.65,
   matchCount: 5,
   voice: 'Aoede',
-  maxTokens: 1024,
+  // 512 cobre 99% das respostas institucionais (100-400 tokens típico).
+  // Cap menor = TTLB menor (modelo termina o stream antes).
+  maxTokens: 512,
 };
 
 async function fetchSettingsFromDb(): Promise<AppSettings> {

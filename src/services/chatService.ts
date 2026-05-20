@@ -32,6 +32,9 @@ export async function streamChat(
   const sourcesHeader = res.headers.get('X-Sources');
   const sources = sourcesHeader ? JSON.parse(sourcesHeader) : [];
 
+  const videoHeader = res.headers.get('X-Video');
+  const video = videoHeader ? JSON.parse(videoHeader) : null;
+
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let fullText = '';
@@ -52,6 +55,7 @@ export async function streamChat(
     voiceAvailable: true,
     actions: [{ type: 'copy' }, { type: 'expand' }, { type: 'replay_voice' }],
     sources,
+    video,
   };
 
   return node;

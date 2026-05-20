@@ -8,6 +8,7 @@
 
 import { supabase } from './supabase';
 import { generateEmbedding } from './gemini';
+import { extractVideoEmbeds } from './video-embeds';
 
 interface IngestOptions {
   title: string;
@@ -41,7 +42,7 @@ export async function ingestContent({
 }: IngestOptions): Promise<IngestResult> {
   const { data: source, error: sourceError } = await supabase
     .from('knowledge_sources')
-    .insert({ title, content, type })
+    .insert({ title, content, type, video_embeds: extractVideoEmbeds(content) })
     .select('id')
     .single();
 

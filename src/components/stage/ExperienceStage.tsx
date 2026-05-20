@@ -12,6 +12,7 @@ interface ExperienceStageProps {
   userMessages: { id: string; content: string }[];
   isStreaming: boolean;
   streamingText: string;
+  voiceStreamingText: string;
   onClose: () => void;
 }
 
@@ -20,12 +21,13 @@ export function ExperienceStage({
   userMessages,
   isStreaming,
   streamingText,
+  voiceStreamingText,
   onClose,
 }: ExperienceStageProps) {
   const setTState = useAppStore((s) => s.setTState);
   const setRadialOpen = useAppStore((s) => s.setRadialOpen);
   const tState = useAppStore((s) => s.tState);
-  const hasContent = responses.length > 0 || isStreaming;
+  const hasContent = responses.length > 0 || isStreaming || voiceStreamingText.length > 0;
 
   const handleHoverStart = () => {
     if (tState === 'idle' || tState === 'stable') setTState('hover');
@@ -63,6 +65,7 @@ export function ExperienceStage({
             userMessages={userMessages}
             isStreaming={isStreaming}
             streamingText={streamingText}
+            voiceStreamingText={voiceStreamingText}
             onClose={onClose}
           />
         </div>

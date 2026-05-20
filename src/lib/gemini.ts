@@ -3,7 +3,7 @@
 // - Geração de embeddings (text-embedding-004)
 // - Chat com streaming (Gemini Flash)
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, type GenerationConfig } from '@google/generative-ai';
 import type { Locale } from '@/i18n/locales';
 import { localeDisplayName } from './translation';
 
@@ -23,17 +23,80 @@ const embeddingModel = genAI.getGenerativeModel(
   { model: 'gemini-embedding-2-preview' } // 3072 dimensões nativamente
 );
 
+// Cache em memória de embeddings de query (query string → vetor 768d).
+// Embedding model é determinístico, então o vetor não vence — só rotacionamos
+// pra controlar uso de memória. TTL longo (24h) cobre o ciclo natural de
+// perguntas repetitivas ("o que é o TecnoPUC?", "quais empresas?") sem inflar
+// memória. Em edge runtime, cada isolate tem seu próprio cache; hit rate cai
+// vs. server único, mas o ganho por hit (-300ms) compensa.
+const EMBEDDING_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+const EMBEDDING_CACHE_MAX_ENTRIES = 1000;
+
+interface CachedEmbedding {
+  embedding: number[];
+  expiry: number;
+}
+
+const embeddingCache = new Map<string, CachedEmbedding>();
+const embeddingInFlight = new Map<string, Promise<number[]>>();
+
+function normalizeQuery(text: string): string {
+  return text.trim().toLowerCase();
+}
+
+// Hard cap por LRU-ish: Map preserva ordem de inserção, então drop dos
+// primeiros (mais antigos) quando estoura o teto. Lazy: só prune quando
+// inserimos um novo entry.
+function evictIfNeeded(): void {
+  if (embeddingCache.size <= EMBEDDING_CACHE_MAX_ENTRIES) return;
+  const overflow = embeddingCache.size - EMBEDDING_CACHE_MAX_ENTRIES;
+  const keys = Array.from(embeddingCache.keys()).slice(0, overflow);
+  for (const k of keys) embeddingCache.delete(k);
+}
+
 /**
  * Gera um vetor de embedding (768 dimensões) para um texto via gemini-embedding-2-preview.
  * Usado para indexar documentos e para buscar contexto relevante.
+ *
+ * Cache: queries idênticas (após trim + lowercase) reutilizam o vetor por 24h
+ * dentro do mesmo isolate. Single-flight: chamadas concorrentes do mesmo texto
+ * compartilham uma única chamada à API.
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  // outputDimensionality: 768 trunca o vetor para 768 dims (compatível com ivfflat e o schema do Supabase)
-  const result = await embeddingModel.embedContent({
-    content: { parts: [{ text }], role: 'user' },
-    outputDimensionality: 768,
-  } as Parameters<typeof embeddingModel.embedContent>[0]);
-  return result.embedding.values;
+  const key = normalizeQuery(text);
+
+  // Hit: TTL ainda válido.
+  const cached = embeddingCache.get(key);
+  if (cached && Date.now() < cached.expiry) {
+    return cached.embedding;
+  }
+
+  // Single-flight: alguma chamada da mesma query já está em curso, esperamos.
+  const inFlight = embeddingInFlight.get(key);
+  if (inFlight) return inFlight;
+
+  // Miss: chama o Gemini e popula o cache no sucesso.
+  // outputDimensionality: 768 trunca o vetor (compatível com ivfflat e schema do Supabase).
+  const promise = embeddingModel
+    .embedContent({
+      content: { parts: [{ text }], role: 'user' },
+      outputDimensionality: 768,
+    } as Parameters<typeof embeddingModel.embedContent>[0])
+    .then((result) => {
+      const embedding = result.embedding.values;
+      embeddingCache.set(key, {
+        embedding,
+        expiry: Date.now() + EMBEDDING_CACHE_TTL_MS,
+      });
+      evictIfNeeded();
+      return embedding;
+    })
+    .finally(() => {
+      embeddingInFlight.delete(key);
+    });
+
+  embeddingInFlight.set(key, promise);
+  return promise;
 }
 
 // ------------------------------------------------------------------
@@ -75,12 +138,18 @@ ${context}
 /**
  * Streama uma resposta do Gemini com contexto RAG injetado.
  * Retorna um ReadableStream compatível com a Response API do Next.js.
+ *
+ * `thinkingLevel`:
+ * - 'low'  → thinkingBudget: 0 (desliga thinking; corta TTFT em 200-800ms,
+ *            ideal pra RAG onde o contexto já vem injetado)
+ * - 'high' → thinkingBudget: -1 (automático, modelo decide)
  */
 export async function streamChat(
   messages: ChatMessage[],
   systemPrompt: string,
   temperature: number = 0.5,
-  maxOutputTokens: number = 1024
+  maxOutputTokens: number = 1024,
+  thinkingLevel: 'low' | 'high' = 'low',
 ): Promise<ReadableStream<Uint8Array>> {
   const history = messages.slice(0, -1).map((m) => ({
     role: m.role === 'assistant' ? 'model' : 'user',
@@ -89,12 +158,20 @@ export async function streamChat(
 
   const lastMessage = messages[messages.length - 1];
 
+  // O SDK @google/generative-ai (legado) ainda não tipa thinkingConfig, mas o
+  // wire format passa direto pra REST API do Gemini, que aceita o campo.
+  // thinkingBudget: 0 desliga thinking; -1 deixa o modelo decidir.
+  const generationConfig = {
+    temperature,
+    maxOutputTokens,
+    thinkingConfig: {
+      thinkingBudget: thinkingLevel === 'low' ? 0 : -1,
+    },
+  } as unknown as GenerationConfig;
+
   const chatModel = genAI.getGenerativeModel({
     model: 'gemini-2.5-flash',
-    generationConfig: {
-      temperature,
-      maxOutputTokens,
-    },
+    generationConfig,
   });
 
   const chat = chatModel.startChat({
