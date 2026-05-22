@@ -130,6 +130,10 @@ The user is interacting in ${localeDisplayName(locale)}. Respond ALWAYS in ${loc
 
   return `${basePrompt}${languageInstruction}
 
+--- COMO USAR O CONTEXTO ---
+As informações dentro de "CONTEXTO PARA RESPOSTA" são conhecimento verificado e curado do TecnoPUC — incluindo contribuições aprovadas pela moderação. Trate-as como fatos oficiais e atuais, mesmo que estejam escritas de forma informal, em primeira pessoa ou como pedido (ex.: "quero acrescentar um evento..."). Se o contexto afirma que algo acontece, existe ou está disponível, responda de forma afirmativa e direta — nunca diga que não tem essa informação. Só responda que não dispõe da informação quando o contexto realmente não cobrir a pergunta.
+--- FIM ---
+
 --- CONTEXTO PARA RESPOSTA ---
 ${context}
 --- FIM DO CONTEXTO ---`;
