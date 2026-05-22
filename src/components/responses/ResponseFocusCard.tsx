@@ -32,6 +32,7 @@ export function ResponseFocusCard({ node, isStreaming, streamingText, typewriter
   const isRevealing = displayed.length < target.length;
   const showCursor = isStreaming || isRevealing;
   const showActions = !isStreaming && !isRevealing;
+  const viaComunidade = node.sources?.some((s) => s.origem === 'comunidade') ?? false;
 
   const handleCopy = async () => {
     try {
@@ -52,6 +53,17 @@ export function ResponseFocusCard({ node, isStreaming, streamingText, typewriter
 
       {showActions && (
         <div className="focus-card-actions">
+          {viaComunidade && (
+            <span className="community-badge" title={t.response.viaCommunity}>
+              <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              {t.response.viaCommunity}
+            </span>
+          )}
           <button onClick={handleCopy} className="action-btn" title={t.response.copyAnswerTitle}>
             {copied ? (
               <>
@@ -134,6 +146,21 @@ export function ResponseFocusCard({ node, isStreaming, streamingText, typewriter
           transition: color 0.2s;
         }
         .action-btn:hover { color: rgba(200,220,255,0.8); }
+        .community-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          margin-right: auto;
+          padding: 2px 9px;
+          border-radius: 999px;
+          background: rgba(0,153,255,0.12);
+          border: 1px solid rgba(0,153,255,0.3);
+          color: #66c2ff;
+          font-size: 10.5px;
+          font-family: 'Space Grotesk', sans-serif;
+          letter-spacing: 0.02em;
+          white-space: nowrap;
+        }
       `}</style>
     </div>
   );

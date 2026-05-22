@@ -37,7 +37,7 @@ export interface ResponseNode {
   relevance?: number;
   voiceAvailable?: boolean;
   actions?: ResponseAction[];
-  sources?: { source: string; similarity: string }[];
+  sources?: { source: string; similarity: string; origem?: string }[];
   video?: VideoEmbed | null;
 }
 

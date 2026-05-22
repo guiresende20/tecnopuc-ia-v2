@@ -29,6 +29,7 @@ export interface Document {
     source_id?: number | string; // FK para knowledge_sources.id (presente nos 4 fluxos)
     chunkIndex: number;
     category?: string;    // ex: "empresa", "servico", "evento"
+    origem?: string;      // 'comunidade' quando o chunk veio de contribuição aprovada
   };
   similarity?: number;    // cosine similarity (vector side)
   fts_rank?: number;      // ts_rank_cd (FTS side, presente no hybrid)

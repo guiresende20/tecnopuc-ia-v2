@@ -55,6 +55,7 @@ export const en: Dictionary = {
     closeTitle: 'Close',
     copy: 'Copy',
     copied: 'Copied',
+    viaCommunity: 'via community',
     userPrefix: 'You',
     assistantPrefix: 'Assistant',
     genericError: 'Sorry, something went wrong. Please try again.',

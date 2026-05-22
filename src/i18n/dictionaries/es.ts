@@ -55,6 +55,7 @@ export const es: Dictionary = {
     closeTitle: 'Cerrar',
     copy: 'Copiar',
     copied: 'Copiado',
+    viaCommunity: 'vía comunidad',
     userPrefix: 'Tú',
     assistantPrefix: 'Asistente',
     genericError: 'Lo sentimos, ocurrió un error. Inténtalo de nuevo.',

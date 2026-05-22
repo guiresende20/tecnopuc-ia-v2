@@ -56,6 +56,7 @@ export interface Dictionary {
     closeTitle: string;
     copy: string;
     copied: string;
+    viaCommunity: string;
     userPrefix: string;
     assistantPrefix: string;
     genericError: string;
@@ -164,6 +165,7 @@ export const pt: Dictionary = {
     closeTitle: 'Fechar',
     copy: 'Copiar',
     copied: 'Copiado',
+    viaCommunity: 'via comunidade',
     userPrefix: 'Você',
     assistantPrefix: 'Assistente',
     genericError: 'Desculpe, ocorreu um erro. Tente novamente.',

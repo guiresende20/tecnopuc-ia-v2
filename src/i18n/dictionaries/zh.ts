@@ -55,6 +55,7 @@ export const zh: Dictionary = {
     closeTitle: '关闭',
     copy: '复制',
     copied: '已复制',
+    viaCommunity: '来自社区',
     userPrefix: '你',
     assistantPrefix: '助手',
     genericError: '抱歉，发生错误。请再试一次。',

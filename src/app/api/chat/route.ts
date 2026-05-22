@@ -153,6 +153,7 @@ export async function POST(req: NextRequest) {
       'X-Sources': JSON.stringify(
         relevantDocs.map((d) => ({
           source: d.metadata?.source,
+          origem: d.metadata?.origem,
           similarity: d.similarity?.toFixed(2),
           fts_rank: d.fts_rank?.toFixed(3),
           rrf_score: d.rrf_score?.toFixed(4),
