@@ -177,6 +177,43 @@ export function ContribuicoesPanel({ authHeader, onPendingCountChange }: Props) 
         </div>
       </div>
 
+      <details className="contrib-tips" open>
+        <summary>💡 Dicas de edição — embedding mais fiel</summary>
+        <p>
+          Antes de aprovar, ajuste o conteúdo. O texto vira um embedding vetorial e é
+          recuperado por similaridade — quanto mais direto e factual, melhor a IA o
+          encontra e o trata como verdade.
+        </p>
+        <ul>
+          <li>
+            <strong>Reescreva como afirmação factual, em 3ª pessoa.</strong> Evite 1ª
+            pessoa e pedidos (ex.: <code>quero acrescentar…</code>, <code>seria legal…</code>).
+            O conteúdo da base é tratado como fato pelo assistente.
+          </li>
+          <li>
+            <strong>Comece pelo assunto e pelos termos-chave.</strong> Use os nomes
+            próprios e siglas que as pessoas digitariam ao perguntar (<code>Copa do Mundo</code>,
+            <code>FabLab</code>, <code>TecnoPUC Garage</code>).
+          </li>
+          <li>
+            <strong>Um fato por frase, objetivo.</strong> Corte saudações, rodeios e
+            linguagem de e-mail.
+          </li>
+          <li>
+            <strong>Repita o termo principal</strong> em vez de pronomes soltos
+            (<code>ele</code>, <code>isso</code>) — a busca fica mais precisa.
+          </li>
+          <li>
+            <strong>Um tópico por contribuição.</strong> Conteúdo coeso gera um chunk
+            coeso e um embedding mais fiel; misturar assuntos dilui a relevância.
+          </li>
+          <li>
+            <strong>Dê um título claro e descritivo</strong> — ele identifica o
+            documento na base de conhecimento.
+          </li>
+        </ul>
+      </details>
+
       {loading && items.length === 0 && (
         <p className="contrib-empty">Carregando...</p>
       )}
