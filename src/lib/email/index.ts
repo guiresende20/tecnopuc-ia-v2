@@ -1,27 +1,47 @@
 // src/lib/email/index.ts
-// Envio de e-mails transacionais via Resend.
+// Envio de e-mails transacionais. Suporta dois transportes, escolhidos por env:
+//   1. SMTP (nodemailer) — preferido quando SMTP_HOST está setado. Ex: Gmail.
+//   2. Resend — usado se SMTP_HOST ausente mas RESEND_API_KEY presente.
+//   3. Nenhum (dev) — loga a URL de verificação no console.
 //
 // Variáveis de ambiente:
+//   EMAIL_FROM="TecnoPUC IA <endereco@dominio>"  (remetente; no Gmail precisa ser
+//              a conta autenticada ou um alias "enviar como")
+//   APP_BASE_URL=https://...   (usado para montar a URL de validação)
+//
+//   --- SMTP (ex: Gmail) ---
+//   SMTP_HOST=smtp.gmail.com
+//   SMTP_PORT=465              (465=SSL implícito; 587=STARTTLS)
+//   SMTP_USER=conta@gmail.com
+//   SMTP_PASS=...              (App Password do Google, não a senha normal)
+//
+//   --- Resend (alternativa) ---
 //   RESEND_API_KEY=...
-//   EMAIL_FROM="TecnoPUC IA <onboarding@resend.dev>"
-//   APP_BASE_URL=https://...   (usado para montar URL de validação)
 //
-// IMPORTANTE — modo dev com onboarding@resend.dev:
-//   O remetente "onboarding@resend.dev" só consegue enviar para o e-mail do
-//   próprio dono da conta Resend. Quando o domínio próprio for verificado,
-//   trocar EMAIL_FROM para "TecnoPUC IA <noreply@dominio-da-pucrs>".
-//
-// Comportamento sem RESEND_API_KEY (dev local):
-//   Em vez de falhar, a função loga a URL de verificação no console e
-//   retorna { ok: true, skipped: true }. Útil para testar o fluxo sem
-//   precisar de conta Resend.
+// IMPORTANTE: a rota que usa este wrapper (api/contribuicoes) roda em Node
+// runtime — nodemailer NÃO funciona em edge.
 
 import { Resend } from 'resend';
-
-const apiKey = process.env.RESEND_API_KEY;
-const resend = apiKey ? new Resend(apiKey) : null;
+import nodemailer from 'nodemailer';
 
 const FROM = process.env.EMAIL_FROM ?? 'TecnoPUC IA <onboarding@resend.dev>';
+const SUBJECT = 'Confirme sua contribuição — TecnoPUC IA';
+
+// Transporte SMTP (preferido). Só é criado se SMTP_HOST estiver presente.
+const smtpHost = process.env.SMTP_HOST;
+const smtpPort = Number(process.env.SMTP_PORT ?? 465);
+const smtpTransport = smtpHost
+  ? nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465, // 465 = SSL implícito; 587 = STARTTLS
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    })
+  : null;
+
+// Transporte Resend (fallback).
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 interface SendResult {
   ok: boolean;
@@ -78,27 +98,36 @@ export async function sendConfirmacaoContribuicao(params: {
     : params.conteudoPreview;
   const html = htmlConfirmacaoContribuicao(urlVerificacao, escapeHtml(truncado));
 
-  if (!resend) {
-    console.warn(`[email] RESEND_API_KEY ausente — e-mail não enviado para ${params.para}.`);
-    console.warn(`[email] URL de verificação (cole no browser para testar): ${urlVerificacao}`);
-    return { ok: true, skipped: true };
+  // 1. SMTP (preferido — ex: Gmail).
+  if (smtpTransport) {
+    try {
+      await smtpTransport.sendMail({ from: FROM, to: params.para, subject: SUBJECT, html });
+      return { ok: true };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'erro desconhecido';
+      console.error('[email] Exceção SMTP:', msg);
+      return { ok: false, error: msg };
+    }
   }
 
-  try {
-    const { error } = await resend.emails.send({
-      from: FROM,
-      to: params.para,
-      subject: 'Confirme sua contribuição — TecnoPUC IA',
-      html,
-    });
-    if (error) {
-      console.error('[email] Erro Resend:', error);
-      return { ok: false, error: error.message };
+  // 2. Resend (fallback).
+  if (resend) {
+    try {
+      const { error } = await resend.emails.send({ from: FROM, to: params.para, subject: SUBJECT, html });
+      if (error) {
+        console.error('[email] Erro Resend:', error);
+        return { ok: false, error: error.message };
+      }
+      return { ok: true };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'erro desconhecido';
+      console.error('[email] Exceção Resend:', msg);
+      return { ok: false, error: msg };
     }
-    return { ok: true };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'erro desconhecido';
-    console.error('[email] Exceção:', msg);
-    return { ok: false, error: msg };
   }
+
+  // 3. Nenhum transporte configurado (dev): loga a URL para teste manual.
+  console.warn(`[email] Nenhum transporte (SMTP/Resend) configurado — e-mail não enviado para ${params.para}.`);
+  console.warn(`[email] URL de verificação (cole no browser para testar): ${urlVerificacao}`);
+  return { ok: true, skipped: true };
 }
