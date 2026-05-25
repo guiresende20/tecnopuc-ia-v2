@@ -7,6 +7,7 @@
 // Variáveis de ambiente:
 //   EMAIL_FROM="TecnoPUC IA <endereco@dominio>"  (remetente; no Gmail precisa ser
 //              a conta autenticada ou um alias "enviar como")
+//   EMAIL_REPLY_TO="..."       (opcional; Reply-To. Default = EMAIL_FROM)
 //   APP_BASE_URL=https://...   (usado para montar a URL de validação)
 //
 //   --- SMTP (ex: Gmail) ---
@@ -26,6 +27,9 @@ import nodemailer from 'nodemailer';
 
 const FROM = process.env.EMAIL_FROM ?? 'TecnoPUC IA <onboarding@resend.dev>';
 const SUBJECT = 'Confirme sua contribuição — TecnoPUC IA';
+// Reply-To válido reduz o score de spam. Por padrão usa o próprio remetente;
+// sobrescreva com EMAIL_REPLY_TO se quiser respostas em outro endereço.
+const REPLY_TO = process.env.EMAIL_REPLY_TO ?? FROM;
 
 // Transporte SMTP (preferido). Só é criado se SMTP_HOST estiver presente.
 const smtpHost = process.env.SMTP_HOST;
@@ -86,6 +90,24 @@ function htmlConfirmacaoContribuicao(urlVerificacao: string, previewSeguro: stri
 </html>`;
 }
 
+// Versão text/plain do e-mail. Enviar multipart (text + html) em vez de só HTML
+// reduz o score de spam — muitos filtros penalizam mensagens HTML-only.
+function textConfirmacaoContribuicao(urlVerificacao: string, preview: string): string {
+  return [
+    'TecnoPUC IA',
+    '',
+    'Recebemos sua contribuição para a base de conhecimento do assistente TecnoPUC.',
+    'Para enviá-la para revisão, confirme no link abaixo (válido por 1 hora):',
+    '',
+    urlVerificacao,
+    '',
+    'Prévia do que você enviou:',
+    `"${preview}"`,
+    '',
+    'Se você não enviou esta contribuição, pode ignorar este e-mail.',
+  ].join('\n');
+}
+
 export async function sendConfirmacaoContribuicao(params: {
   para: string;
   token: string;
@@ -100,11 +122,12 @@ export async function sendConfirmacaoContribuicao(params: {
     ? params.conteudoPreview.slice(0, 240) + '…'
     : params.conteudoPreview;
   const html = htmlConfirmacaoContribuicao(urlVerificacao, escapeHtml(truncado));
+  const text = textConfirmacaoContribuicao(urlVerificacao, truncado);
 
   // 1. SMTP (preferido — ex: Gmail).
   if (smtpTransport) {
     try {
-      await smtpTransport.sendMail({ from: FROM, to: params.para, subject: SUBJECT, html });
+      await smtpTransport.sendMail({ from: FROM, to: params.para, replyTo: REPLY_TO, subject: SUBJECT, html, text });
       return { ok: true };
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'erro desconhecido';
@@ -116,7 +139,7 @@ export async function sendConfirmacaoContribuicao(params: {
   // 2. Resend (fallback).
   if (resend) {
     try {
-      const { error } = await resend.emails.send({ from: FROM, to: params.para, subject: SUBJECT, html });
+      const { error } = await resend.emails.send({ from: FROM, to: params.para, replyTo: REPLY_TO, subject: SUBJECT, html, text });
       if (error) {
         console.error('[email] Erro Resend:', error);
         return { ok: false, error: error.message };
