@@ -49,7 +49,7 @@ export function ContribuirForm({ onSuccess }: Props) {
       });
 
       if (res.ok) {
-        setMensagem({ tipo: 'sucesso', texto: t.contribuir.success });
+        setMensagem({ tipo: 'sucesso', texto: '' });
         setConteudo('');
         setEmail('');
         setCategoria('');
@@ -141,7 +141,14 @@ export function ContribuirForm({ onSuccess }: Props) {
 
       {mensagem && (
         <div className={`contrib-message ${mensagem.tipo}`} role="status">
-          {mensagem.texto}
+          {mensagem.tipo === 'sucesso' ? (
+            <>
+              <strong className="contrib-message-title">{t.contribuir.success}</strong>
+              <span className="contrib-message-spam">⚠️ {t.contribuir.successSpam}</span>
+            </>
+          ) : (
+            mensagem.texto
+          )}
         </div>
       )}
 
@@ -265,7 +272,10 @@ export function ContribuirForm({ onSuccess }: Props) {
         }
 
         .contrib-message {
-          padding: 11px 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          padding: 12px 15px;
           border-radius: 8px;
           font-size: 12.5px;
           line-height: 1.5;
@@ -276,6 +286,17 @@ export function ContribuirForm({ onSuccess }: Props) {
           background: rgba(16, 185, 129, 0.1);
           border-color: rgba(16, 185, 129, 0.35);
           color: rgba(167, 243, 208, 0.95);
+        }
+
+        .contrib-message-title {
+          font-size: 13.5px;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+        }
+
+        .contrib-message-spam {
+          font-weight: 600;
+          color: rgba(253, 224, 130, 0.98);
         }
 
         .contrib-message.erro {

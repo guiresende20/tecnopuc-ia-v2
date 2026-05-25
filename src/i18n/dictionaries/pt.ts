@@ -84,6 +84,7 @@ export interface Dictionary {
     submit: string;
     submitting: string;
     success: string;
+    successSpam: string;
     errorGeneric: string;
     errorConnection: string;
     requiredMark: string;
@@ -195,8 +196,9 @@ export const pt: Dictionary = {
     categoryPlaceholder: 'Empresa, evento, programa...',
     submit: 'Enviar contribuição',
     submitting: 'Enviando...',
-    success:
-      'Pronto! Verifique seu e-mail para confirmar a contribuição (link válido por 1h).',
+    success: 'Contribuição enviada!',
+    successSpam:
+      'ATENÇÃO: para que ela entre no nosso sistema, enviamos um e-mail com um link de validação. Cheque sua caixa de entrada — e também a pasta de lixo/spam.',
     errorGeneric:
       'Não foi possível enviar agora. Tente novamente em instantes.',
     errorConnection: 'Erro de conexão. Tente novamente.',

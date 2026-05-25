@@ -85,8 +85,9 @@ export const es: Dictionary = {
     categoryPlaceholder: 'Empresa, evento, programa...',
     submit: 'Enviar contribución',
     submitting: 'Enviando...',
-    success:
-      '¡Listo! Revisa tu e-mail para confirmar la contribución (enlace válido por 1h).',
+    success: '¡Contribución enviada!',
+    successSpam:
+      'ATENCIÓN: para que entre en nuestro sistema, enviamos un correo con un enlace de validación. Revisa tu bandeja de entrada — y también la carpeta de spam/correo no deseado.',
     errorGeneric:
       'No se pudo enviar ahora. Inténtalo de nuevo en un instante.',
     errorConnection: 'Error de conexión. Inténtalo de nuevo.',

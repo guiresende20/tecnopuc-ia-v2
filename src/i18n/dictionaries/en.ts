@@ -85,8 +85,9 @@ export const en: Dictionary = {
     categoryPlaceholder: 'Company, event, program...',
     submit: 'Send contribution',
     submitting: 'Sending...',
-    success:
-      "Done! Check your email to confirm the contribution (link valid for 1h).",
+    success: 'Contribution sent!',
+    successSpam:
+      "IMPORTANT: for it to enter our system, we've sent an email with a validation link. Check your inbox — and your spam/junk folder too.",
     errorGeneric:
       'Could not send right now. Please try again shortly.',
     errorConnection: 'Connection error. Please try again.',

@@ -85,8 +85,9 @@ export const zh: Dictionary = {
     categoryPlaceholder: '公司、活动、项目...',
     submit: '提交贡献',
     submitting: '提交中...',
-    success:
-      '完成！请查收邮件以确认贡献（链接 1 小时内有效）。',
+    success: '贡献已发送！',
+    successSpam:
+      '重要提示：为了让它进入我们的系统，我们已向您发送了一封含验证链接的邮件。请查收收件箱，并务必检查垃圾邮件文件夹。',
     errorGeneric:
       '现在无法发送。请稍后再试。',
     errorConnection: '连接错误。请再试一次。',
