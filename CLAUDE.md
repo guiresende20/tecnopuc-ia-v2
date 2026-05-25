@@ -170,8 +170,10 @@ Sistema que permite **qualquer visitante** sugerir conhecimento para a base, com
 1. Visitante clica no botão **"CONTRIBUIR"** (canto inferior direito) → abre `<ContribuirLayer />` (modal estilo `ResponseLayer`)
 2. Preenche conteúdo (50–5000 chars) + e-mail + categoria opcional → `POST /api/contribuicoes`
 3. Backend gera token de 1h, salva como `aguardando_email`, dispara e-mail via Resend (em dev sem chave, loga URL no console)
-4. Visitante clica no link → `GET /api/contribuicoes/verificar?token=...` valida e promove para `aguardando_revisao`
-5. Redireciona para `/contribuir/validado` (ou `/contribuir/expirado` se token inválido)
+4. Visitante clica no link → abre a página `/contribuir/confirmar?token=...` (GET puro, não muta) com um botão
+5. Clique no botão → `POST /api/contribuicoes/verificar` (body `{token}`) valida e promove para `aguardando_revisao`, depois redireciona para `/contribuir/validado` (ou `/contribuir/expirado` se inválido/expirado)
+
+> **Por que página + POST (não GET-que-muta):** scanners de e-mail (Safe Links do Office 365, usado pelo `@pucrs.br`) fazem GET automático em todo link para checar phishing. Se a mutação estivesse no GET, a contribuição seria auto-validada e o token single-use queimado antes do humano clicar. O GET de `/api/.../verificar` virou apenas um fallback que redireciona para a página de confirmação.
 
 ### Fluxo admin
 1. `/admin` → aba **"Contribuições"** (badge vermelho com count de pendentes)
@@ -202,9 +204,9 @@ Campos críticos:
 - Lib: `src/lib/email/index.ts` (Resend wrapper) e `src/lib/ingest.ts` (`ingestContent()`)
 - API pública: `src/app/api/contribuicoes/{route.ts, verificar/route.ts}`
 - API admin: `src/app/api/admin/contribuicoes/route.ts` (GET list + PATCH aprovar/rejeitar)
-- UI pública: `src/components/contribuir/{ContribuirForm, ContribuirButton, ContribuirLayer}.tsx`
+- UI pública: `src/components/contribuir/{ContribuirForm, ContribuirButton, ContribuirLayer, ConfirmarContribuicao}.tsx`
 - UI admin: `src/components/admin/ContribuicoesPanel.tsx`
-- Páginas: `src/app/contribuir/{page, validado/page, expirado/page}.tsx`
+- Páginas: `src/app/contribuir/{page, confirmar/page, validado/page, expirado/page}.tsx`
 
 ### Limitação atual conhecida
 `EMAIL_FROM=onboarding@resend.dev` — Resend bloqueia envio para qualquer e-mail que não seja o dono da conta. Para produção real, verificar domínio próprio antes de promover.

@@ -92,7 +92,10 @@ export async function sendConfirmacaoContribuicao(params: {
   conteudoPreview: string;
 }): Promise<SendResult> {
   const baseUrl = process.env.APP_BASE_URL ?? 'http://localhost:3000';
-  const urlVerificacao = `${baseUrl}/api/contribuicoes/verificar?token=${encodeURIComponent(params.token)}`;
+  // Aponta para a PÁGINA de confirmação (GET puro, não muta), não para a rota de
+  // API. A mutação só ocorre no POST disparado pelo clique humano — assim
+  // scanners de e-mail (Safe Links do Office 365) não auto-validam ao varrer o link.
+  const urlVerificacao = `${baseUrl}/contribuir/confirmar?token=${encodeURIComponent(params.token)}`;
   const truncado = params.conteudoPreview.length > 240
     ? params.conteudoPreview.slice(0, 240) + '…'
     : params.conteudoPreview;
